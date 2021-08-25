@@ -1,10 +1,10 @@
 import type { NextPage } from 'next'
 import styles from './Home.module.css'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 
 import firebase from 'src/firebase/client'
-import Cookies from 'js-cookie'
+import Loader from 'src/sharedComponents/Loader'
 
 const Home: NextPage = () => {
 
@@ -12,14 +12,39 @@ const Home: NextPage = () => {
   const [avatar, setAvatar] = useState('')
   const router = useRouter()
 
-  const onCreateLobby = () => {
+  const [loading, setLoading] = useState(false)
 
+  useEffect(() => {
+    localStorage.removeItem('saved-player')
+    localStorage.removeItem('saved-lobby')
+  }, [])
+
+  const onCreateLobby = () => {
+    setLoading(true)
+
+    // TODO : Frontend error
     if (!nickname) {
-      // TODO: Frontend error message 
+      alert('You must enter a nickname')
+      setLoading(false)
       return
     }
 
-    const lobbyId = firebase.database().ref().push().key as string
+    const lobbyId = firebase.database().ref().push({
+      gameStatus: {
+        round: 0,
+        countdownStarted: false
+      },
+      settings: {
+        dealer: {
+          on: true,
+          default: true
+        },
+        peek: {
+          timer: 4,
+          cooldown: 4
+        }
+      }
+    }).key as string
     const playerId = firebase.database().ref(`${lobbyId}/players`).push().key as string
     firebase.database().ref(`${lobbyId}/players/${playerId}`).set({
       id: playerId,
@@ -29,15 +54,11 @@ const Home: NextPage = () => {
     }).then(() => {
       sessionStorage.setItem('lid', lobbyId)
       sessionStorage.setItem('pid', playerId)
-      Cookies.set('saved-lid', lobbyId)
-      Cookies.set('saved-pid', playerId)
       router.push('/lobby')
-    }).catch(e => {
-      // TODO : Generic server error message
-      console.log(e)
     })
   }
 
+  if (loading) return (<Loader message="Creating lobby"/>)
   return (
     <div className={styles.container}>
         <h1 className={styles.title}>

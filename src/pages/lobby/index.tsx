@@ -1,158 +1,183 @@
 import type { NextPage } from 'next'
-import styles from './Lobby.module.css'
 import { useEffect, useState } from 'react'
-import { CopyToClipboard } from 'react-copy-to-clipboard'
 import { useBeforeunload } from 'react-beforeunload'
-import router, { useRouter } from "next/router"
-import Cookies from 'js-cookie';
-
+import router from "next/router"
 import firebase from 'src/firebase/client'
+import useInterval from 'react-useinterval'
+import { LobbyInfo, emptyLobbyInfo, Player, emptyPlayer } from 'src/types'
 
-type Player = {
-  id: string,
-  nickname: string, 
-  avatar: string,
-  isHost: boolean
-}
+import Setup from './components/Setup'
+import Countdown from './components/Countdown'
+import Game from './components/Game'
+import Loader from 'src/sharedComponents/Loader'
 
 const Lobby: NextPage = () => {
 
-  const [player, setPlayer] = useState<Player | undefined>();
-  const [players, setPlayers] = useState<any>([]);
-  const [lobbyId, setLobbyId] = useState('');
-  const [playerId, setPlayerId] = useState('');
-  const [loading, setLoading] = useState(true)
+  const [myPlayer, setMyPlayer] = useState<Player>(emptyPlayer)
+  const [lobby, setLobby] = useState<LobbyInfo>(emptyLobbyInfo)
 
-  // TODO : Cleanup this code
+  // Local Countdown Timer  
+  const [seconds, setSeconds] = useState(0)
+  const [countdown, setCountdown] = useState(6)
+
+  const [loading, setLoading] = useState(true)
+  const [renderCountdown, setRenderCountdown] = useState(false)
+  const [renderGame, setRenderGame] = useState(false)
+
   useEffect(() => {
     const lobbyId = sessionStorage.getItem('lid')
     const playerId = sessionStorage.getItem('pid')
 
-    // Successfull entry to lobby
+    // Successful entry to lobby (create, join, refresh)
     if (lobbyId && playerId) {
 
-      const serialisedSavedPlayer = Cookies.get('saved-player')
-      const savedPlayer = serialisedSavedPlayer ? JSON.parse(serialisedSavedPlayer) : ''
-
-      // Player refreshed
-      if (savedPlayer) {
-        firebase.database().ref(`${lobbyId}/players/${playerId}`).set(savedPlayer)
-        Cookies.remove('saved-player')
-      } 
-
-      firebase.database().ref(lobbyId).on('value', (snapshot) => {
-        if (snapshot.exists()) {
-          const lobby = snapshot.val() as any
-          const player = lobby.players[Object.keys(lobby.players).filter((pid: any) => pid === playerId)[0]]
-          if (!player) {
-            // Kicked out of the game by host - TODO: Meaningful error, open a modal
-            alert('Kicked!')
-            router.push('/404') 
-            sessionStorage.removeItem('lid')
-            sessionStorage.removeItem('pid')
-            Cookies.remove('saved-lid')
-            Cookies.remove('saved-pid')
-            Cookies.remove('saved-player')
-          } else {
-            // Check is host is available, if not assign the next person as the host
-            const hostAvailable = Object.keys(lobby.players).filter((pid: any) => lobby.players[pid].isHost).length === 1
-            if (!hostAvailable) {
-              const newHost = lobby.players[Object.keys(lobby.players)[0]]
-              firebase.database().ref(`${lobbyId}/players/${newHost.id}/isHost`).set(true)
-            } else {
-              updateUI(lobbyId, lobby, player)
+      // Refresh
+      const savedPlayer =  JSON.parse(localStorage.getItem('saved-player') as string)
+      const savedLobby =  JSON.parse(localStorage.getItem('saved-lobby') as string)
+      if (savedPlayer) { 
+        if (savedLobby) {
+          firebase.database().ref(lobbyId).set({
+            ...savedLobby,
+            id: null,
+            players: {
+              [playerId]: {
+                ...savedPlayer
+              }
             }
-          }
+          })
+          localStorage.removeItem('saved-lobby')
+          localStorage.removeItem('saved-player')
+          listenForUpdates(lobbyId, playerId)
         } else {
-          // TODO : server error
+          firebase.database().ref(`${lobbyId}/players/${playerId}`).set(savedPlayer)
+          localStorage.removeItem('saved-player')
+          listenForUpdates(lobbyId, playerId)
         }
-      })
-    // Player exited the lobby
-    } else {
-      const lidSaved = Cookies.get('saved-lid')
-      const pidSaved = Cookies.get('saved-pid')
-      if (lidSaved && pidSaved ) {
-        removePlayer(lidSaved, pidSaved).then(() => {
-          Cookies.remove('saved-lid')
-          Cookies.remove('saved-pid')
-        })
+      } else {
+        // Created or joined
+        listenForUpdates(lobbyId, playerId)
       }
-
-      const playerSaved = Cookies.get('saved-player')
-      if (playerSaved) Cookies.remove('saved-player')
+    // Player existed lobby
+    } else {
+      localStorage.removeItem('saved-player')
+      localStorage.removeItem('saved-lobby')
       router.push('/404')
     }
   }, []);
 
-  const updateUI = (lobbyId: any, lobbyInfo: any, player: any) => {
-    if (lobbyInfo && player) {
-      setPlayers(lobbyInfo.players)
-      setPlayer(player)
-      setLoading(false)
-      setLobbyId(lobbyId)
-      setPlayerId(player.id)
-    } else {
-      setLoading(true)
-    }
-    
+  const listenForUpdates = (lobbyId: string, playerId: string) => {
+    firebase.database().ref(lobbyId).on('value', (snapshot) => {
+      if (snapshot.exists()) {
+        const lobby = snapshot.val() as any
+
+        const myPlayer = lobby.players[Object.keys(lobby.players).filter((pid: any) => pid === playerId)[0]]
+        if (!myPlayer) {
+          // Kicked!
+          alert('Kicked!')
+          sessionStorage.removeItem('lid')
+          sessionStorage.removeItem('pid')
+          localStorage.removeItem('saved-player')
+          localStorage.removeItem('saved-lobby')
+          router.push('/404') 
+        } else {
+          // Replace host if not available
+          const hostAvailable = Object.keys(lobby.players).filter((pid: any) => lobby.players[pid].isHost).length === 1
+          if (!hostAvailable) {
+            const newHost = lobby.players[Object.keys(lobby.players)[0]]
+            firebase.database().ref(`${lobbyId}/players/${newHost.id}/isHost`).set(true)
+          }
+          // Map new lobby info to UI
+          mapLobbyInfo(lobbyId, lobby, myPlayer)
+        }
+      } else {
+        alert('Internal server error')
+      }
+    })
   }
 
-  useBeforeunload(() => {
-    // TODO: FIGURE THIS OUT!
-    firebase.database().ref(lobbyId).off()
-    const cachedPlayer = {
-      ...player,
-      isHost: false
+  const mapLobbyInfo = (lobbyId: any, lobby: any, player: any) => {
+    const players = Object.keys(lobby.players).map(pid => {
+      const player : Player =  {
+        id: pid, 
+        nickname: lobby.players[pid].nickname,
+        avatar: lobby.players[pid].player,
+        isHost: lobby.players[pid].isHost
+      } 
+      return player
+    })
+    const lobbyInfo : LobbyInfo = {
+      id: lobbyId,
+      players: players,
+      gameStatus: lobby.gameStatus,
+      settings: lobby.settings
     }
-    const serialisedCachedPlayer = JSON.stringify(cachedPlayer)
-    Cookies.set('saved-player', serialisedCachedPlayer)
-    removePlayer(lobbyId, playerId)
-  })
+    const countdownStarted = lobbyInfo.gameStatus.countdownStarted
+    const renderGame = lobbyInfo.gameStatus.round > 0 && !countdownStarted
+
+    if (renderGame) { 
+      setCountdown(6)
+      setSeconds(0)
+    }
+    setMyPlayer(player)
+    setLobby(lobbyInfo)
+    setRenderGame(renderGame )
+    setRenderCountdown(countdownStarted)
+    setLoading(false)
+  }
+
+  useInterval(() => {
+    const countdown = 5 - seconds
+    if (countdown <= 0) {
+      firebase.database().ref(`${lobby.id}/gameStatus`).set({
+        ...lobby.gameStatus,
+        round: lobby.gameStatus.round + 1,
+        countdownStarted: false
+      })
+    } else {
+      setCountdown(countdown)
+      setSeconds(seconds + 1)
+    }
+    setCountdown(countdown)
+  }, renderCountdown ? 1000 : null)
 
   const removePlayer = (lobbyId: string, playerId: string) => {
     return firebase.database().ref(`${lobbyId}/players/${playerId}`).remove()
   }
 
-  if (loading) {
-    return (
-      <div className={styles.container}> 
-        <h1 className={styles.title}> <span> Loading... </span> </h1>
-      </div>
-    )
-  } 
+  useBeforeunload(() => {
+    firebase.database().ref(lobby.id).off()
+
+    // Prepare to recover the player
+    const savedPlayer = JSON.stringify({
+      ...myPlayer,
+      isHost: false
+    })
+    localStorage.setItem('saved-player', savedPlayer)
+
+    if (lobby.players.length - 1 === 0) {
+       // Prepare to recover the lobby
+      const savedLobby = JSON.stringify({
+        ...lobby,
+        players: [savedPlayer]
+      })
+      localStorage.setItem('saved-lobby', savedLobby)
+      firebase.database().ref(lobby.id).remove()
+    } else {
+      removePlayer(lobby.id, myPlayer.id)
+    }
+  })
+
+  if (loading) return (<Loader message="Getting lobby information"/>) 
+  if (renderCountdown) return (<Countdown countdown={countdown}/>)
+  if (renderGame) {
+    return (<Game/>)
+  }
   return (
-    <div className={styles.container}>
-        <h1 className={styles.title}>
-          <span> Lobby ({Object.keys(players).length} / 10) </span>
-        </h1>
-        <h2> Me: </h2> 
-        <p> {player && player.nickname} {player && player.isHost &&  '(Host)'} </p>
-        <br/>
-        <h2> Others: </h2>
-        {Object.keys(players).map((i) => {
-          if (i !== playerId) return (
-            <div key={i}>
-              <p > 
-                {players[i].nickname} {players[i].isHost && '(Host)'} 
-                { player && player.isHost && (
-                  <span> <button onClick={(e) => removePlayer(lobbyId, players[i].id)}> Remove </button> </span>
-                )} 
-              </p>
-              
-            </div>
-          )
-        })} 
-        <br/>
-        <CopyToClipboard 
-          text={`localhost:3000/spoons/join?code=${lobbyId}`}
-          onCopy={() => {}}
-        >
-          <button> Copy link to invite others! </button>
-        </CopyToClipboard>
-        <br/>
-        <button disabled={player && !player.isHost}> {(player && player.isHost) ? 'Start Game' : 'Waiting for host to start game...'} </button>
-    </div>
-  )
+    <Setup 
+      lobby={lobby} 
+      myPlayer={myPlayer} 
+      removePlayer={removePlayer}
+    />)
 }
 
 export default Lobby
