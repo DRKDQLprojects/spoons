@@ -1,4 +1,5 @@
 import styles from './404.module.css'
+import router from 'next/router';
 
 export default function Custom404() {
   return (
@@ -7,7 +8,7 @@ export default function Custom404() {
       <p> Not to worry we will help you get back </p>
 
       <h2> Where would you like to go?</h2>
-      <button> Create a Spoons lobby </button>
+      <button onClick={e => router.push("/")}> Create a Spoons lobby </button>
       <br/>
       <br/>
        <div> Join a Spoons Game </div>

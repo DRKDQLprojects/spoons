@@ -3,18 +3,25 @@ import styles from './Join.module.css'
 import { useState, useEffect } from 'react'
 import firebase from 'src/firebase/client'
 import { useRouter } from "next/router"
-import Cookies from 'js-cookie'
+import Loader from 'src/sharedComponents/Loader'
 
 const Join: NextPage = () => {
 
   const [nickname, setNickname] = useState('')
   const [avatar, setAvatar] = useState('')
   const [lobbyId, setLobbyId] = useState('')
-  const [numPlayers, setNumPlayers] = useState(-1)
+  const [numPlayers, setNumPlayers] = useState(0)
+  const [gameStarted, setGameStarted] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
+  const [joining, setJoining] = useState(false)
+
   useEffect(() => {
+
+    localStorage.removeItem('saved-player')
+    localStorage.removeItem('saved-lobby')
+
     if (router.isReady) {
       const code = router.query.code
       if (code) {
@@ -34,24 +41,45 @@ const Join: NextPage = () => {
     firebase.database().ref().on('value', (snapshot) => {
       if (snapshot.exists()) {
         const lobbies = snapshot.val()
-        if (lobbies[lobbyId]) {
-          const numPlayers = Object.keys(lobbies[lobbyId].players).length
+        const lobby = lobbies[lobbyId]
+        if (lobby) {
+          const numPlayers = Object.keys(lobby.players).length
+
           setNumPlayers(numPlayers)
           setLobbyId(lobbyId)
-          setLoading(false)            
+          setLoading(false)
+          setGameStarted(lobby.gameStatus.round > 0)
         } else {
           // More helpful error if lobby doesnt exist
           router.push('/404')
         }
       } else {
-        // TODO: Server error
+        alert('Internal server error')
       }
     })
   }
 
   const join = () => {
+    setJoining(true)
+
+    // TODO : Frontend error
+    if (!nickname) {
+      alert('You must enter a nickname')
+      setJoining(false)
+      return
+    }
+
+    // TODO: Error - lobby is full
     if (numPlayers + 1 > 10) {
-      // TODO: Error - lobby is full
+      alert('The lobby is full. Please try again soon ')
+      setJoining(false)
+      return
+    // TODO : Error - game has started already
+    } else if (gameStarted) {
+      alert('The lobby has already started the game. Please try again soon') 
+      setJoining(false)
+      return
+    // Good to join
     } else {
       // TODO: Check if these are valid before sending 200
       const playerId = firebase.database().ref(`${lobbyId}/players`).push().key as string
@@ -63,22 +91,13 @@ const Join: NextPage = () => {
       }).then(() => {
         sessionStorage.setItem('lid', lobbyId)
         sessionStorage.setItem('pid', playerId)
-        Cookies.set('saved-lid', lobbyId)
-        Cookies.set('saved-pid', playerId)
         router.push("/lobby")
-      }).catch(e => {
-        console.log(e) // TODO: server error
       })
     }
   }
 
-  if (loading) {
-    return (
-      <div className={styles.container}> 
-        <h1 className={styles.title}> <span> Searching for lobby... </span> </h1>
-      </div>
-    )
-  }
+  if (loading) return (<Loader message="Attempting to find lobby"/>)
+  if (joining) return (<Loader message="Joining lobby"/> )
 
   return (
     <div className={styles.container}>
