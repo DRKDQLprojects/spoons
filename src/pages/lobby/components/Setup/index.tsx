@@ -2,12 +2,14 @@ import styles from './Setup.module.css'
 import { CopyToClipboard } from 'react-copy-to-clipboard'
 import { emptyLobbyInfo, emptyPlayer, LobbyInfo, Player } from 'src/types'
 import firebase from 'src/firebase/client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Dispatch, SetStateAction } from 'react'
+import { setupBoard } from 'src/shared/helpers'
 
 type SetupProps = {
   myPlayer: Player,
   lobby: LobbyInfo,
-  removePlayer: (lobbyId: string, playerId: string) => Promise<any>
+  removePlayer: (lobbyId: string, playerId: string) => Promise<any>,
+  setSeconds: Dispatch<SetStateAction<number>>;
 }
 
 const Setup = (props: SetupProps) => {
@@ -31,9 +33,19 @@ const Setup = (props: SetupProps) => {
       alert('You need at least 2 players to start')
       return
     } else {
-      firebase.database().ref(`${lobbyId}/gameStatus`).set({
-        ...gameStatus,
-        countdownStarted: true
+      
+      // setupBoard
+      const newPlayers = setupBoard(players, settings)
+      
+      firebase.database().ref(lobbyId).set({
+        gameStatus: {
+          ...gameStatus,
+          countdownStarted: true
+        },
+        players: newPlayers,
+        settings: {
+          ...settings
+        }
       })
     }
   }

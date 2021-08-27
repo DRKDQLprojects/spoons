@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 
 import firebase from 'src/firebase/client'
-import Loader from 'src/sharedComponents/Loader'
+import Loader from 'src/shared/Loader'
+import { emptyGameState } from 'src/types'
 
 const Home: NextPage = () => {
 
@@ -32,7 +33,8 @@ const Home: NextPage = () => {
     const lobbyId = firebase.database().ref().push({
       gameStatus: {
         round: 0,
-        countdownStarted: false
+        countdownStarted: false,
+        roundComplete: false
       },
       settings: {
         dealer: {
@@ -50,7 +52,8 @@ const Home: NextPage = () => {
       id: playerId,
       nickname: nickname,
       avatar: avatar,
-      isHost: true
+      isHost: true,
+      gameState: emptyGameState
     }).then(() => {
       sessionStorage.setItem('lid', lobbyId)
       sessionStorage.setItem('pid', playerId)

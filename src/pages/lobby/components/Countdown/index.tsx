@@ -1,11 +1,11 @@
 import styles from './Countdown.module.css'
 
 type CountdownProps = {
-  countdown: number
+  seconds: number
 }
 
 const Countdown = (props: CountdownProps) => {
-  const text = (props.countdown > 0 && props.countdown <= 5) ? props.countdown : 'Starting now'
+  const text = (props.seconds > 0 && props.seconds <= 5) ? `Starting in ${props.seconds}` : 'Starting now'
   return (
     <div className={styles.container}> 
       <h1 className={styles.title}> <span> {text} </span> </h1>

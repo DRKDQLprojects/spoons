@@ -1,18 +1,91 @@
 .container {
-  min-height: 100vh;
-  padding: 0 0.5rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  padding: 50px;
+  width: 90%;
 }
 
-.title > span {
+.title {
+  text-align: center;
+}
+.title > h1 {
   color: #0070f3;
 }
 
-.button {
-  width: 200px;
+.myPlayer {
+  padding: 50px;
+  text-align: center;
+  height: 250;
+  border: 1px black solid;
+  background-color: cornflowerblue;
+}
+
+.opponents {
+  display: flex;
+  justify-content: space-between;
+  height: 250px;
+}
+
+.opponent {
+  padding: 50px;
+  text-align: center;
+  height: 250px;
+  border: 1px black solid;
+  background-color: cornflowerblue;
+}
+
+.table {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  border: 1px black solid;
+  background-color: burlywood;
+}
+.spoon {
+  height: 75px;
+  width: 75px;
+}
+
+.peekButton {
+  height: 80%;
+  width: 80%;
+}
+
+.cardPlaceholder {
+  border: 3px black dotted;
   height: 100px;
+  width: 75px;
+  margin-right: 10px;
+}
+
+.cards {
+  display: flex;
+  margin-right: 50px;
+}
+.card {
+  height: 100px;
+  margin-right: 10px;
+  width: 75px;
+  background-color: white;
+}
+
+.pile {
+  height: 100px;
+  margin-right: 10px;
+  width: 75px;
+  background-color: cyan;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.playerActions {
+  display: flex;
+  justify-content: center;
+}
+
+.pilePlaceholder {
+  border: 3px black dotted;
+  height: 100px;
+  width: 75px;
+  margin-right: 10px;
 }
