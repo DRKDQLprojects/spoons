@@ -85,7 +85,6 @@ const Join: NextPage = () => {
       // TODO: Check if these are valid before sending 200
       const playerId = firebase.database().ref(`${lobbyId}/players`).push().key as string
       firebase.database().ref(`${lobbyId}/players/${playerId}`).set({
-        id: playerId,
         nickname: nickname,
         avatar: avatar,
         isHost: false,

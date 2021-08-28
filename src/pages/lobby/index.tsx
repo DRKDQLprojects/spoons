@@ -4,7 +4,7 @@ import { useBeforeunload } from 'react-beforeunload'
 import router from "next/router"
 import firebase from 'src/firebase/client'
 import useInterval from 'react-useinterval'
-import { LobbyInfo, emptyLobbyInfo, Player, emptyPlayer, emptyGameState, Card } from 'src/types'
+import { LobbyInfo, emptyLobbyInfo, Player, emptyPlayer, emptyGameState } from 'src/types'
 
 import Setup from './components/Setup'
 import Countdown from './components/Countdown'
@@ -94,24 +94,19 @@ const Lobby: NextPage = () => {
   }
 
   const mapLobbyInfo = (lobbyId: any, lobby: any, playerId: any, dbMyPlayer: any) => {
-
-    
   
     const players : Player[] = Object.keys(lobby.players).map(pid => {
       return {
+        ...lobby.players[pid],
         id: pid, 
-        nickname: lobby.players[pid].nickname,
-        avatar: lobby.players[pid].avatar,
-        isHost: lobby.players[pid].isHost,
-        gameState: lobby.gameStatus.round === 0 ? emptyGameState : lobby.players[pid].gameState
+        gameState: (lobby.gameStatus.round === 0 || !lobby.players[pid].gameState.hand) ? emptyGameState : lobby.players[pid].gameState
       }
     })
     
-
     const myPlayer : Player = { 
         ...dbMyPlayer,
         id: playerId,
-        gameState: lobby.gameStatus.round === 0 ? emptyGameState : dbMyPlayer.gameState
+        gameState: (lobby.gameStatus.round === 0 || !lobby.players[playerId].gameState.hand) ? emptyGameState : dbMyPlayer.gameState
     }
     const lobbyInfo : LobbyInfo = {
       id: lobbyId,
@@ -119,15 +114,14 @@ const Lobby: NextPage = () => {
       gameStatus: lobby.gameStatus,
       settings: lobby.settings
     }
+
     const countdownStarted = lobbyInfo.gameStatus.countdownStarted
     const renderGame = lobbyInfo.gameStatus.round > 0 && !countdownStarted
-
     
     setLobby(lobbyInfo)
     setMyPlayer(myPlayer)
     
     if (countdownStarted) {
-      
       setSeconds(5)
     }
     setRenderCountdown(countdownStarted)
@@ -200,7 +194,8 @@ const Lobby: NextPage = () => {
       myPlayer={myPlayer} 
       removePlayer={removePlayer}
       setSeconds={setSeconds}
-    />)
+    />
+  )
   
 }
 

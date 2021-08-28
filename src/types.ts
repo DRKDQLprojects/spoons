@@ -2,14 +2,13 @@ export type LobbyInfo = {
   id: string,
   gameStatus : {
     round: number,
-    countdownStarted: boolean,
-    roundComplete: boolean
+    countdownStarted: boolean
   }, 
   players: Player[],
   settings: {
     dealer: {
       default: boolean,
-      on: true
+      on: boolean
     },
     peek : {
       cooldown: number,
@@ -30,13 +29,13 @@ export type Card = {
   value: string,
   suit: string
 }
-export const CardValues = ['A', '2', '3', '3', '4', '5', '6', '7', '8', '9', '10', '11', 'J', 'Q', 'K']
+export const CardValues = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
 export const CardSuits = ['heart', 'diamond', 'spade', 'club']
 
 export const Deck = () : Card[] => {
   let deck : Card[] = []
-  for (let i = 0; i < 4; i++) {
-    for (let j = 0; j < 13; j++) {
+  for (let i = 0; i < CardSuits.length; i++) {
+    for (let j = 0; j < CardValues.length; j++) {
       deck.push({ value: CardValues[j], suit: CardSuits[i] })
     }
   }
@@ -50,23 +49,27 @@ export const Deck = () : Card[] => {
 }
 
 export type PlayerGameState = {
-  remaining: true
+  remaining: boolean
   hand: Card[],
   pile: Card[],
+  previousPlayerId: string,
   nextPlayerId: string,
   spoonCollected: boolean,
-  dealer: boolean
+  dealer: boolean,
+  toBeEliminated: boolean
 }
 
 // Empty Types
 
 export const emptyGameState : PlayerGameState = {
-  remaining: true,
+  remaining: false,
   hand: [],
   pile: [],
   spoonCollected: false,
+  previousPlayerId: '',
   nextPlayerId: '',
-  dealer: false
+  dealer: false,
+  toBeEliminated: false
 } 
 
 export const emptyPlayer : Player = {
@@ -81,8 +84,7 @@ export const emptyLobbyInfo : LobbyInfo = {
   id: '',
   gameStatus : {
     round: 0,
-    countdownStarted: false,
-    roundComplete: false
+    countdownStarted: false
   }, 
   players: [],
   settings: {

@@ -1,3 +1,5 @@
+/* SHARED */
+
 .container {
   padding: 50px;
   width: 90%;
@@ -10,6 +12,135 @@
   color: #0070f3;
 }
 
+.playerActions {
+  display: flex;
+  justify-content: center;
+}
+
+.safe {
+  color: white;
+  background-color: green;
+}
+
+.eliminated{
+  color: white;
+  background-color: red;
+}
+
+/* OPPONENTS */
+
+.opponents {
+  display: flex;
+  justify-content: center;
+}
+
+.opponent {
+  padding: 50px;
+  text-align: center;
+  border: 1px black solid;
+  background-color: cornflowerblue;
+  width: 100%;
+}
+
+
+.opponentCards {
+  display: flex;
+}
+
+.opponentCard {
+  height: 100px;
+  margin-right: 10px;
+  width: 75px;
+  background-color: purple;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 3px solid thistle;
+  border-radius: 10px;
+}
+
+.opponentPile {
+  margin-right: 52px;
+  height: 100px;
+  width: 75px;
+}
+
+.opponentPilePlaceholder {
+  border: 3px black dotted;
+  border-radius: 10px;
+  height: 100px;
+  width: 75px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-right: 52px;
+}
+
+.opponentPileCard {
+  height: 100px;
+  width: 75px;
+  border: 3px solid thistle;
+  border-radius: 10px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  
+  background-color: purple;
+  color: white;
+  position: absolute;
+}
+
+/* TABLE */
+
+.table {
+  padding: 25px;
+  text-align: center;
+  border: 1px black solid;
+  background-color: burlywood;
+  height: 350px;
+}
+
+.spoons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.spoon {
+  height: 150px;
+  width: 100px;
+  background-color: grey;
+  color: white;
+}
+
+.peekButtonRed {
+  background-color: red;
+  color: white;
+  height: 75px;
+  width: 100px;
+}
+
+.peekButtonGreen {
+  background-color: green;
+  color: white;
+  height: 75px;
+  width: 100px;
+}
+
+.spectating {
+  background-color: blue;
+  color: white;
+  margin-right: 20px;
+}
+
+/* PLAYER */
+
 .myPlayer {
   padding: 50px;
   text-align: center;
@@ -18,74 +149,89 @@
   background-color: cornflowerblue;
 }
 
-.opponents {
-  display: flex;
-  justify-content: space-between;
-  height: 250px;
-}
-
-.opponent {
-  padding: 50px;
-  text-align: center;
-  height: 250px;
-  border: 1px black solid;
-  background-color: cornflowerblue;
-}
-
-.table {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 300px;
-  border: 1px black solid;
-  background-color: burlywood;
-}
-.spoon {
-  height: 75px;
-  width: 75px;
-}
-
-.peekButton {
-  height: 80%;
-  width: 80%;
-}
-
-.cardPlaceholder {
-  border: 3px black dotted;
-  height: 100px;
-  width: 75px;
-  margin-right: 10px;
-}
-
-.cards {
+.myPlayerCards {
   display: flex;
   margin-right: 50px;
 }
-.card {
-  height: 100px;
-  margin-right: 10px;
-  width: 75px;
-  background-color: white;
-}
 
-.pile {
+.myPlayerCard {
   height: 100px;
-  margin-right: 10px;
   width: 75px;
-  background-color: cyan;
+  border: 3px solid thistle;
+  border-radius: 10px;
+
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-}
 
-.playerActions {
-  display: flex;
-  justify-content: center;
-}
-
-.pilePlaceholder {
-  border: 3px black dotted;
-  height: 100px;
-  width: 75px;
+  color: black;
+  background-color: white;
   margin-right: 10px;
 }
+
+.myPlayerCardRed {
+  height: 100px;
+  width: 75px;
+  border: 3px solid thistle;
+  border-radius: 10px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  color: red;
+  background-color: white;
+  margin-right: 10px;
+}
+
+.myPlayerCardPlaceholder {
+  height: 100px;
+  width: 75px;
+  border: 3px black dotted;
+  border-radius: 10px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  
+  margin-right: 10px;
+}
+
+.myPlayerPileCard {
+  height: 100px;
+  width: 75px;
+  border: 3px solid thistle;
+  border-radius: 10px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  background-color: purple;
+  color: white;
+  position: absolute;
+}
+
+.myPlayerPile {
+  height: 100px;
+  width: 75px;
+}
+
+.myPlayerPilePlaceholder {
+  height: 100px;
+  width: 75px;
+  border: 3px black dotted;
+  border-radius: 10px;
+  
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  position: absolute;
+}
+

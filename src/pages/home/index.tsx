@@ -33,8 +33,7 @@ const Home: NextPage = () => {
     const lobbyId = firebase.database().ref().push({
       gameStatus: {
         round: 0,
-        countdownStarted: false,
-        roundComplete: false
+        countdownStarted: false
       },
       settings: {
         dealer: {
@@ -49,7 +48,6 @@ const Home: NextPage = () => {
     }).key as string
     const playerId = firebase.database().ref(`${lobbyId}/players`).push().key as string
     firebase.database().ref(`${lobbyId}/players/${playerId}`).set({
-      id: playerId,
       nickname: nickname,
       avatar: avatar,
       isHost: true,
