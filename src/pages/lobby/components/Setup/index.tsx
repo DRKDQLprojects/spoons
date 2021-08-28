@@ -1,39 +1,42 @@
 import styles from './Setup.module.css'
 import { CopyToClipboard } from 'react-copy-to-clipboard'
-import { emptyLobbyInfo, emptyPlayer, LobbyInfo, Player } from 'src/types'
+import { LobbyInfo, Player } from 'src/types'
 import firebase from 'src/firebase/client'
-import { useEffect, useState } from 'react'
+import { Dispatch, SetStateAction } from 'react'
+import { setupBoard } from 'src/shared/helpers'
 
 type SetupProps = {
   myPlayer: Player,
   lobby: LobbyInfo,
-  removePlayer: (lobbyId: string, playerId: string) => Promise<any>
+  removePlayer: (lobbyId: string, playerId: string) => Promise<any>,
+  setSeconds: Dispatch<SetStateAction<number>>;
 }
 
 const Setup = (props: SetupProps) => {
 
-  const [lobbyId, setLobbyId] = useState('')
-  const [gameStatus, setGameStatus] = useState(emptyLobbyInfo.gameStatus)
-  const [settings, setSettings] = useState(emptyLobbyInfo.settings)
-  const [players, setPlayers] = useState(emptyLobbyInfo.players)
-  const [myPlayer, setMyPlayer] = useState(emptyPlayer)
-
-  useEffect(() => {
-    setLobbyId(props.lobby.id)
-    setGameStatus(props.lobby.gameStatus)
-    setSettings(props.lobby.settings)
-    setPlayers(props.lobby.players)
-    setMyPlayer(props.myPlayer)
-  }, [props])
+  const lobbyId = props.lobby.id
+  const gameStatus = props.lobby.gameStatus
+  const settings = props.lobby.settings
+  const players = props.lobby.players
+  const myPlayer = props.myPlayer
 
   const play = () => {
     if (players.length == 1) {
       alert('You need at least 2 players to start')
       return
     } else {
-      firebase.database().ref(`${lobbyId}/gameStatus`).set({
-        ...gameStatus,
-        countdownStarted: true
+      
+      // setupBoard
+      const newPlayers = setupBoard(players, settings, true)
+      firebase.database().ref(lobbyId).set({
+        gameStatus: {
+          ...gameStatus,
+          countdownStarted: true
+        },
+        players: newPlayers,
+        settings: {
+          ...settings
+        }
       })
     }
   }
@@ -93,7 +96,7 @@ const Setup = (props: SetupProps) => {
         { settings.dealer.on && 
           <div style={{ marginLeft: "20px"}}>
             <input type="radio" id="dealer-random" name="dealer-random" checked={settings.dealer.default} disabled={!myPlayer.isHost} onChange={e => updateDealerDefault(true)}/>
-            <label htmlFor="dealer-random">Random dealer every eound</label><br/><br/>
+            <label htmlFor="dealer-random">Random dealer every round</label><br/><br/>
 
             <input type="radio" id="dealer-winner" name="dealer-winner" checked={!settings.dealer.default} disabled={!myPlayer.isHost} onChange={e => updateDealerDefault(false)}/>
             <label htmlFor="dealer-winner">Winner deals every round</label><br/>

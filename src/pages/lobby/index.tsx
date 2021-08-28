@@ -4,12 +4,12 @@ import { useBeforeunload } from 'react-beforeunload'
 import router from "next/router"
 import firebase from 'src/firebase/client'
 import useInterval from 'react-useinterval'
-import { LobbyInfo, emptyLobbyInfo, Player, emptyPlayer } from 'src/types'
+import { LobbyInfo, emptyLobbyInfo, Player, emptyPlayer, emptyGameState } from 'src/types'
 
 import Setup from './components/Setup'
 import Countdown from './components/Countdown'
 import Game from './components/Game'
-import Loader from 'src/sharedComponents/Loader'
+import Loader from 'src/shared/Loader'
 
 const Lobby: NextPage = () => {
 
@@ -17,8 +17,7 @@ const Lobby: NextPage = () => {
   const [lobby, setLobby] = useState<LobbyInfo>(emptyLobbyInfo)
 
   // Local Countdown Timer  
-  const [seconds, setSeconds] = useState(0)
-  const [countdown, setCountdown] = useState(6)
+  const [seconds, setSeconds] = useState(-1)
 
   const [loading, setLoading] = useState(true)
   const [renderCountdown, setRenderCountdown] = useState(false)
@@ -30,6 +29,8 @@ const Lobby: NextPage = () => {
 
     // Successful entry to lobby (create, join, refresh)
     if (lobbyId && playerId) {
+
+      listenForUpdates(lobbyId, playerId)
 
       // Refresh
       const savedPlayer =  JSON.parse(localStorage.getItem('saved-player') as string)
@@ -47,15 +48,10 @@ const Lobby: NextPage = () => {
           })
           localStorage.removeItem('saved-lobby')
           localStorage.removeItem('saved-player')
-          listenForUpdates(lobbyId, playerId)
         } else {
           firebase.database().ref(`${lobbyId}/players/${playerId}`).set(savedPlayer)
           localStorage.removeItem('saved-player')
-          listenForUpdates(lobbyId, playerId)
         }
-      } else {
-        // Created or joined
-        listenForUpdates(lobbyId, playerId)
       }
     // Player existed lobby
     } else {
@@ -69,9 +65,10 @@ const Lobby: NextPage = () => {
     firebase.database().ref(lobbyId).on('value', (snapshot) => {
       if (snapshot.exists()) {
         const lobby = snapshot.val() as any
+        
 
-        const myPlayer = lobby.players[Object.keys(lobby.players).filter((pid: any) => pid === playerId)[0]]
-        if (!myPlayer) {
+        const dbMyPlayer = lobby.players[Object.keys(lobby.players).filter((pid: any) => pid === playerId)[0]]
+        if (!dbMyPlayer) {
           // Kicked!
           alert('Kicked!')
           sessionStorage.removeItem('lid')
@@ -83,11 +80,12 @@ const Lobby: NextPage = () => {
           // Replace host if not available
           const hostAvailable = Object.keys(lobby.players).filter((pid: any) => lobby.players[pid].isHost).length === 1
           if (!hostAvailable) {
-            const newHost = lobby.players[Object.keys(lobby.players)[0]]
-            firebase.database().ref(`${lobbyId}/players/${newHost.id}/isHost`).set(true)
+            const newHostId = Object.keys(lobby.players)[0]
+            firebase.database().ref(`${lobbyId}/players/${newHostId}/isHost`).set(true)
+          } else {
+            // Map new lobby info to UI
+            mapLobbyInfo(lobbyId, lobby, playerId, dbMyPlayer)
           }
-          // Map new lobby info to UI
-          mapLobbyInfo(lobbyId, lobby, myPlayer)
         }
       } else {
         alert('Internal server error')
@@ -95,49 +93,54 @@ const Lobby: NextPage = () => {
     })
   }
 
-  const mapLobbyInfo = (lobbyId: any, lobby: any, player: any) => {
-    const players = Object.keys(lobby.players).map(pid => {
-      const player : Player =  {
+  const mapLobbyInfo = (lobbyId: any, lobby: any, playerId: any, dbMyPlayer: any) => {
+  
+    const players : Player[] = Object.keys(lobby.players).map(pid => {
+      return {
+        ...lobby.players[pid],
         id: pid, 
-        nickname: lobby.players[pid].nickname,
-        avatar: lobby.players[pid].player,
-        isHost: lobby.players[pid].isHost
-      } 
-      return player
+        gameState: (lobby.gameStatus.round === 0 || !lobby.players[pid].gameState.hand) ? emptyGameState : lobby.players[pid].gameState
+      }
     })
+    
+    const myPlayer : Player = { 
+        ...dbMyPlayer,
+        id: playerId,
+        gameState: (lobby.gameStatus.round === 0 || !lobby.players[playerId].gameState.hand) ? emptyGameState : dbMyPlayer.gameState
+    }
     const lobbyInfo : LobbyInfo = {
       id: lobbyId,
       players: players,
       gameStatus: lobby.gameStatus,
       settings: lobby.settings
     }
+
     const countdownStarted = lobbyInfo.gameStatus.countdownStarted
     const renderGame = lobbyInfo.gameStatus.round > 0 && !countdownStarted
-
-    if (renderGame) { 
-      setCountdown(6)
-      setSeconds(0)
-    }
-    setMyPlayer(player)
+    
     setLobby(lobbyInfo)
-    setRenderGame(renderGame )
+    setMyPlayer(myPlayer)
+    
+    if (countdownStarted) {
+      setSeconds(5)
+    }
     setRenderCountdown(countdownStarted)
+    setRenderGame(renderGame)
     setLoading(false)
   }
 
   useInterval(() => {
-    const countdown = 5 - seconds
-    if (countdown <= 0) {
+    if (5 >= seconds && seconds > 1) {
+      setSeconds(seconds - 1)
+    } else {
+      setSeconds(-1)
+      setRenderCountdown(false)
       firebase.database().ref(`${lobby.id}/gameStatus`).set({
         ...lobby.gameStatus,
         round: lobby.gameStatus.round + 1,
         countdownStarted: false
       })
-    } else {
-      setCountdown(countdown)
-      setSeconds(seconds + 1)
     }
-    setCountdown(countdown)
   }, renderCountdown ? 1000 : null)
 
   const removePlayer = (lobbyId: string, playerId: string) => {
@@ -158,7 +161,7 @@ const Lobby: NextPage = () => {
        // Prepare to recover the lobby
       const savedLobby = JSON.stringify({
         ...lobby,
-        players: [savedPlayer]
+        players: null
       })
       localStorage.setItem('saved-lobby', savedLobby)
       firebase.database().ref(lobby.id).remove()
@@ -168,16 +171,32 @@ const Lobby: NextPage = () => {
   })
 
   if (loading) return (<Loader message="Getting lobby information"/>) 
-  if (renderCountdown) return (<Countdown countdown={countdown}/>)
-  if (renderGame) {
-    return (<Game/>)
+  if (renderCountdown) {
+    return (
+      <Countdown 
+        seconds={seconds}
+      />
+    )
   }
+  if (renderGame) {
+    
+    return (
+      <Game 
+        lobby={lobby} 
+        myPlayer={myPlayer}
+      />
+    )
+  }
+
   return (
     <Setup 
       lobby={lobby} 
       myPlayer={myPlayer} 
       removePlayer={removePlayer}
-    />)
+      setSeconds={setSeconds}
+    />
+  )
+  
 }
 
 export default Lobby

@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 
 import firebase from 'src/firebase/client'
-import Loader from 'src/sharedComponents/Loader'
+import Loader from 'src/shared/Loader'
+import { emptyGameState } from 'src/types'
 
 const Home: NextPage = () => {
 
@@ -47,10 +48,10 @@ const Home: NextPage = () => {
     }).key as string
     const playerId = firebase.database().ref(`${lobbyId}/players`).push().key as string
     firebase.database().ref(`${lobbyId}/players/${playerId}`).set({
-      id: playerId,
       nickname: nickname,
       avatar: avatar,
-      isHost: true
+      isHost: true,
+      gameState: emptyGameState
     }).then(() => {
       sessionStorage.setItem('lid', lobbyId)
       sessionStorage.setItem('pid', playerId)

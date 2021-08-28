@@ -3,7 +3,8 @@ import styles from './Join.module.css'
 import { useState, useEffect } from 'react'
 import firebase from 'src/firebase/client'
 import { useRouter } from "next/router"
-import Loader from 'src/sharedComponents/Loader'
+import Loader from 'src/shared/Loader'
+import { emptyGameState } from 'src/types'
 
 const Join: NextPage = () => {
 
@@ -84,10 +85,10 @@ const Join: NextPage = () => {
       // TODO: Check if these are valid before sending 200
       const playerId = firebase.database().ref(`${lobbyId}/players`).push().key as string
       firebase.database().ref(`${lobbyId}/players/${playerId}`).set({
-        id: playerId,
         nickname: nickname,
         avatar: avatar,
-        isHost: false
+        isHost: false,
+        gameState: emptyGameState
       }).then(() => {
         sessionStorage.setItem('lid', lobbyId)
         sessionStorage.setItem('pid', playerId)
