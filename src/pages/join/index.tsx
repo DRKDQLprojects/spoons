@@ -135,7 +135,7 @@ const Join: NextPage = () => {
   if (joining) return (<Loader message="Joining lobby..."/> )
   return (
     <Fullscreen center>
-        <Logo/>
+        <Logo text="Spoons"/>
         <h1> Joining {`${host}'s`} Spoons Game </h1>
         <label> Nickname </label> 
         <br/>
@@ -149,7 +149,7 @@ const Join: NextPage = () => {
           error={nicknameError}
         />
         <br/>
-        <Button onClick={joinLobby}> Join Lobby </Button>
+        <Button onClick={joinLobby} primary disabled={false}> Join Lobby </Button>
     </Fullscreen>
   )
 }

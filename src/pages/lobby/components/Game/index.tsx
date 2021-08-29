@@ -5,6 +5,9 @@ import Loader from 'src/shared/components/Loader'
 import useInterval from 'react-useinterval';
 import firebase from 'src/firebase/client'
 import { convertToDBPlayers, setupBoard } from 'src/shared/helpers';
+import Logo from 'src/shared/components/Logo';
+import Fullscreen from 'src/shared/layout/Fullscreen';
+import Flexbox from 'src/shared/layout/Flexbox';
 
 type GameProps = {
   lobby: LobbyInfo,
@@ -370,12 +373,10 @@ const Game = (props: GameProps) => {
   if (loading) return <Loader message="Organsing your table..."/>
 
   return (
-    <div className={styles.container}> 
+    <Fullscreen> 
       {/* --------------- TITLE   */}
-      <div className={styles.title}>
-        <h1> Playing Spoons :) </h1> 
-       { currentMyPlayer.isHost && <button onClick={e => backToLobby()}> Back to Lobby </button> }
-      </div>
+      <Logo text="Spoons"/>
+      { currentMyPlayer.isHost && <button onClick={e => backToLobby()}> Back to Lobby </button> }
       {/* --------------- OPPONENTS   */}
       <div className={styles.opponents}> 
         {opponents.map(p => {
@@ -493,7 +494,11 @@ const Game = (props: GameProps) => {
                 key={`card-${index}`} 
                 onClick={e => discard(card)} disabled={cardDrawn === undefined || spectating || fourOfAKind()}
               > 
-                <h1> {card.value} {getSuit(card.suit)} </h1>
+                <Flexbox column center>
+                  <h4> {card.value} </h4>
+                  <h4> {getSuit(card.suit)} </h4>
+                </Flexbox>
+                
               </button>
             )
           })}
@@ -504,7 +509,10 @@ const Game = (props: GameProps) => {
               disabled={spectating}
               onClick={e => discard(cardDrawn)}
             > 
-              <h1> {cardDrawn.value} {getSuit(cardDrawn.suit)} </h1>
+              <Flexbox column center>
+                  <h4> {cardDrawn.value} </h4>
+                  <h4> {getSuit(cardDrawn.suit)} </h4>
+                </Flexbox>
             </button>
           } 
           { !cardDrawn && !spectating && <div className={styles.myPlayerCardPlaceholder}/> }
@@ -516,7 +524,7 @@ const Game = (props: GameProps) => {
         </div>
         {safeMessage && <h1 className={safeMessage === 'ELIMINATED' ? styles.eliminated : styles.safe}> {safeMessage} </h1>}
       </div>
-    </div>
+    </Fullscreen>
   )
 }
 

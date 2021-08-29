@@ -77,7 +77,7 @@ const Home: NextPage = () => {
   if (loading) return (<Loader message="Creating lobby..."/>)
   return (
     <Fullscreen center>
-        <Logo/>
+        <Logo text="Spoons"/>
         <label> Nickname </label> 
         <br/>
         <TextField
@@ -90,7 +90,7 @@ const Home: NextPage = () => {
           error={error}
         />
         <br/>
-        <Button onClick={createLobby}> Create Lobby </Button>
+        <Button onClick={createLobby} primary disabled={false}> Create Lobby </Button>
         <br/>
     </Fullscreen>
   )

@@ -1,20 +1,28 @@
 import styles from './404.module.css'
 import router from 'next/router';
+import Fullscreen from 'src/shared/layout/Fullscreen';
+import Logo from 'src/shared/components/Logo';
+import Button from 'src/shared/components/Button';
 
 export default function Custom404() {
   return (
-    <div className={styles.container}> 
-      <h1 >Hey there, you seem to be lost!</h1>
-      <p> Not to worry we will help you get back </p>
+    <Fullscreen center> 
+      <Logo text="404"/>
+      <h1 >You look lost! No worries, we are here to help!</h1>
 
-      <h2> Where would you like to go?</h2>
-      <button onClick={e => router.push("/")}> Create a Spoons lobby </button>
+      <p>
+        If you tried to join a game, make sure the link or code is entered correctly.
+      </p>
+      <p>
+        Otherwise, head back to the homepage and Create a Lobby!
+      </p>
       <br/>
-      <br/>
-       <div> Join a Spoons Game </div>
-      <br/>
-      <br/>
-      If you attempted to join via game link, the lobby probably does not exist anymore. Make sure you entered the link correctly :)
-    </div>
+      <Button 
+        onClick={()=> router.push("/")}
+        disabled={false}
+      > 
+        Create a lobby 
+      </Button>
+    </Fullscreen>
   )
 }
