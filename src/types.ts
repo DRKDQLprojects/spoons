@@ -56,7 +56,8 @@ export type PlayerGameState = {
   nextPlayerId: string,
   spoonCollected: boolean,
   dealer: boolean,
-  toBeEliminated: boolean
+  toBeEliminated: boolean,
+  roundWinner: boolean
 }
 
 // Empty Types
@@ -69,7 +70,8 @@ export const emptyGameState : PlayerGameState = {
   previousPlayerId: '',
   nextPlayerId: '',
   dealer: false,
-  toBeEliminated: false
+  toBeEliminated: false,
+  roundWinner: false
 } 
 
 export const emptyPlayer : Player = {

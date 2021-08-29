@@ -1,70 +1,56 @@
 import { useEffect, useState, useRef } from 'react';
 import { LobbyInfo, Player, Card, emptyGameState, emptyPlayer } from 'src/types';
 import styles from './Game.module.css'
-import Loader from 'src/shared/Loader'
+import Loader from 'src/shared/components/Loader'
 import useInterval from 'react-useinterval';
 import firebase from 'src/firebase/client'
-import { convertPlayerArrayToDBArray, setupBoard } from 'src/shared/helpers';
+import { convertToDBPlayers, setupBoard } from 'src/shared/helpers';
 
 type GameProps = {
   lobby: LobbyInfo,
   myPlayer: Player
 }
 
-const usePrevious = <T extends any>(value: T): T | undefined => {
-  const ref = useRef<T>();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-};
-
 const Game = (props: GameProps) => {
 
-  const lobby = props.lobby
+  const currentLobby = props.lobby
+  const currentGameStatus = currentLobby.gameStatus
+  const currentRound = currentGameStatus.round
+  const currentPlayers = currentLobby.players
+  const currentSettings = currentLobby.settings
+
+  const currentMyPlayer = props.myPlayer
+
   const [myPlayer, setMyPlayer] = useState<Player>(emptyPlayer)
-  // const prevProps = usePrevious({lobby: lobby, myPlayer: myPlayer})
-  
   const [opponents, setOpponents] = useState<Player[]>([])
-  const [numSpoonsLeft, setNumSpoonsLeft] = useState(0)
+
   const [cardDrawn, setCardDrawn] = useState<Card | undefined>(undefined)
   const [pileLength, setPileLength] = useState<number>(0)
+  const [numSpoonsLeft, setNumSpoonsLeft] = useState(0)
   const [safeMessage, setSafeMessage] = useState('') 
   const [roundComplete, setRoundComplete] = useState(false)
-  const [spectating, setSpectating] = useState(false)
-
-  const [peakTimerOn, setPeakTimerOn] = useState(false)
-  const [peakCooldownOn, setPeakCooldownOn] = useState(false)
+  
+  const [peekTimerOn, setPeekTimerOn] = useState(false)
+  const [peekCooldownOn, setPeekCooldownOn] = useState(false)
   const [seconds, setSeconds] = useState(-1)
 
-  const [preparingDisconnectedPlayer, setPreparingDisconnectedPlayer] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [spectating, setSpectating] = useState(false)
 
   useEffect(() => {
-    // if (prevProps) {
-    //   const playersBeforeDisconnect = prevProps.lobby.players
-    //   if (lobby.players.length < playersBeforeDisconnect.length) {
-    //     // TODO: Handle exit / refresh
-    //     // const disconnectedPlayers = playersBeforeDisconnect.filter(player => lobby.players.findIndex((p) => p.id === player.id) === -1 )
-    //     // preparingDisconnectedPlayer(true)
-    //   } 
-    // }
-    if (props.lobby.gameStatus.round !== 0) {
+    if (currentRound !== 0) {
       mapLobbyToUI()
-    } else {
     }
-    
   }, [props])
 
   const mapLobbyToUI = () => {
-    const numRounds = lobby.players.length - 1
-    const remainingPlayers = lobby.players.filter(p => p.gameState.remaining)
+    const remainingPlayers = currentPlayers.filter(p => p.gameState.remaining)
     const numSpoonsLeft = remainingPlayers.filter(p => !p.gameState.spoonCollected).length - 1
 
-    if (props.myPlayer.gameState.remaining) {
-      const opponents = findOpponents(props.myPlayer, remainingPlayers)
-      if (props.myPlayer.gameState.spoonCollected) {
-        if (lobby.gameStatus.round === numRounds) {
+    if (currentMyPlayer.gameState.remaining) {
+      const opponents = findOpponents(currentMyPlayer, remainingPlayers)
+      if (currentMyPlayer.gameState.spoonCollected) {
+        if (currentMyPlayer.gameState.roundWinner) {
           setSafeMessage('WINNER')
         } else {
           setSafeMessage('SAFE')
@@ -81,16 +67,15 @@ const Game = (props: GameProps) => {
       }
 
       let pileLength = 0;
-      if (props.myPlayer.gameState.pile) {
+      if (currentMyPlayer.gameState.pile) {
         if (cardDrawn) { 
-          pileLength = props.myPlayer.gameState.pile.length - 1 
+          pileLength = currentMyPlayer.gameState.pile.length - 1 
         } else {
-          pileLength = props.myPlayer.gameState.pile.length
+          pileLength = currentMyPlayer.gameState.pile.length
         }
       }
       setPileLength(pileLength)
-
-      setMyPlayer(props.myPlayer)
+      setMyPlayer(currentMyPlayer)
       setOpponents(opponents)
     } else {
       let spectatingPlayer : Player;
@@ -103,9 +88,8 @@ const Game = (props: GameProps) => {
         spectatingPlayer = remainingPlayers.filter(p => p.id === myPlayer.id)[0]
         spectatingOpponents = findOpponents(spectatingPlayer, remainingPlayers)
       }
-
       if (spectatingPlayer.gameState.spoonCollected) {
-        if (lobby.gameStatus.round === numRounds) {
+        if (myPlayer.gameState.roundWinner) {
           setSafeMessage('WINNER')
         } else {
           setSafeMessage('SAFE')
@@ -120,7 +104,6 @@ const Game = (props: GameProps) => {
           setRoundComplete(true)   
         }
       }
-
       let pileLength = 0;
       if (spectatingPlayer.gameState.pile) {
         if (cardDrawn) { 
@@ -138,38 +121,37 @@ const Game = (props: GameProps) => {
   }
 
   useInterval(() => {
-    if (peakTimerOn) {
-      if (lobby.settings.peek.timer >= seconds && seconds > 1) {
+    if (peekTimerOn) {
+      if (currentSettings.peek.timer >= seconds && seconds > 1) {
         setSeconds(seconds - 1)
       } else {
         cancelPeek()
       }
     } 
-    if (peakCooldownOn) {
-      if (lobby.settings.peek.cooldown >= seconds && seconds > 1) {
+    if (peekCooldownOn) {
+      if (currentSettings.peek.cooldown >= seconds && seconds > 1) {
         setSeconds(seconds - 1)
       } else {
         setSeconds(-1)
-        setPeakTimerOn(false)
-        setPeakCooldownOn(false)
+        setPeekTimerOn(false)
+        setPeekCooldownOn(false)
       }
     }
     
-  }, (peakCooldownOn || peakTimerOn) ? 1000 : null)
+  }, (peekCooldownOn || peekTimerOn) ? 1000 : null)
 
   const peek = () => {
-    setPeakTimerOn(true)
-    setSeconds(lobby.settings.peek.timer)
+    setPeekTimerOn(true)
+    setSeconds(currentSettings.peek.timer)
   }
 
   const cancelPeek = () => {
-    setSeconds(lobby.settings.peek.cooldown)
-    setPeakTimerOn(false)
-    setPeakCooldownOn(true)
+    setSeconds(currentSettings.peek.cooldown)
+    setPeekTimerOn(false)
+    setPeekCooldownOn(true)
   }
 
   const findOpponents = (player: Player, players: Player[]): Player[] => {
-    
     const playerPos = players.findIndex((p) => p.id === player.id)
     const before = players.slice(0, playerPos)
     const after = players.slice(playerPos + 1, players.length)
@@ -177,7 +159,16 @@ const Game = (props: GameProps) => {
   }
 
   const collectSpoon = () => {
-    firebase.database().ref(`${lobby.id}/players/${myPlayer.id}/gameState/spoonCollected`).set(true)
+    const winner = currentPlayers.filter(p => p.gameState.roundWinner).length === 0
+    if (winner) {
+      firebase.database().ref(`${currentLobby.id}/players/${myPlayer.id}/gameState`).set({
+        ...myPlayer.gameState,
+        spoonCollected: true,
+        roundWinner: true
+      })
+    } else {
+      firebase.database().ref(`${currentLobby.id}/players/${myPlayer.id}/gameState/spoonCollected`).set(true)
+    }
   }
 
   const spoons = () => {
@@ -206,7 +197,7 @@ const Game = (props: GameProps) => {
 
   const spoonCollectAllowed = () => {
     
-    const firstSpoonCollected = lobby.players.filter(p => p.gameState.spoonCollected).length >= 1
+    const firstSpoonCollected = currentPlayers.filter(p => p.gameState.spoonCollected).length >= 1
     const myPlayerCollected = myPlayer.gameState.spoonCollected
 
     return !myPlayerCollected && (firstSpoonCollected || fourOfAKind())
@@ -215,11 +206,11 @@ const Game = (props: GameProps) => {
   const discard = (card: Card) => {
     const newHand = myPlayer.gameState.hand.concat([cardDrawn as Card]).filter(c => c !== card)
     
-    const nextPlayer = lobby.players.filter(p => p.id === myPlayer.gameState.nextPlayerId)[0]
-    const playersDb = convertPlayerArrayToDBArray(lobby.players)
+    const nextPlayer = currentPlayers.filter(p => p.id === myPlayer.gameState.nextPlayerId)[0]
+    const playersDb = convertToDBPlayers(currentPlayers)
 
     setCardDrawn(undefined)
-    firebase.database().ref(`${lobby.id}/players`).set({
+    firebase.database().ref(`${currentLobby.id}/players`).set({
       ...playersDb,
       [myPlayer.id]: {
         ...myPlayer,
@@ -283,32 +274,32 @@ const Game = (props: GameProps) => {
   }
 
   const setupForElimination = () => {
-    firebase.database().ref(`${props.lobby.id}/players/${props.myPlayer.id}/gameState/toBeEliminated`).set(true)
+    firebase.database().ref(`${currentLobby.id}/players/${currentMyPlayer.id}/gameState/toBeEliminated`).set(true)
   }
 
   const nextRound = () => {
-    const newPlayers = setupBoard(lobby.players, lobby.settings, false)
-    firebase.database().ref(lobby.id).set({
+    const newPlayers = setupBoard(currentPlayers, currentSettings, currentRound)
+    firebase.database().ref(currentLobby.id).set({
       gameStatus: {
-        ...lobby.gameStatus,
+        ...currentLobby.gameStatus,
         countdownStarted: true
       },
       players: newPlayers,
-      settings: lobby.settings
+      settings: currentSettings
     })
   }
 
   const backToLobby = () => {
-    const playersWithEmptyGameStates = lobby.players.map(p => {
+    const playersWithEmptyGameStates = currentPlayers.map(p => {
       return {
         ...p,
         gameState: emptyGameState
       }
     })
-    const dbPlayers = convertPlayerArrayToDBArray(playersWithEmptyGameStates)
+    const dbPlayers = convertToDBPlayers(playersWithEmptyGameStates)
     
-    firebase.database().ref(lobby.id).set({
-      ...lobby,
+    firebase.database().ref(currentLobby.id).set({
+      ...currentLobby,
       id: null,
       gameStatus: {
         round: 0,
@@ -319,7 +310,7 @@ const Game = (props: GameProps) => {
   }
 
   const spectateNext = () => {
-    const remainingPlayers = lobby.players.filter(p => p.gameState.remaining)
+    const remainingPlayers = currentPlayers.filter(p => p.gameState.remaining)
 
     const nextPlayer = remainingPlayers.filter(p => p.id === myPlayer.gameState.nextPlayerId)[0]
     const nextOpponents = findOpponents(nextPlayer, remainingPlayers)
@@ -327,7 +318,7 @@ const Game = (props: GameProps) => {
     if (nextPlayer.gameState.pile) pileLength = nextPlayer.gameState.pile.length
 
     if (nextPlayer.gameState.spoonCollected) {
-      if (lobby.gameStatus.round === lobby.players.length - 1) {
+      if (currentRound === currentPlayers.length - 1) {
         setSafeMessage('WINNER')
       } else {
         setSafeMessage('SAFE')
@@ -348,7 +339,7 @@ const Game = (props: GameProps) => {
   }
 
   const spectatePrevious = () => {
-    const remainingPlayers = lobby.players.filter(p => p.gameState.remaining)
+    const remainingPlayers = currentPlayers.filter(p => p.gameState.remaining)
 
     const previousPlayer = remainingPlayers.filter(p => p.id === myPlayer.gameState.previousPlayerId)[0]
     const previousOpponents = findOpponents(previousPlayer, remainingPlayers)
@@ -356,7 +347,7 @@ const Game = (props: GameProps) => {
     if (previousPlayer.gameState.pile) pileLength = previousPlayer.gameState.pile.length
 
     if (previousPlayer.gameState.spoonCollected) {
-      if (lobby.gameStatus.round === lobby.players.length - 1) {
+      if (currentRound === currentPlayers.length - 1) {
         setSafeMessage('WINNER')
       } else {
         setSafeMessage('SAFE')
@@ -376,14 +367,14 @@ const Game = (props: GameProps) => {
     setPileLength(pileLength)
   }
 
-  if (loading) return <Loader message="Organsing your table"/>
+  if (loading) return <Loader message="Organsing your table..."/>
 
   return (
     <div className={styles.container}> 
       {/* --------------- TITLE   */}
       <div className={styles.title}>
         <h1> Playing Spoons :) </h1> 
-       { props.myPlayer.isHost && <button onClick={e => backToLobby()}> Back to Lobby </button> }
+       { currentMyPlayer.isHost && <button onClick={e => backToLobby()}> Back to Lobby </button> }
       </div>
       {/* --------------- OPPONENTS   */}
       <div className={styles.opponents}> 
@@ -392,12 +383,12 @@ const Game = (props: GameProps) => {
             <div key={`opponent-${p.id}`} className={styles.opponent}> 
               <h2> {p.nickname} {p.gameState.dealer ? '(Dealer)' : ''}</h2>
               <div className={styles.playerActions}> 
-                { p.gameState.pile && 
+                { p.gameState.pile.length === 0  && <div className={styles.opponentPilePlaceholder}/>}
+                { p.gameState.pile.length > 0 && 
                   <div className={styles.opponentPile}> 
                     {generatePileDisplay(styles.opponentPileCard, p.gameState.pile.length)}
                   </div>
                 }
-                { !p.gameState.pile && <div className={styles.opponentPilePlaceholder}/>}
                 <div className={styles.opponentCards}>
                   {p.gameState.hand.map((_, index) => {
                     return (
@@ -408,8 +399,8 @@ const Game = (props: GameProps) => {
               </div>
               {roundComplete && 
                 <h1 className={p.gameState.spoonCollected ? styles.safe : styles.eliminated}> 
-                  {p.gameState.spoonCollected && lobby.gameStatus.round === lobby.players.length - 1 && 'WINNER' }
-                  {p.gameState.spoonCollected && lobby.gameStatus.round < lobby.players.length - 1 && 'SAFE' }
+                  {p.gameState.spoonCollected && p.gameState.roundWinner && 'WINNER' }
+                  {p.gameState.spoonCollected && !p.gameState.roundWinner && 'SAFE' }
                   {!p.gameState.spoonCollected && 'ELIMINATED' }
                 </h1>
               }
@@ -419,7 +410,7 @@ const Game = (props: GameProps) => {
       </div>
       {/* --------------- TABLE   */}
       <div className={styles.table}>
-        {(peakTimerOn || myPlayer.gameState.spoonCollected || spectating) && (
+        {(peekTimerOn || myPlayer.gameState.spoonCollected || spectating) && (
           <>
             { (!myPlayer.gameState.spoonCollected && !roundComplete && !spectating) && 
               <button className={styles.peekButtonRed} onClick={() => cancelPeek()}>
@@ -431,16 +422,16 @@ const Game = (props: GameProps) => {
             </div>
           </>
         )}
-        {(!(peakTimerOn || myPlayer.gameState.spoonCollected || roundComplete || spectating)) && (
-          <button className={styles.peekButtonGreen} onClick={() => peek()} disabled={peakCooldownOn || spectating}>
-            {peakCooldownOn ? `Wait (${seconds}s)` : 'Peek at table '}
+        {(!(peekTimerOn || myPlayer.gameState.spoonCollected || roundComplete || spectating)) && (
+          <button className={styles.peekButtonGreen} onClick={() => peek()} disabled={peekCooldownOn || spectating}>
+            {peekCooldownOn ? `Wait (${seconds}s)` : 'Peek at table '}
           </button> 
         )}
         { roundComplete && 
           <div>
-            {props.myPlayer.isHost &&
+            {currentMyPlayer.isHost &&
               <div>
-                {lobby.gameStatus.round === lobby.players.length - 1 && 
+                {currentRound === currentPlayers.length - 1 && 
                   <>
                   <h1> Spoons Game Complete! </h1>
                   <button
@@ -451,7 +442,7 @@ const Game = (props: GameProps) => {
                   </button>
                 </>
                 }
-                {lobby.gameStatus.round < lobby.players.length - 1 &&
+                {currentRound < currentPlayers.length - 1 &&
                   <>
                     <h1> Move to the next round</h1>
                     <button
@@ -464,16 +455,16 @@ const Game = (props: GameProps) => {
                 }
               </div>
             }
-            {!props.myPlayer.isHost && 
+            {!currentMyPlayer.isHost && 
               <>
-              {lobby.gameStatus.round === lobby.players.length - 1 && 
+              {currentRound === currentPlayers.length - 1 && 
                 <> 
                   <h1> Spoons Game Complete! </h1> 
                   <h2> Waiting for host to go back to lobby... </h2>
                 </>
               }
-              {lobby.gameStatus.round < lobby.players.length - 1 && 
-                <h1> Waiting for host to move to Round {lobby.gameStatus.round + 1}... </h1>
+              {currentRound < currentPlayers.length - 1 && 
+                <h1> Waiting for host to move to Round {currentRound + 1}... </h1>
               }
               </>
             }
@@ -500,7 +491,7 @@ const Game = (props: GameProps) => {
               <button 
                 className={`${(card.suit === 'diamond' || card.suit === 'heart') ? styles.myPlayerCardRed : styles.myPlayerCard}`} 
                 key={`card-${index}`} 
-                onClick={e => discard(card)} disabled={cardDrawn === undefined || spectating}
+                onClick={e => discard(card)} disabled={cardDrawn === undefined || spectating || fourOfAKind()}
               > 
                 <h1> {card.value} {getSuit(card.suit)} </h1>
               </button>

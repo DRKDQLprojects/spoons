@@ -7,7 +7,7 @@ type LoaderProps = {
 const Loader = (props: LoaderProps) => {
   return (
     <div className={styles.container}> 
-      <h1 className={styles.title}> <span> Loading... ({props.message}) </span> </h1>
+      <h1> {props.message} </h1>
     </div>
   )
 }

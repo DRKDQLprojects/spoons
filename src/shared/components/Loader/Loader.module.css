@@ -7,11 +7,3 @@
   align-items: center;
   height: 100vh;
 }
-
-.title > span {
-  color: #0070f3;
-}
-
-.gif {
-  border: 1px solid black;
-}

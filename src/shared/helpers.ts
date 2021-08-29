@@ -1,93 +1,141 @@
-import { emptyGameState, LobbyInfo, Player } from "src/types"
+import { emptyGameState, emptyPlayer, Player } from "src/types"
 import { Deck, Card } from "src/types"
 
-export const setupBoard = (players : Player[], settings: any, startingRound: boolean) : any => {
+export const convertToDBPlayers = (players: Player[]) => {
+  let dbArray : any = {}
+  players.forEach((player, i) => { 
+    dbArray[player.id] =  {
+      ...player, 
+      id: null
+    }
+  })
+  return dbArray
+}
+
+export const convertToPlayers = (players: any): Player[] => {
+  return Object.keys(players).map(pid => {
+    const player : Player = {
+      ...players[pid],
+      id: pid,
+      gameState: {
+        ...players[pid].gameState,
+        hand: players[pid].gameState.hand || [],
+        pile: players[pid].gameState.pile || []
+        
+      }
+    }
+    return player
+  })
+}
+
+export const setupBoard = (players : Player[], settings: any, round: number) : any => {
     
   let deck = Deck()
-  
-  let shuffledPlayers = shufflePlayers(players)
 
-  if (settings.dealer.on) {
+  let _players = players;
+  if (false) {
+    // TODO: Shuffle players after every round
+    _players = shufflePlayers(players)
+  }
+
+  const winner = round > 0 ? _players.filter(p => p.gameState.roundWinner)[0] : emptyPlayer
+
+  const resettedPlayers = resetPlayers(_players, round) 
+  const remainingPlayers = resettedPlayers.filter(p => p.gameState.remaining)
+
+  let finalPlayers = convertToDBPlayers(resettedPlayers)
+
+  if (settings.dealer.on && remainingPlayers.length > 2) {
+    
+    // Random Dealer
+    let dealer;
     if (settings.dealer.default) {
-      let remainingPlayers : Player[];
-      if (startingRound) {
-        // Round 0 - everyone remains
-        remainingPlayers = shuffledPlayers.map(p => {
-          return {
-            ...p,
-            gameState: {
-              ...p.gameState,
-              remaining: true
-            }
-          }
-        })
-        shuffledPlayers = remainingPlayers
+      dealer = remainingPlayers[Math.floor(Math.random() * remainingPlayers.length)]
+
+    // Winner deals
+    } else {
+      if (round === 0) {
+        dealer = remainingPlayers[Math.floor(Math.random() * remainingPlayers.length)]
       } else {
-        remainingPlayers = shuffledPlayers.filter(p => p.gameState.remaining && !p.gameState.toBeEliminated)
+        dealer = remainingPlayers.filter(p => p.id === winner.id)[0]
       }
-      // Random dealer
-      const dealer = remainingPlayers[Math.floor(Math.random() * remainingPlayers.length)];
+    }
 
-      const playersWithCardSetup = shuffledPlayers.map((player, i) => { 
-        if (player.gameState.remaining) {
-          if (player.gameState.toBeEliminated) {
-            return {
-              ...player,
-              gameState: { 
-                ...emptyGameState,
-                remaining: false
-              }
-            }
-          }
+    // Draw Hands
+    for (let i = 0; i < 4 * remainingPlayers.length; i++) {
+      if (i === 4 * remainingPlayers.length) {
+        break;
+      }
 
-          let [hand, newDeck] = draw(4, deck)
-          let pile: Card[] = []
-          if (remainingPlayers.length === 2) {
-            const [splitPile, newDeck2] = draw(22, newDeck)
-            pile = splitPile
-            deck = newDeck2
-          } else {
-            if (player.id === dealer.id) {
-              let [dealerPile, newDeck2] = draw(52 - (4 * remainingPlayers.length), newDeck)
-              pile = dealerPile
-              deck = newDeck2
-            } else {
-              deck = newDeck
-            }
-          }
-          const x = remainingPlayers.findIndex((p) => p === player)
-          const playerWithCardSetup = {
-            ...player,
-            gameState: {
-              ...player.gameState,
-              previousPlayerId: remainingPlayers[(x + remainingPlayers.length - 1) % remainingPlayers.length].id,
-              nextPlayerId: remainingPlayers[(x + 1) % remainingPlayers.length].id,
-              hand: hand,
-              pile: pile,
-              dealer: (player.id === dealer.id),
-              spoonCollected: false,
-            }
-          }
-          return playerWithCardSetup
-        } else {
-          return {
-            ...player,
-            gameState: {
-              ...emptyGameState,
-              toBeEliminated: false
-            }
+      const x = i % remainingPlayers.length;
+      const playerId = remainingPlayers[x].id
+
+      const player = finalPlayers[playerId]
+      const gameState = player.gameState
+
+      const card = deck[i]
+
+      finalPlayers = {
+        ...finalPlayers,
+        [playerId]: {
+          ...player,
+          gameState: {
+            ...gameState,
+            hand: gameState.hand.concat([card]),
           }
         }
-      })
-      return convertPlayerArrayToDBArray(playersWithCardSetup)
-    } else {
-      // TODO: Winner deals
-      return []
+      }
     }
-  } else {
-    // TODO: Handle evenly spread deck here
-    return []
-  }
+    
+    // Draw Dealer Piles
+    finalPlayers[dealer.id].gameState.dealer = true
+    for (let i = 4 * remainingPlayers.length; i < deck.length; i++) {
+      const player = finalPlayers[dealer.id]
+      const gameState = player.gameState
+      const card = deck[i]
+
+      finalPlayers = {
+        ...finalPlayers,
+        [dealer.id]: {
+          ...player,
+          gameState: {
+            ...gameState,
+            pile: gameState.pile.concat([card])
+          }
+        }
+      }
+    }
+
+    return finalPlayers
+  } 
+
+  // Spread the deck evenly
+  deck.forEach((card, i) => {
+    const x = i % remainingPlayers.length;
+    const playerId = remainingPlayers[x].id
+
+    const player = finalPlayers[playerId]
+    const gameState = player.gameState
+
+    let drawHand = true
+    if (gameState.hand.length === 4) {
+      drawHand = false
+    }
+    finalPlayers = {
+      ...finalPlayers,
+      [playerId]: {
+        ...player,
+        gameState: {
+          ...gameState,
+          hand: drawHand ? gameState.hand.concat([card]) : gameState.hand,
+          pile: !drawHand ? gameState.pile.concat([card]) : gameState.pile
+        }
+      }
+    }
+
+  })
+  return finalPlayers
+  
 }
 
 const shufflePlayers = (players: Player[]) : Player[] => {
@@ -101,19 +149,67 @@ const shufflePlayers = (players: Player[]) : Player[] => {
   return shuffledPlayers
 }
 
-const draw = (amount: number, deck: Card[]) : [Card[], Card[]] => {
-  const hand = deck.filter((_, index) => index < amount)
-  const remainingDeck = deck.filter((_, index) => index >= amount)
-  return [hand, remainingDeck]
-}
+const resetPlayers = (players: Player[], round: number) : Player[] => {
+  const resettedPlayers = players.map((p, i) => {
+    if (round === 0) {
+      return {
+        ...p,
+        gameState: {
+          ...emptyGameState,
+          remaining: true
+        }
+      }
+    } 
 
-export const convertPlayerArrayToDBArray = (players: Player[]) => {
-  let dbArray : any = {}
-  players.forEach((player, i) => { 
-    dbArray[player.id] =  {
-      ...player, 
-      id: null
+    if (p.gameState.toBeEliminated) {
+      return {
+        ...p,
+        gameState: {
+          ...emptyGameState,
+          toBeEliminated: true,
+          remaining: false
+        }
+      }
+    } 
+
+    if (p.gameState.remaining) {
+      return {
+        ...p,
+        gameState: {
+          ...emptyGameState,
+          remaining: true
+        }
+      }
+    }
+
+    return p
+  })
+
+  let finalPlayers = convertToDBPlayers(resettedPlayers); 
+
+  const remainingPlayers = resettedPlayers.filter(p => p.gameState.remaining)
+  remainingPlayers.forEach((p, i) => {
+    finalPlayers = {
+      ...finalPlayers,
+      [p.id] : {
+        ...p,
+        gameState: {
+          ...p.gameState,
+          previousPlayerId: remainingPlayers[(i + remainingPlayers.length - 1) % remainingPlayers.length].id,
+          nextPlayerId: remainingPlayers[(i + 1) % remainingPlayers.length].id,
+        }
+      }
     }
   })
-  return dbArray
+  return convertToPlayers(finalPlayers)
+
+} 
+
+const draw = (amount: number, deck: Card[]) : { cards: Card[], remainingDeck: Card[]} => {
+  const cards = deck.filter((_, index) => index < amount)
+  const remainingDeck = deck.filter((_, index) => index >= amount)
+  return {
+    cards: cards,
+    remainingDeck: remainingDeck
+  }
 }

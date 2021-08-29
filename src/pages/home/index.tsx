@@ -1,31 +1,39 @@
 import type { NextPage } from 'next'
-import styles from './Home.module.css'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-
 import firebase from 'src/firebase/client'
-import Loader from 'src/shared/Loader'
 import { emptyGameState } from 'src/types'
+
+import styles from './Home.module.css'
+import Loader from 'src/shared/components/Loader'
+import Fullscreen from 'src/shared/layout/Fullscreen'
+import Button from 'src/shared/components/Button'
+import TextField from 'src/shared/components/TextField'
+import Logo from 'src/shared/components/Logo'
 
 const Home: NextPage = () => {
 
   const [nickname, setNickname] = useState('')
   const [avatar, setAvatar] = useState('')
-  const router = useRouter()
 
+  const [error, setError] = useState(false)
+
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
 
+  // ***** ON PAGE LOAD *****
   useEffect(() => {
     localStorage.removeItem('saved-player')
     localStorage.removeItem('saved-lobby')
   }, [])
 
-  const onCreateLobby = () => {
+  // ***** CREATE LOBBY *****
+  const createLobby = () => {
     setLoading(true)
 
-    // TODO : Frontend error
+    // Entered data not valid
     if (!nickname) {
-      alert('You must enter a nickname')
+      setError(true)
       setLoading(false)
       return
     }
@@ -59,16 +67,32 @@ const Home: NextPage = () => {
     })
   }
 
-  if (loading) return (<Loader message="Creating lobby"/>)
+  // ***** SET NICKNAME, SET ERROR FALSE *****
+  const nicknameChanged = (value: string) => {
+    setError(false)
+    setNickname(value)
+  }
+
+  // ***** RENDER *****
+  if (loading) return (<Loader message="Creating lobby..."/>)
   return (
-    <div className={styles.container}>
-        <h1 className={styles.title}>
-          Welcome to <span> Spoons</span>
-        </h1>
+    <Fullscreen center>
+        <Logo/>
         <label> Nickname </label> 
-        <input type="text" value={nickname} onChange={e => setNickname(e.target.value)}/>
-        <button onClick={e => onCreateLobby()}> Create Lobby </button>
-    </div>
+        <br/>
+        <TextField
+          type="text"
+          value={nickname}
+          onPaste={e => e.preventDefault()} 
+          onChange={e => nicknameChanged(e.target.value.replace(/[^a-zA-Z\d]/ig, ""))}
+          maxLength={20}
+          placeholder={'E.g. Derek1234'}
+          error={error}
+        />
+        <br/>
+        <Button onClick={createLobby}> Create Lobby </Button>
+        <br/>
+    </Fullscreen>
   )
 }
 
