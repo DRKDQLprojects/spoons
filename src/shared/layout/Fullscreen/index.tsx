@@ -1,4 +1,3 @@
-
 import styles from './Fullscreen.module.css'
 import { FunctionComponent } from 'react'
 

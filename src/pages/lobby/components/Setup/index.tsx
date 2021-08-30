@@ -69,7 +69,10 @@ const Setup = (props: SetupProps) => {
     <div className={styles.container}>
       <Logo text="Spoons"/>
       {/* <h1 className={styles.title}> {`${host ? host.nickname : ''}'s`} Lobby </h1> */}
-      <Grid gridTemplateColumns="2fr 3fr"> 
+      <Grid 
+        gridTemplateColumns="2fr 3fr"
+        gridTemplateRows=""
+      > 
         <div className={styles.gridItem}>
           <Flexbox center>
             <h2> Lobby {`${players.length}/10`} </h2> 
@@ -91,7 +94,10 @@ const Setup = (props: SetupProps) => {
           {players.filter(p => p.id !== myPlayer.id).map((player) => {
               return (
                 <div key={`lobby-${player.id}`} className={styles.player}>
-                  <Grid gridTemplateColumns="3fr 1fr">
+                  <Grid 
+                      gridTemplateColumns="3fr 1fr"
+                      gridTemplateRows=""
+                    >
                     <Flexbox column center>
                       <Flexbox>
                         {player.nickname} 
@@ -118,7 +124,6 @@ const Setup = (props: SetupProps) => {
             <h2> Settings & Modes </h2>
           </Flexbox>
           <h3> DEALER </h3>
-
           <Flexbox>
               <Radio 
                 id="dealer-random" 
@@ -145,9 +150,7 @@ const Setup = (props: SetupProps) => {
               />
           </Flexbox>
             
-
           <h3> PEEKING </h3>
-
           <h4> TIMER </h4>
           <Flexbox>
             { [2,3,4,5].map(time => {
@@ -184,6 +187,7 @@ const Setup = (props: SetupProps) => {
             <br/>
           <Flexbox center>
             <Button 
+              primary
               disabled={!myPlayer.isHost}
               onClick={() => startGame()}
             > 

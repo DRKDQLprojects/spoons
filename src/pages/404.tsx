@@ -17,12 +17,15 @@ export default function Custom404() {
         Otherwise, head back to the homepage and Create a Lobby!
       </p>
       <br/>
-      <Button 
-        onClick={()=> router.push("/")}
-        disabled={false}
-      > 
-        Create a lobby 
-      </Button>
+      <div style={{ height: '65px'}}>
+        <Button 
+          onClick={()=> router.push("/")}
+          disabled={false}
+          primary
+        > 
+          Create a lobby 
+        </Button>
+      </div> 
     </Fullscreen>
   )
 }

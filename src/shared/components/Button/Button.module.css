@@ -1,22 +1,4 @@
-.button {
-  background: #71C7DA;
-  border: 8px solid #FFFFFF;
-  border-radius: 4px;
-  padding: 10px 40px 10px 40px;
-}
-
-.button:hover {
-  background: #B8E3ED;
-  cursor: pointer;
-  box-shadow: 0px 7px 0px rgba(0, 0, 0, 0.1);
-}
-
-.button:active {
-  background: #B8E3ED;
-  cursor: pointer;
-  box-shadow: none;
-}
-
+/*  TEXT */
 .text {
   text-transform: uppercase;
   text-shadow: 0px 4px 4px #00000026;
@@ -25,34 +7,82 @@
   margin: 0
 }
 
-/* DANGER */
+/* VARIANTS */
+
+/* --- PRIMARY */
+.button {
+  background: #71C7DA;
+  border: 8px solid #FFFFFF;
+  border-radius: 4px;
+  padding: 10px 40px 10px 40px;
+  width: 100%;
+  height: 100%;
+}
+
+.button:hover:not(:disabled) {
+  background: #B8E3ED;
+  cursor: pointer;
+  box-shadow: 0px 7px 0px rgba(0, 0, 0, 0.1);
+  margin-top: -7px;
+}
+
+.button:active:not(:disabled) {
+  background: #B8E3ED;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.button:disabled {
+  background: #B8E3ED;
+}
+
+/* --- DANGER */
 .danger {
   background: #CD554F;
   border: 8px solid #FFFFFF;
   border-radius: 4px;
   padding: 10px 40px 10px 40px;
-  box-shadow: -7px 7px 0px rgba(0, 0, 0, 0.1);
 }
 
-.danger:hover {
+.danger:hover:not(:disabled) {
   background: rgba(205, 85, 79, 0.5);
   cursor: pointer;
-  box-shadow: -7px 7px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 7px 0px rgba(0, 0, 0, 0.1);
+  margin-top: -7px;
 }
 
-.danger:active {
+.danger:active:not(:disabled) {
   background: rgba(205, 85, 79, 0.5);
   cursor: pointer;
   box-shadow: none;
-  margin-left: -7px;
-  margin-top: 7px;
 }
 
-/* DANGER */
-.disabled {
-  background: #B8E3ED;
+.danger:disabled {
+  background: rgba(205, 85, 79, 0.5);
+  box-shadow: -7px 7px 0px rgba(0, 0, 0, 0.1);
+}
+
+/* --- SUCCESS */
+.success {
+  background: #7EE07C;
   border: 8px solid #FFFFFF;
   border-radius: 4px;
   padding: 10px 40px 10px 40px;
-  box-shadow: -7px 7px 0px rgba(0, 0, 0, 0.1);
+}
+
+.success:hover:not(:disabled) {
+  background: #A4F0A2;
+  cursor: pointer;
+  box-shadow: 0px 7px 0px rgba(0, 0, 0, 0.1);
+  margin-top: -7px;
+}
+
+.success:active:not(:disabled) {
+  background: #A4F0A2;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.success:disabled {
+  background: #A4F0A2;
 }

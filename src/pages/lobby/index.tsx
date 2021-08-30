@@ -17,6 +17,7 @@ import { convertToPlayers } from 'src/shared/helpers'
 const Lobby: NextPage = () => {
 
   const [snapshots, loading, error] = useList(firebase.database().ref())
+  const [pageLoading, setPageLoading] = useState(true)
 
   const [myPlayer, setMyPlayer] = useState<Player>(emptyPlayer)
   const [lobby, setLobby] = useState<LobbyInfo>(emptyLobbyInfo)
@@ -156,6 +157,7 @@ const Lobby: NextPage = () => {
     } else {
       setSeconds(-1)
       setRenderCountdown(false)
+      setRenderGame(true)
       firebase.database().ref(`${lobby.id}/gameStatus`).set({
         ...lobby.gameStatus,
         round: lobby.gameStatus.round + 1,
@@ -192,6 +194,8 @@ const Lobby: NextPage = () => {
     setSeconds(countdownStarted ? 5 : seconds)
     setRenderCountdown(countdownStarted)
     setRenderGame(lobby.gameStatus.round > 0 && !countdownStarted)
+
+    setPageLoading(false)
   }
 
   // ****** EXIT ******
@@ -204,15 +208,25 @@ const Lobby: NextPage = () => {
   }
 
   // ********** RENDER **********
-  if (loading || reloadBuffer || renderCountdown) {
+  if (loading || pageLoading) {
     return (
       <Fullscreen center>
-        {loading && <Loader message="Getting lobby information..."/>}
-        {reloadBuffer && <Loader message="..."/>}
-        {renderCountdown && <Countdown seconds={seconds}/>}
+        <Loader message="Getting lobby information..."/>
       </Fullscreen>
     )
-  } else {
+  } else if (pageLoading) {
+    return (
+      <Fullscreen center>
+         <Loader message="..."/>
+      </Fullscreen>
+    )
+  } else if (renderCountdown) {
+    return (
+      <Fullscreen center>
+        <Countdown seconds={seconds}/>
+      </Fullscreen>
+    )
+  }else {
     return (
       <Fullscreen>
         {renderGame && 
@@ -229,7 +243,6 @@ const Lobby: NextPage = () => {
             setSeconds={setSeconds}
           />
         }
-        
       </Fullscreen>
     )
   }

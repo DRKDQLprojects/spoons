@@ -122,6 +122,7 @@ const Join: NextPage = () => {
       sessionStorage.setItem('pid', playerId)
       router.push("/lobby")
     })
+    setJoining(false)
   }
 
   // ***** CHANGE NICKNAME *****
@@ -149,7 +150,10 @@ const Join: NextPage = () => {
           error={nicknameError}
         />
         <br/>
-        <Button onClick={joinLobby} primary disabled={false}> Join Lobby </Button>
+        <div className={styles.container}>
+          <Button onClick={joinLobby} primary disabled={false}> Join Lobby </Button>
+        </div>
+        
     </Fullscreen>
   )
 }

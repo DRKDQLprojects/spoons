@@ -1,12 +1,14 @@
 .container {
   text-align: center;
-  margin-top: 0px;
-  padding-top: 20px;
+  padding: 5px;
+  margin-top: 20px;
+  padding-top: 5px;
 }
 
 .text {
   color: rgba(131,86,204,1);
   -webkit-text-stroke: 0.5px white;
   font-size: 90px;
-  margin-bottom: 20px;
+  margin: 5px 0px 0px 0px;
 }
+

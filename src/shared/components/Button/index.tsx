@@ -6,24 +6,32 @@ type ButtonProps = {
   onClick: () => void,
   primary?: boolean,
   danger?: boolean,
-  disabled: boolean
+  success?: boolean,
+  disabled: boolean,
+  small?: boolean
 }
 
 const Button : FunctionComponent<ButtonProps> = (props) => {
 
   const getStyle = () => {
-    const { primary, danger, disabled} = props
-    if (disabled) return styles.disabled
+    const { primary, danger, success} = props
+    if (primary) return styles.button
     if (danger) return styles.danger
-    return styles.button
+    if (success) return styles.success
   }
+
   return (
     <button 
       className={getStyle()} 
       onClick={props.onClick}
       disabled={props.disabled}
     > 
-      <p className={styles.text}> {props.children} </p>
+      <p 
+        className={styles.text}
+        style={props.small ? { fontSize:'16px'} : {} }
+      > 
+        {props.children} 
+      </p>
     </button>
   )
 }

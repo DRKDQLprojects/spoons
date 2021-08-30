@@ -1,13 +1,30 @@
-.normal {
+.row {
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
+  height: 100%;
   width: 100%;
 }
-.center {
+
+.rowEnd {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  height: 100%;
+  width: 100%;
+}
+
+.rowCenter {
   display: flex;
   flex-direction: row;
   justify-content: center;
+  width: 100%;
+}
+
+.rowSpaceEvenly {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
   width: 100%;
 }
 
@@ -23,4 +40,18 @@
   flex-direction: column;
   justify-content: center;
   height: 100%;
+}
+
+.columnEnd {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
+}
+
+.columnSpaceBetween {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
 }
