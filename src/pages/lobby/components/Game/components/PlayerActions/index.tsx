@@ -8,8 +8,6 @@ import Flexbox from 'src/shared/layout/Flexbox'
 type PlayerActionsProps = {
   myPlayer: Player,
   spectating: boolean,
-  cardDrawn: Card | undefined,
-  pileLength: number,
   roundComplete: boolean,
   safeMessage: string,
   spectateNext: () => void,
@@ -23,10 +21,11 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
 
   const myPlayer = props.myPlayer
   const spectating = props.spectating
-  const cardDrawn = props.cardDrawn
-  const pileLength = props.pileLength
   const roundComplete = props.roundComplete
   const safeMessage = props.safeMessage
+
+  const cardDrawn = myPlayer.gameState.cardDrawn
+  const pileLength = myPlayer.gameState.pile.length
 
   const [topPileCardHovered, setTopPileCardHovered] = useState(false)
 

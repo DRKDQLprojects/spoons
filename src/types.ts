@@ -30,6 +30,7 @@ export type Card = {
   value: string,
   suit: string
 }
+
 export const CardValues = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
 export const CardSuits = ['heart', 'diamond', 'spade', 'club']
 
@@ -53,6 +54,7 @@ export type PlayerGameState = {
   remaining: boolean
   hand: Card[],
   pile: Card[],
+  cardDrawn?: Card,
   previousPlayerId: string,
   nextPlayerId: string,
   spoonCollected: boolean,

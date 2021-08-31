@@ -3,7 +3,6 @@ import { FunctionComponent  } from "react"
 import { Player } from "src/types"
 import styles from './Left.module.css'
 
-import Container from "src/shared/layout/Container"
 import Flexbox from "src/shared/layout/Flexbox"
 
 type OpponentsLeftType = {
@@ -66,6 +65,46 @@ const OpponentsLeft: FunctionComponent<OpponentsLeftType>  = (props) => {
     return ''
   }
 
+  const renderHand = (p: Player) => {
+    let fullHand = p.gameState.hand
+    if (p.gameState.cardDrawn) {
+      fullHand = p.gameState.hand.concat([p.gameState.cardDrawn])
+    }
+
+    return fullHand.map((card, index) => {
+      if (roundComplete && p.gameState.roundWinner) {
+        if (index === 4) {
+          return (
+            <div 
+              className={styles.winnerCard} 
+              key={`opponent-card-${index}`} 
+              style={{ color: card.suit === 'diamond' || card.suit === 'heart' ?  'red' : '', marginTop: `${156 - (index*52) - 10}px`, marginLeft: '10px' }}>
+                <h4> {getSuit(card.suit)} </h4>
+                <h4> {card.value} </h4>
+            </div> 
+          )
+        }
+        return (
+          <div 
+            className={styles.winnerCard} 
+            key={`opponent-card-${index}`} 
+            style={ { color: card.suit === 'diamond' || card.suit === 'heart' ? 'red' : '', marginTop: `${156 - (index*52)}px` }}
+          >
+            <h4> {getSuit(card.suit)} </h4>
+            <h4> {card.value} </h4>
+          </div>
+        )
+      }
+      return (
+        <div 
+          className={styles.card} 
+          key={`opponent-card-${index}`}
+          style={{marginTop: `${78 - (index*26)}px`}}
+        /> 
+      )
+    })
+  }
+
   return (
     <div style={{marginLeft: '20px'}}> 
     <Flexbox column spaceEvenly> 
@@ -88,27 +127,7 @@ const OpponentsLeft: FunctionComponent<OpponentsLeftType>  = (props) => {
                 }
               </Flexbox>
               <Flexbox>
-                {p.gameState.hand.map((card, index) => {
-                  if (roundComplete && p.gameState.roundWinner) {
-                    return (
-                      <div 
-                        className={styles.winnerCard} 
-                        key={`opponent-card-${index}`} 
-                        style={ { color: card.suit === 'diamond' || card.suit === 'heart' ? 'red' : '', marginTop: `${156 - (index*52)}px` }}
-                      >
-                        <h4> {getSuit(card.suit)} </h4>
-                        <h4> {card.value} </h4>
-                      </div>
-                    )
-                  }
-                  return (
-                    <div 
-                      className={styles.card} 
-                      key={`opponent-card-${index}`}
-                      style={{marginTop: `${78 - (index*26)}px`}}
-                    /> 
-                  )
-                })}
+                {renderHand(p)}
                 <div className={styles.pile} style={{ marginTop: roundComplete && p.gameState.roundWinner ? '156px' : '78px'}}> 
                   { p.gameState.pile.length === 0  && <div className={styles.pilePlaceholder}/>}
                   { p.gameState.pile.length > 0 && renderPile(p.gameState.pile.length)}

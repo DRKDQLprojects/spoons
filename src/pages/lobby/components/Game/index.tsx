@@ -34,8 +34,6 @@ const Game = (props: GameProps) => {
   const [myPlayer, setMyPlayer] = useState<Player>(emptyPlayer)
   const [opponents, setOpponents] = useState<Player[]>([])
 
-  const [cardDrawn, setCardDrawn] = useState<Card | undefined>(undefined)
-  const [pileLength, setPileLength] = useState<number>(0)
   const [numSpoonsLeft, setNumSpoonsLeft] = useState(0)
   const [safeMessage, setSafeMessage] = useState('') 
   const [roundComplete, setRoundComplete] = useState(false)
@@ -59,8 +57,6 @@ const Game = (props: GameProps) => {
     const unorderedRemainingPlayers = currentPlayers.filter(p => p.gameState.remaining)
     const remainingPlayers = orderPlayers(unorderedRemainingPlayers);
 
-    console.log(remainingPlayers)
-
     const numSpoonsLeft = remainingPlayers.filter(p => !p.gameState.spoonCollected).length - 1
 
     if (currentMyPlayer.gameState.remaining) {
@@ -81,16 +77,6 @@ const Game = (props: GameProps) => {
           setRoundComplete(true)   
         }
       }
-
-      let pileLength = 0;
-      if (currentMyPlayer.gameState.pile) {
-        if (cardDrawn) { 
-          pileLength = currentMyPlayer.gameState.pile.length - 1 
-        } else {
-          pileLength = currentMyPlayer.gameState.pile.length
-        }
-      }
-      setPileLength(pileLength)
       setMyPlayer(currentMyPlayer)
       setOpponents(opponents)
     } else {
@@ -120,15 +106,6 @@ const Game = (props: GameProps) => {
           setRoundComplete(true)   
         }
       }
-      let pileLength = 0;
-      if (spectatingPlayer.gameState.pile) {
-        if (cardDrawn) { 
-          pileLength = spectatingPlayer.gameState.pile.length - 1 
-        } else {
-          pileLength = spectatingPlayer.gameState.pile.length
-        }
-      }
-      setPileLength(pileLength)
       setMyPlayer(spectatingPlayer)
       setOpponents(spectatingOpponents)
     }
@@ -214,12 +191,13 @@ const Game = (props: GameProps) => {
   }
 
   const discard = (card: Card) => {
-    const newHand = myPlayer.gameState.hand.concat([cardDrawn as Card]).filter(c => c !== card)
-    
+    const newHand = myPlayer.gameState.hand.map(c => {
+      if (c === card) return myPlayer.gameState.cardDrawn
+      return c
+    })
     const nextPlayer = currentPlayers.filter(p => p.id === myPlayer.gameState.nextPlayerId)[0]
     const playersDb = convertToDBPlayers(currentPlayers)
 
-    setCardDrawn(undefined)
     firebase.database().ref(`${currentLobby.id}/players`).set({
       ...playersDb,
       [myPlayer.id]: {
@@ -228,7 +206,7 @@ const Game = (props: GameProps) => {
         gameState: {
           ...myPlayer.gameState,
           hand: newHand,
-          pile: myPlayer.gameState.pile.splice(1, myPlayer.gameState.pile.length)
+          cardDrawn: null
         }
       },
       [nextPlayer.id]: {
@@ -245,8 +223,11 @@ const Game = (props: GameProps) => {
     const pile = myPlayer.gameState.pile
     const cardDrawn = pile[0]
 
-    setPileLength(pileLength - 1)
-    setCardDrawn(cardDrawn)
+    firebase.database().ref(`${currentLobby.id}/players/${currentMyPlayer.id}/gameState/`).set({
+      ...myPlayer.gameState,
+      cardDrawn: cardDrawn,
+      pile: pile.splice(1, pile.length)
+    })
   }
 
   const setupForElimination = () => {
@@ -311,7 +292,6 @@ const Game = (props: GameProps) => {
 
     setMyPlayer(nextPlayer)
     setOpponents(nextOpponents)
-    setPileLength(pileLength)
   }
 
   const spectatePrevious = () => {
@@ -343,7 +323,6 @@ const Game = (props: GameProps) => {
 
     setMyPlayer(previousPlayer)
     setOpponents(previousOpponents)
-    setPileLength(pileLength)
   }
 
   if (loading) return <Loader message="Organsing your table..."/>
@@ -416,8 +395,6 @@ const Game = (props: GameProps) => {
               <PlayerActions
                 myPlayer={myPlayer}
                 spectating={spectating}
-                cardDrawn={cardDrawn}
-                pileLength={pileLength}
                 roundComplete={roundComplete}
                 safeMessage={safeMessage}
                 spectateNext={spectateNext}

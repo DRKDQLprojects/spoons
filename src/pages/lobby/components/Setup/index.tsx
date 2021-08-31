@@ -94,7 +94,7 @@ const Setup = (props: SetupProps) => {
             >
               <div style={{marginRight: "10px"}}>
                 <Button primary disabled={false} onClick={() => { setSeconds(2); setCopiedTimerOn(true); }}> 
-                  { copiedTimerOn ? 'COPIED!' : 'INIVTE'  }
+                  { copiedTimerOn ? 'COPIED!' : 'INVITE'  }
                 </Button>
               </div>
             </CopyToClipboard>

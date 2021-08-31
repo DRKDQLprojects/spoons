@@ -64,8 +64,25 @@ const OpponentsTop: FunctionComponent<OpponentsTopType>  = (props) => {
   }
 
   const renderHand = (p: Player) => {
-    return p.gameState.hand.map((card, index) => {
+
+    let fullHand = p.gameState.hand
+    if (p.gameState.cardDrawn) {
+      fullHand = p.gameState.hand.concat([p.gameState.cardDrawn])
+    }
+
+    return fullHand.map((card, index) => {
       if (roundComplete && p.gameState.roundWinner) {
+        if (index === 4) {
+          return (
+            <div 
+              className={styles.winnerCard} 
+              key={`opponent-card-${index}`} 
+              style={{ color: card.suit === 'diamond' || card.suit === 'heart' ?  'red' : '', marginLeft: `${index*52 + 10}px`, marginTop: '10px' }}>
+                <h4> {getSuit(card.suit)} </h4>
+                <h4> {card.value} </h4>
+            </div> 
+          )
+        }
         return (
           <div 
             className={styles.winnerCard} 

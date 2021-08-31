@@ -69,6 +69,45 @@ const OpponentsRight: FunctionComponent<OpponentsRightType>  = (props) => {
     return ''
   }
 
+  const renderHand = (p: Player) => {
+    let fullHand = p.gameState.hand
+    if (p.gameState.cardDrawn) {
+      fullHand = p.gameState.hand.concat([p.gameState.cardDrawn])
+    }
+
+    return fullHand.map((card, index) => {
+      if (roundComplete && p.gameState.roundWinner) {
+        if (index === 4) {
+          return (
+            <div 
+              className={styles.winnerCard} 
+              key={`opponent-card-${index}`} 
+              style={{ color: card.suit === 'diamond' || card.suit === 'heart' ?  'red' : '', marginTop: `${index*52 + 10}px`, marginRight: '10px' }}>
+              <h4> {card.value} </h4>
+              <h4> {getSuit(card.suit)} </h4>
+            </div> 
+          )
+        }
+        return (
+          <div 
+            className={styles.winnerCard} 
+            key={`opponent-card-${index}`} 
+            style={{ color: card.suit === 'diamond' || card.suit === 'heart' ?  'red' : '', marginTop: `${index*52}px` }}>
+            <h4> {card.value} </h4>
+            <h4> {getSuit(card.suit)} </h4>
+          </div> 
+        )
+      }
+      return (
+        <div 
+          className={styles.card} 
+          key={`opponent-card-${index}`}
+          style={{ marginTop: `${index*25}px` }}
+        /> 
+      )
+    })
+  }
+
   return (
     <div style={{marginRight: '20px'}}> 
     <Flexbox column spaceEvenly> 
@@ -90,26 +129,7 @@ const OpponentsRight: FunctionComponent<OpponentsRightType>  = (props) => {
                   { p.gameState.pile.length === 0  && <div className={styles.pilePlaceholder}/>}
                   { p.gameState.pile.length > 0 && renderPile(p.gameState.pile.length)}
                 </div>
-                {p.gameState.hand.map((card, index) => {
-                  if (roundComplete && p.gameState.roundWinner) {
-                    return (
-                      <div 
-                        className={styles.winnerCard} 
-                        key={`opponent-card-${index}`} 
-                        style={{ color: card.suit === 'diamond' || card.suit === 'heart' ?  'red' : '', marginTop: `${index*52}px` }}>
-                        <h4> {card.value} </h4>
-                        <h4> {getSuit(card.suit)} </h4>
-                      </div> 
-                    )
-                  }
-                  return (
-                    <div 
-                      className={styles.card} 
-                      key={`opponent-card-${index}`}
-                      style={{ marginTop: `${index*25}px` }}
-                    /> 
-                  )
-                })}
+                {renderHand(p)}
               </Flexbox>
            </Flexbox >
           )
