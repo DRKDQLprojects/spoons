@@ -14,5 +14,6 @@ deploy:
   github_token: $github_token # GitHub access token to use when pushing to the gh-pages branch
   local_dir: out # Directory to push to the gh-pages branch
   on:
-    branch: phase1
-    # branch: main # Deploy main branch
+    branch: 
+      - main
+      - test
