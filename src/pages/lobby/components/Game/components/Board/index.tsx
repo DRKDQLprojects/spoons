@@ -46,19 +46,20 @@ const Board: FunctionComponent<BoardProps> = (props) => {
     }
     return (list.map((i) => {
       return (
+        <Flexbox key={`spoon-${i}`} column>
         <button 
-          key={`spoon-${i}`} 
           onClick={e => props.collectSpoon()} 
           className={styles.spoon} 
           disabled={!spoonCollectAllowed() || roundComplete || spectating}
         > 
           <Spoon 
-            // key={`spoon-${i}`} 
-            height={200} 
-            width={100} 
+            height={75} 
+            width={50} 
             numSpoonsLeft={numSpoonsLeft}
           /> 
         </button>
+        <h3 className={styles.spoonCollectedLabel}> Collect </h3>
+        </Flexbox>
         
       )
     }))
@@ -77,34 +78,42 @@ const Board: FunctionComponent<BoardProps> = (props) => {
       {/* ---------- CANCEL PEEK */}
       {(peekTimerOn || myPlayer.gameState.spoonCollected || spectating) && (
         <>
+          { (!myPlayer.gameState.spoonCollected && !roundComplete && !spectating) && 
+            <h2>{seconds}</h2>
+          }
           <Flexbox spaceEvenly> 
             {spoons()}
           </Flexbox>
-          { (!myPlayer.gameState.spoonCollected && !roundComplete && !spectating) && 
-            <div style={{ marginTop: '10px'}}>
-              <Button  
-                danger
-                onClick={props.cancelPeek}
-                disabled={false}
-              >
-                Cancel ({seconds}s)
-              </Button> 
-            </div>
-          }
         </>
       )}
       {/* ---------- PEEK BUTTON */}
-      {(!(peekTimerOn || myPlayer.gameState.spoonCollected || roundComplete || spectating)) && (
-        <div style={{ height: '100%'}}>
-          <Button 
-            primary
-            onClick={props.peek} 
-            disabled={peekCooldownOn || spectating}
-          >
-            {peekCooldownOn ? `Wait (${seconds}s)` : 'Check for Spoons '}
-          </Button> 
-        </div>
-      )}
+      {(!(peekTimerOn || myPlayer.gameState.spoonCollected || roundComplete || spectating)) && 
+        <> 
+          {currentRound === currentPlayers.length - 1 && 
+            <Flexbox column center>
+              <h2 className={styles.collectIndicator}> {props.fourOfAKind() && 'COLLECT NOW!'} </h2>
+              <Flexbox spaceEvenly> 
+                {spoons()}
+              </Flexbox>
+            </Flexbox>
+          }
+
+          {currentRound < currentPlayers.length - 1 &&
+            (<div style={{ height: '100%'}}>
+              <Button 
+                onClick={props.peek} 
+                disabled={peekCooldownOn || spectating}
+                success={props.fourOfAKind()}
+                primary={!props.fourOfAKind()}
+              >
+                {peekCooldownOn && `Wait (${seconds})`}
+                {!peekCooldownOn && props.fourOfAKind() && 'Collect your spoon!'}
+                {!peekCooldownOn && !props.fourOfAKind() && 'Check for spoons'}
+              </Button> 
+            </div>)
+          }
+        </>
+      }
       {/* --------- END OF ROUND */}
       { roundComplete && 
         <Flexbox column center>
@@ -117,7 +126,7 @@ const Board: FunctionComponent<BoardProps> = (props) => {
                 <>
                   <h1> Spoons Game Complete! </h1>
                   <Flexbox center>
-                    <div style={{height: '60px'}}>
+                    <div style={{height: '65px'}}>
                         <Button
                           onClick={props.backToLobby}
                           disabled={false}
@@ -133,15 +142,17 @@ const Board: FunctionComponent<BoardProps> = (props) => {
               {currentRound < currentPlayers.length - 1 &&
                 <>
                   <h1> Ready for Round {currentRound + 1} / {currentPlayers.length - 1}?</h1>
-                  <div style={{height: '50px', width: '100px'}}>
-                    <Button
-                      onClick={props.nextRound}
-                      disabled={false}
-                      primary
-                    > 
-                      Start
-                    </Button>
-                  </div>
+                  <Flexbox center>
+                    <div style={{height: '65px', width: '200px'}}>
+                      <Button
+                        onClick={props.nextRound}
+                        disabled={false}
+                        primary
+                      > 
+                        Start
+                      </Button>
+                    </div>
+                  </Flexbox>
                 </>
               }
             </>

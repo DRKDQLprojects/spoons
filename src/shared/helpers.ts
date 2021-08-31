@@ -33,10 +33,10 @@ export const setupBoard = (players : Player[], settings: any, round: number) : a
   let deck = Deck()
 
   let _players = players;
-  if (false) {
-    // TODO: Shuffle players after every round
-    _players = shufflePlayers(players)
-  }
+  if (settings.shuffle) {
+    _players = shufflePlayers(_players)
+  } 
+
 
   const winner = round > 0 ? _players.filter(p => p.gameState.roundWinner)[0] : emptyPlayer
 

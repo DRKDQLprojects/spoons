@@ -1,7 +1,7 @@
 import type { NextPage } from 'next'
 import { useState, useEffect } from 'react'
 import firebase from 'src/firebase/client'
-import { emptyGameState } from 'src/types'
+import { emptyGameState, Player } from 'src/types'
 import { useRouter } from 'next/router'
 import { useList } from 'react-firebase-hooks/database';
 import { convertToPlayers } from 'src/shared/helpers'
@@ -22,10 +22,10 @@ const Join: NextPage = () => {
   const router = useRouter()
   const [snapshots, loading, error] = useList(firebase.database().ref())
   const [joining, setJoining] = useState(false)
-  const [nicknameError, setNicknameError] = useState(false)
+  const [nicknameError, setNicknameError] = useState('')
 
   const [lobbyId, setLobbyId] = useState('')
-  const [numPlayers, setNumPlayers] = useState(0)
+  const [players, setPlayers] = useState<Player[]>([])
   const [host, setHost] = useState('')
   const [gameStarted, setGameStarted] = useState<any>(null)
 
@@ -61,7 +61,7 @@ const Join: NextPage = () => {
         const lobby = snapshots.filter(lobby => lobby.key === lobbyId)[0].val()
         const players = convertToPlayers(lobby.players)
         const hostAvailable = players.filter(p => p.isHost).length === 1
-        setNumPlayers(players.length)
+        setPlayers(players)
         setLobbyId(lobbyId)
         setHost(hostAvailable ? players.filter(p => p.isHost)[0].nickname : '')
         setGameStarted(lobby.gameStatus.round > 0)
@@ -93,20 +93,27 @@ const Join: NextPage = () => {
   const joinLobby = () => {
     setJoining(true)
     // Entered data not valid
-    if (!nickname) {
-      setNicknameError(true)
+    if (!nickname || nickname.length < 3) {
+      setNicknameError('Your nickname must be at least 3 characters long.')
       setJoining(false)
       return
     }
+
+    if (players.filter(p => p.nickname.toLocaleLowerCase() === nickname.toLowerCase()).length !== 0) {
+      setNicknameError('Sorry this nickname is taken. Please try another nickname.')
+      setJoining(false)
+      return
+    } 
+
     // Lobby full
-    if (numPlayers + 1 > 10) {
-      alert('The lobby is full. Please try again soon.')
+    if (players.length + 1 > 10) {
+      setNicknameError('The lobby is full. Please try again soon.')
       setJoining(false)
       return
     } 
     // Game already started
     if (gameStarted) {
-      alert('The lobby has already started the game. Please try again soon.') 
+      setNicknameError('The lobby has already started the game. Please try again soon.') 
       setJoining(false)
       return
     }
@@ -117,17 +124,17 @@ const Join: NextPage = () => {
       avatar: avatar,
       isHost: false,
       gameState: emptyGameState
-    }).then(() => {
-      sessionStorage.setItem('lid', lobbyId)
-      sessionStorage.setItem('pid', playerId)
-      router.push("/lobby")
     })
+      
+    sessionStorage.setItem('lid', lobbyId)
+    sessionStorage.setItem('pid', playerId)
+    router.push("/lobby")
     setJoining(false)
   }
 
   // ***** CHANGE NICKNAME *****
   const changeNickname = (value: string) => {
-    setNicknameError(false)
+    setNicknameError('')
     setNickname(value)
   }
 
@@ -137,7 +144,7 @@ const Join: NextPage = () => {
   return (
     <Fullscreen center>
         <Logo text="Spoons"/>
-        <h1> Joining {`${host}'s`} Spoons Game </h1>
+        <h1> Joining {`${host}'s`} Lobby </h1>
         <label> Nickname </label> 
         <br/>
         <TextField 
@@ -147,8 +154,15 @@ const Join: NextPage = () => {
           onChange={e => changeNickname(e.target.value.replace(/[^a-zA-Z\d]/ig, ""))}
           maxLength={20}
           placeholder={'E.g. Marc7890'}
-          error={nicknameError}
+          error={nicknameError !== ''}
         />
+        {nicknameError && 
+          <> 
+            <br/>
+            {nicknameError}
+            <br/>
+          </>
+        }
         <br/>
         <div className={styles.container}>
           <Button onClick={joinLobby} primary disabled={false}> Join Lobby </Button>

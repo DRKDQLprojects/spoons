@@ -2,3 +2,8 @@
   display: block;
   text-align: center;
 }
+
+.normal {
+  display: block;
+  text-align: left;
+}

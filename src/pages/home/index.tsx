@@ -16,7 +16,7 @@ const Home: NextPage = () => {
   const [nickname, setNickname] = useState('')
   const [avatar, setAvatar] = useState('')
 
-  const [error, setError] = useState(false)
+  const [error, setError] = useState('')
 
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -32,8 +32,8 @@ const Home: NextPage = () => {
     setLoading(true)
 
     // Entered data not valid
-    if (!nickname) {
-      setError(true)
+    if (!nickname || nickname.length < 3) {
+      setError('Your nickname must be at least 3 characters long')
       setLoading(false)
       return
     }
@@ -69,7 +69,7 @@ const Home: NextPage = () => {
 
   // ***** SET NICKNAME, SET ERROR FALSE *****
   const nicknameChanged = (value: string) => {
-    setError(false)
+    setError('')
     setNickname(value)
   }
 
@@ -78,18 +78,24 @@ const Home: NextPage = () => {
   return (
     <Fullscreen center>
       <Logo text="Spoons" fontSize="120px"/>
-      <Logo height={400} width={300}> </Logo>
-      <label> Nickname </label> 
+      <h3> Nickname </h3> 
       <br/>
       <TextField
         type="text"
         value={nickname}
         onPaste={e => e.preventDefault()} 
         onChange={e => nicknameChanged(e.target.value.replace(/[^a-zA-Z\d]/ig, ""))}
-        maxLength={20}
+        maxLength={15}
         placeholder={'E.g. Derek1234'}
-        error={error}
+        error={error !== ''}
       />
+      {error && 
+        <> 
+          <br/>
+          {error}
+          <br/>
+        </>
+      }
       <br/>
       <div className={styles.container}>
         <Button onClick={createLobby} primary disabled={false}> Create Lobby </Button>

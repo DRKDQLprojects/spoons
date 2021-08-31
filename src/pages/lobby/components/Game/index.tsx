@@ -56,7 +56,11 @@ const Game = (props: GameProps) => {
   }, [props])
 
   const mapLobbyToUI = () => {
-    const remainingPlayers = currentPlayers.filter(p => p.gameState.remaining)
+    const unorderedRemainingPlayers = currentPlayers.filter(p => p.gameState.remaining)
+    const remainingPlayers = orderPlayers(unorderedRemainingPlayers);
+
+    console.log(remainingPlayers)
+
     const numSpoonsLeft = remainingPlayers.filter(p => !p.gameState.spoonCollected).length - 1
 
     if (currentMyPlayer.gameState.remaining) {
@@ -168,6 +172,26 @@ const Game = (props: GameProps) => {
     const before = players.slice(0, playerPos)
     const after = players.slice(playerPos + 1, players.length)
     return after.concat(before)
+  }
+
+  const orderPlayers = (players: Player[]) => {
+    const firstPlayer = players[0]
+    const ordered: Player[] = [];
+
+    let currPlayerId: string = firstPlayer.id;
+
+    while (currPlayerId !== '') {
+      const player = players.filter(p => p.id === currPlayerId)[0]
+      ordered.push(player)
+      if (currPlayerId === firstPlayer.gameState.previousPlayerId) {
+        currPlayerId = ''
+      } else {
+        currPlayerId = player.gameState.nextPlayerId
+      }
+    }
+
+
+    return ordered;
   }
 
   const collectSpoon = () => {
@@ -335,7 +359,7 @@ const Game = (props: GameProps) => {
           <Flexbox column center> 
             { currentMyPlayer.isHost && 
               <div className={styles.backButton}> 
-                <Button disabled={false} onClick={() => backToLobby()} primary> Back to Lobby </Button>  
+                <Button disabled={false} onClick={() => backToLobby()} primary> LOBBY </Button>  
               </div>
             }
           </Flexbox>
@@ -369,7 +393,7 @@ const Game = (props: GameProps) => {
             {/* --------------- PLAYER ACTIONS */}
             <Grid
               gridTemplateColumns=""
-              gridTemplateRows="1fr 0.5fr"
+              gridTemplateRows="1fr 1fr"
             >
               <Board
                 peekTimerOn={peekTimerOn}

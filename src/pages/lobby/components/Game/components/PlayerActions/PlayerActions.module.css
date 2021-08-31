@@ -1,7 +1,7 @@
 .card {
   height: 100px;
   width: 70px;
-  border: 3px solid thistle;
+  border: 3px solid white;
   border-radius: 10px;
 
   display: flex;
@@ -14,30 +14,16 @@
   margin-right: 10px;
 }
 
-.cardNoHover {
-  height: 100px;
-  width: 70px;
-  border: 3px solid thistle;
-  border-radius: 10px;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-
-  color: black;
-  background-color: white;
-  margin-right: 10px;
-}
-
-.card:hover {
+.card:hover:not(:disabled) {
   box-shadow: 0px 7px 0px rgba(0, 0, 0, 0.1);
   margin-top: -7px;
+  border: 3px solid red;
 }
 
-.card:focus {
+.card:focus:not(:disabled) {
   box-shadow: 0px 7px 0px rgba(0, 0, 0, 0.1);
   margin-top: -7px;
+  border: 3px solid red;
 }
 
 .cardPlaceholder {
@@ -65,7 +51,7 @@
 .pileCard {
   height: 100px;
   width: 70px;
-  border: 3px solid thistle;
+  border: 3px solid white;
   border-radius: 10px;
 
   display: flex;
@@ -77,13 +63,13 @@
   color: white;
   position: absolute;
 
-  box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
 }
 
 .topPileCard {
   height: 100px;
   width: 70px;
-  border: 3px solid thistle;
+  border: 3px solid white;
   border-radius: 10px;
 
   display: flex;
@@ -94,12 +80,11 @@
   background-color: purple;
   color: white;
   position: absolute;
-
-  box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 4px 0px 0px rgba(0, 0, 0, 0.1);
 }
 
 .topPileCard:hover {
-  box-shadow: 7px 7px 7px rgba(0, 0, 0, 0.1);
+  box-shadow: 4px 0px 0px rgba(0, 0, 0, 0.1);
 }
 
 .pilePlaceholder {
@@ -150,3 +135,15 @@
   box-shadow: none;
 }
 
+.discardText {
+  color: red;
+  font-size: 16px;
+  margin-left: 0px;
+  margin-top: 8px;
+  font-weight: 900;
+  display: none;
+}
+
+.card:hover:not(:disabled) + .discardText:first-of-type {
+  display: block;
+}

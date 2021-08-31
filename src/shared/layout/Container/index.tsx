@@ -6,6 +6,6 @@ type ContainerProps = {
 }
 
 const Container: FunctionComponent<ContainerProps> = (props) => {
-  return (<div className={props.center ? styles.centered : '' }> {props.children} </div>)
+  return (<div className={props.center ? styles.centered : styles.normal }> {props.children} </div>)
 }
 export default Container

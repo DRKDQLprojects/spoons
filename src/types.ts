@@ -8,12 +8,13 @@ export type LobbyInfo = {
   settings: {
     dealer: {
       default: boolean,
-      on: boolean
+      on: boolean,
     },
     peek : {
       cooldown: number,
       timer: number
-    }
+    },
+    shuffle: boolean
   }
 }
 
@@ -97,7 +98,8 @@ export const emptyLobbyInfo : LobbyInfo = {
     peek : {
       cooldown: 4,
       timer: 4
-    }
+    },
+    shuffle: false
   }
 }
 

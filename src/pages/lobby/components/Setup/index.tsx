@@ -1,7 +1,7 @@
 import { CopyToClipboard } from 'react-copy-to-clipboard'
 import { LobbyInfo, Player } from 'src/types'
 import firebase from 'src/firebase/client'
-import { Dispatch, SetStateAction } from 'react'
+import { Dispatch, SetStateAction, useState } from 'react'
 import { setupBoard } from 'src/shared/helpers'
 
 import styles from './Setup.module.css'
@@ -10,6 +10,7 @@ import Flexbox from 'src/shared/layout/Flexbox'
 import Grid from 'src/shared/layout/Grid'
 import Button from 'src/shared/components/Button'
 import Radio from 'src/shared/components/Radio'
+import useInterval from 'react-useinterval'
 
 type SetupProps = {
   myPlayer: Player,
@@ -25,7 +26,9 @@ const Setup = (props: SetupProps) => {
   const settings = props.lobby.settings
   const players = props.lobby.players
   const myPlayer = props.myPlayer
-  const host = props.lobby.players.filter(p => p.isHost)[0]
+
+  const [seconds, setSeconds] = useState(-1)
+  const [copiedTimerOn, setCopiedTimerOn] = useState(false)
 
   // ***** START GAME *****
   const startGame = () => {
@@ -57,18 +60,54 @@ const Setup = (props: SetupProps) => {
   const updateDealerDefault = (value: boolean) => {
     updateDealerOn(true, value)
   }
+  const updatePlayerPositions = (value: boolean) => {
+    firebase.database().ref(`${lobbyId}/settings/shuffle`).set(value)
+  }
   const updatePeekTimer = (value: number) => {
     firebase.database().ref(`${lobbyId}/settings/peek/timer`).set(value)
   }
   const updatePeekCooldown = (value: number) => {
     firebase.database().ref(`${lobbyId}/settings/peek/cooldown`).set(value)
   }
+
+  // ***** TIMER FOR COPIED LABEL *****
+  useInterval(() => {
+    if (seconds > 0) {
+      setSeconds(seconds - 1)
+    } else {
+      setSeconds(-1)
+      setCopiedTimerOn(false)
+    }
+  }, copiedTimerOn ? 1000 : null)
   
   // ********** RENDER **********
   return (
     <div className={styles.container}>
-      <Logo text="Spoons"/>
-      {/* <h1 className={styles.title}> {`${host ? host.nickname : ''}'s`} Lobby </h1> */}
+      <div className={styles.navbar}>
+        <Grid gridTemplateColumns="2fr 2fr 1fr" gridTemplateRows="">
+          <Logo text="Spoons"/>
+          <div></div>
+          <Flexbox end>
+            <CopyToClipboard 
+              text={`localhost:3000/spoons/join?code=${lobbyId}`}
+              onCopy={() => {}}
+            >
+              <div style={{marginRight: "10px"}}>
+                <Button primary disabled={false} onClick={() => { setSeconds(2); setCopiedTimerOn(true); }}> 
+                  { copiedTimerOn ? 'COPIED!' : 'INIVTE'  }
+                </Button>
+              </div>
+            </CopyToClipboard>
+            <Button 
+              success
+              disabled={!myPlayer.isHost}
+              onClick={() => startGame()}
+            > 
+              {(myPlayer.isHost) ? 'Start' : 'Waiting for host...'} 
+            </Button>
+          </Flexbox>
+        </Grid>
+      </div>
       <Grid 
         gridTemplateColumns="2fr 3fr"
         gridTemplateRows=""
@@ -117,6 +156,7 @@ const Setup = (props: SetupProps) => {
                 </div>
               )
           })}
+          {players.length === 1 && <div> No players have joined yet</div>}
         </div>
 
         <div className={styles.gridItem}>
@@ -149,7 +189,24 @@ const Setup = (props: SetupProps) => {
                 onChange={() => updateDealerOn(false, true)}
               />
           </Flexbox>
-            
+          <h3> PLAYER POSITIONS </h3>
+          <Flexbox>
+              <Radio 
+                id="shuffle-off" 
+                label="LOBBY"
+                checked={!settings.shuffle} 
+                disabled={!myPlayer.isHost} 
+                onChange={() => updatePlayerPositions(false)}
+              />
+
+              <Radio 
+                id="shuffle-on" 
+                label="SHUFFLE"
+                checked={settings.shuffle} 
+                disabled={!myPlayer.isHost} 
+                onChange={() => updatePlayerPositions(true)}
+              />
+          </Flexbox>
           <h3> PEEKING </h3>
           <h4> TIMER </h4>
           <Flexbox>
@@ -183,26 +240,6 @@ const Setup = (props: SetupProps) => {
                 )
               })
             }
-          </Flexbox>
-            <br/>
-          <Flexbox center>
-            <Button 
-              primary
-              disabled={!myPlayer.isHost}
-              onClick={() => startGame()}
-            > 
-              {(myPlayer.isHost) ? 'Start Game' : 'Waiting for host...'} 
-            </Button>
-            <CopyToClipboard 
-              text={`localhost:3000/spoons/join?code=${lobbyId}`}
-              onCopy={() => {}}
-            >
-              <div style={{marginLeft: "10px"}}>
-                <Button primary disabled={false} onClick={() => {}}> 
-                  Invite
-                </Button>
-              </div>
-            </CopyToClipboard>
           </Flexbox>
         </div>
       </Grid>

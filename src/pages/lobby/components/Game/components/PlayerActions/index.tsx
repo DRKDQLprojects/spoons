@@ -4,8 +4,6 @@ import { FunctionComponent, useState } from 'react'
 import { Card, Player } from 'src/types'
 
 import Flexbox from 'src/shared/layout/Flexbox'
-import Container from 'src/shared/layout/Container'
-import Button from 'src/shared/components/Button'
 
 type PlayerActionsProps = {
   myPlayer: Player,
@@ -52,6 +50,7 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
             disabled={cardDrawn !== undefined || roundComplete || spectating}
             onMouseEnter={() => setTopPileCardHovered(true)}
             onMouseLeave={() => setTopPileCardHovered(false)}
+            key={`pile-card-${i}`} 
           > 
 
             { (spectating || roundComplete) && ''}
@@ -63,7 +62,7 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
           </button>
           )
       } else {
-        elems.push(<div className={styles.pileCard} style={{marginLeft: `${pileLength-i}px`}}/>)
+        elems.push(<div key={`pile-card-${i}`}  className={styles.pileCard} style={{marginLeft: `${pileLength-i}px`}}/>)
       }
     }
     return elems
@@ -92,40 +91,45 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
       <Flexbox center>
         {myPlayer.gameState.hand.map((card, index) => {
           return (
-            <button 
-              className={spectating ? styles.cardNoHover : styles.card} 
-              key={`card-${index}`} 
-              onClick={() => props.discard(card)} disabled={cardDrawn === undefined || spectating || props.fourOfAKind()}
-              style={(card.suit === 'diamond' || card.suit === 'heart') ? { color: "red" } : { }}
-            > 
-              <Flexbox column center>
-                <h4> {getSuit(card.suit)} </h4>
-                <h4> {card.value} </h4>
-              </Flexbox>
-              
-            </button>
+            <Flexbox key={`card-${index}`}  column>
+              <button 
+                className={styles.card} 
+                onClick={() => props.discard(card)} 
+                disabled={cardDrawn === undefined || spectating || props.fourOfAKind()}
+                style={(card.suit === 'diamond' || card.suit === 'heart') ? { color: "red" } : { }}
+              > 
+                <Flexbox column center>
+                  <h4> {getSuit(card.suit)} </h4>
+                  <h4> {card.value} </h4>
+                </Flexbox>
+              </button>
+              <h3 className={styles.discardText}> REMOVE </h3>
+            </Flexbox>
           )
         })}
         <div className={styles.cardDrawn}>
           { cardDrawn && 
       
-              <button 
-                className={styles.card} 
-                disabled={spectating}
-                onClick={() => props.discard(cardDrawn)}
-                style={(cardDrawn.suit === 'diamond' || cardDrawn.suit === 'heart') ? { color: "red" } : { }}
-              > 
-                <Flexbox column center>
-                  <h4> {getSuit(cardDrawn.suit)} </h4>
-                  <h4> {cardDrawn.value} </h4>
-                </Flexbox>
-              </button>
+              <Flexbox column> 
+                <button 
+                  className={styles.card} 
+                  disabled={spectating}
+                  onClick={() => props.discard(cardDrawn)}
+                  style={(cardDrawn.suit === 'diamond' || cardDrawn.suit === 'heart') ? { color: "red" } : { }}
+                > 
+                  <Flexbox column center>
+                    <h4> {getSuit(cardDrawn.suit)} </h4>
+                    <h4> {cardDrawn.value} </h4>
+                  </Flexbox>
+                </button>
+                <h3 className={styles.discardText}> REMOVE </h3>
+              </Flexbox>
           } 
           { !cardDrawn && !spectating && <div className={styles.cardPlaceholder}/> }
         </div>
         <div className={styles.pile}>
             { pileLength > 0 && pile(pileLength)}
-            {!(pileLength > 0 || (roundComplete && !spectating))  && <h4 className={styles.pilePlaceholder}> Waiting for a Card... </h4>}
+            {!(pileLength > 0 || (roundComplete && !spectating))  && <h4 className={styles.pilePlaceholder}> Wait for card </h4>}
         </div>
       </Flexbox>
     </Flexbox>
