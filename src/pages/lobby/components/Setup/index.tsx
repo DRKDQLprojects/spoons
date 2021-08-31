@@ -89,7 +89,7 @@ const Setup = (props: SetupProps) => {
           <div></div>
           <Flexbox end>
             <CopyToClipboard 
-              text={`localhost:3000/spoons/join?code=${lobbyId}`}
+              text={`${process.env.NEXT_PUBLIC_BASE_URL}/join?code=${lobbyId}`}
               onCopy={() => {}}
             >
               <div style={{marginRight: "10px"}}>
