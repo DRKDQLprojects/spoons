@@ -1,6 +1,7 @@
 import { FunctionComponent } from "react";
 import Spoon from "src/assets/spoon";
 import Button from "src/shared/components/Button";
+import Container from "src/shared/layout/Container";
 import Flexbox from "src/shared/layout/Flexbox";
 import { Player } from "src/types";
 
@@ -47,18 +48,18 @@ const Board: FunctionComponent<BoardProps> = (props) => {
     return (list.map((i) => {
       return (
         <Flexbox key={`spoon-${i}`} column>
-        <button 
-          onClick={e => props.collectSpoon()} 
-          className={styles.spoon} 
-          disabled={!spoonCollectAllowed() || roundComplete || spectating}
-        > 
-          <Spoon 
-            height={75} 
-            width={50} 
-            numSpoonsLeft={numSpoonsLeft}
-          /> 
-        </button>
-        <h3 className={styles.spoonCollectedLabel}> Collect </h3>
+          <button 
+            onClick={e => props.collectSpoon()} 
+            className={styles.spoon} 
+            disabled={!spoonCollectAllowed() || roundComplete || spectating}
+          > 
+            <Spoon 
+              height={75} 
+              width={50} 
+              numSpoonsLeft={numSpoonsLeft}
+            /> 
+          </button>
+          <h3 className={styles.spoonCollectedLabel}> Collect </h3>
         </Flexbox>
         
       )
@@ -74,43 +75,43 @@ const Board: FunctionComponent<BoardProps> = (props) => {
   }
 
   return (
-    <Flexbox column center>
-      {/* ---------- CANCEL PEEK */}
+    <div className={styles.container}>
+      {/* ---------- DURING PEEK */}
       {(peekTimerOn || myPlayer.gameState.spoonCollected || spectating) && (
-        <>
+        <Flexbox column spaceBetween>
           { (!myPlayer.gameState.spoonCollected && !roundComplete && !spectating) && 
-            <h2>{seconds}</h2>
+            <h2>Timer: {seconds}</h2>
           }
           <Flexbox spaceEvenly> 
             {spoons()}
           </Flexbox>
-        </>
+        </Flexbox>
       )}
       {/* ---------- PEEK BUTTON */}
       {(!(peekTimerOn || myPlayer.gameState.spoonCollected || roundComplete || spectating)) && 
         <> 
           {currentRound === currentPlayers.length - 1 && 
-            <Flexbox column center>
-              <h2 className={styles.collectIndicator}> {props.fourOfAKind() && 'COLLECT NOW!'} </h2>
-              <Flexbox spaceEvenly> 
-                {spoons()}
+            (
+              <Flexbox column>
+                <h2 className={styles.collectIndicator}> {props.fourOfAKind() && 'COLLECT NOW!'} </h2>
+                <Flexbox spaceEvenly> 
+                  {spoons()}
+                </Flexbox>
               </Flexbox>
-            </Flexbox>
+            )
           }
 
           {currentRound < currentPlayers.length - 1 &&
-            (<div style={{ height: '100%'}}>
-              <Button 
-                onClick={props.peek} 
-                disabled={peekCooldownOn || spectating}
-                success={props.fourOfAKind()}
-                primary={!props.fourOfAKind()}
-              >
-                {peekCooldownOn && `Wait (${seconds})`}
-                {!peekCooldownOn && props.fourOfAKind() && 'Collect your spoon!'}
-                {!peekCooldownOn && !props.fourOfAKind() && 'Check for spoons'}
-              </Button> 
-            </div>)
+            <Button 
+              onClick={props.peek} 
+              disabled={peekCooldownOn || spectating}
+              success={props.fourOfAKind()}
+              primary={!props.fourOfAKind()}
+            >
+              {peekCooldownOn && `Wait (${seconds})`}
+              {!peekCooldownOn && props.fourOfAKind() && 'Collect your spoon!'}
+              {!peekCooldownOn && !props.fourOfAKind() && 'Check for spoons'}
+            </Button> 
           }
         </>
       }
@@ -124,8 +125,8 @@ const Board: FunctionComponent<BoardProps> = (props) => {
               {/* ------- FINAL ROUND */}
               {currentRound === currentPlayers.length - 1 && 
                 <>
-                  <h1> Spoons Game Complete! </h1>
                   <Flexbox center>
+                  <h1> Spoons Game Complete! </h1>
                     <div style={{height: '65px'}}>
                         <Button
                           onClick={props.backToLobby}
@@ -141,9 +142,12 @@ const Board: FunctionComponent<BoardProps> = (props) => {
               {/* ------- NEXT ROUND */}
               {currentRound < currentPlayers.length - 1 &&
                 <>
-                  <h1> Ready for Round {currentRound + 1} / {currentPlayers.length - 1}?</h1>
                   <Flexbox center>
-                    <div style={{height: '65px', width: '200px'}}>
+                    <h1>
+                      {currentPlayers.length - 1 - currentRound < 1 && `${currentPlayers.length - 1 - currentRound} rounds to go!`} 
+                      {currentPlayers.length - 1 - currentRound === 1 && '1 round to go!'} 
+                    </h1>
+                    <div style={{height: '65px', marginLeft: '20px', marginTop: '-10px'}}>
                       <Button
                         onClick={props.nextRound}
                         disabled={false}
@@ -167,13 +171,17 @@ const Board: FunctionComponent<BoardProps> = (props) => {
               </>
             }
             {currentRound < currentPlayers.length - 1 && 
-              <h1> Waiting for host to move to Round {currentRound + 1}/{currentPlayers.length - 1}... </h1>
+              <h1> 
+                {currentPlayers.length - 1 - currentRound < 1 && `${currentPlayers.length - 1 - currentRound} rounds to go! Waiting for host... `} 
+                {currentPlayers.length - 1 - currentRound === 1 && '1 round to go! Waiting for host...'} 
+              
+              </h1>
             }
             </>
           }
         </Flexbox>
       }
-    </Flexbox>
+    </div>
   )
 }
 

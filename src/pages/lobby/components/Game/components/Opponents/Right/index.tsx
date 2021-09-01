@@ -110,18 +110,18 @@ const OpponentsRight: FunctionComponent<OpponentsRightType>  = (props) => {
 
   return (
     <div style={{marginRight: '20px'}}> 
-    <Flexbox column spaceEvenly> 
+    <Flexbox column spaceEvenly={opponents.length >= 6}> 
         {renderOpponents().map(p => {
           return (
             <Flexbox key={`opponent-${p.id}`} column>
               <Flexbox end>
-                <h3> {p.nickname} {p.gameState.dealer ? '(DEALER)' : ''}</h3>
+                <h4> {p.nickname} {p.gameState.dealer ? '(DEALER)' : ''}</h4>
                 {roundComplete && 
-                <h3 className={p.gameState.spoonCollected ? styles.safe : styles.eliminated}> 
+                <h4 className={p.gameState.spoonCollected ? styles.safe : styles.eliminated}> 
                   {p.gameState.spoonCollected && p.gameState.roundWinner && 'WINNER' }
                   {p.gameState.spoonCollected && !p.gameState.roundWinner && 'SAFE' }
                   {!p.gameState.spoonCollected && 'ELIMINATED' }
-                </h3>
+                </h4>
                 }
               </Flexbox>
               <Flexbox end>

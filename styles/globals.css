@@ -5,24 +5,25 @@ body {
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
   font-family: 'Montserrat', sans-serif;
   font-weight: 500;
-  font-size: 20px;
+  font-size: 16px;
   color: white;
 }
 
 h1 {
   font-family: "Luckiest Guy";
   margin-top: 5px;
+  font-size: 36pt;
 }
 
 h2 {
   font-family: "Luckiest Guy";
-  font-size: 40px;
+  font-size: 30px;
   margin-top: 5px;
   margin-bottom: 0;
 }
 
 h3 {
-  font-size: 24px;
+  font-size: 22px;
   margin: 0px 0px 10px 0px;
   text-transform: capitalize;
 }
@@ -31,6 +32,10 @@ h4 {
   font-size: 18px;
   margin: 0px 0px 10px 0px;
   text-transform: capitalize;
+}
+
+p {
+  font-size: 16px;
 }
 
 input, button {

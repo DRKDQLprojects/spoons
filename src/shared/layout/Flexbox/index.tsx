@@ -7,7 +7,8 @@ type FlexboxProps = {
   column?: boolean,
   end?: boolean,
   spaceEvenly? :boolean,
-  spaceBetween?: boolean
+  spaceBetween?: boolean,
+  noWrap?: boolean
 }
 
 const Flexbox : FunctionComponent<FlexboxProps> = (props) => {
@@ -24,7 +25,7 @@ const Flexbox : FunctionComponent<FlexboxProps> = (props) => {
     return styles.row
   }
 
-  return <div className={getStyle()}> {props.children} </div>
+  return <div className={getStyle()} style={{flexWrap: props.noWrap ? 'nowrap' : 'wrap'}}> {props.children} </div>
 }
 
 export default Flexbox;

@@ -124,7 +124,7 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
                 <h3 className={styles.discardText}> REMOVE </h3>
               </Flexbox>
           } 
-          { !cardDrawn && !spectating && <div className={styles.cardPlaceholder}/> }
+          { !cardDrawn && <div className={styles.cardPlaceholder}/> }
         </div>
         <div className={styles.pile}>
             { pileLength > 0 && pile(pileLength)}

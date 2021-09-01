@@ -113,12 +113,12 @@ const OpponentsTop: FunctionComponent<OpponentsTopType>  = (props) => {
   }
 
   return (
-    <Flexbox spaceEvenly> 
+    <Flexbox spaceEvenly noWrap> 
         {renderOpponents().map(p => {
           return (
             <Flexbox key={`opponent-${p.id}`} center>
               <Flexbox column center>
-                <h3> 
+                <h4> 
                   {p.nickname} 
                   {p.gameState.dealer ? ' (DEALER)' : ''}
                   {roundComplete && 
@@ -128,7 +128,7 @@ const OpponentsTop: FunctionComponent<OpponentsTopType>  = (props) => {
                       {!p.gameState.spoonCollected && 'ELIMINATED' }
                     </span>
                   }
-                </h3>
+                </h4>
                 <Flexbox column>
                     <div className={styles.hand}>
                       {renderHand(p)}

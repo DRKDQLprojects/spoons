@@ -107,31 +107,31 @@ const OpponentsLeft: FunctionComponent<OpponentsLeftType>  = (props) => {
 
   return (
     <div style={{marginLeft: '20px'}}> 
-    <Flexbox column spaceEvenly> 
+    <Flexbox column spaceEvenly={opponents.length >= 6}> 
         {renderOpponents().map(p => {
           return (
             <Flexbox key={`opponent-${p.id}`} column>
-              <Flexbox>
-                <h3> 
-                  {p.nickname} 
-                  {p.gameState.dealer ? ' (DEALER)' : ''}
-                </h3> 
-                {roundComplete && 
-                  <h3>
-                    <div className={p.gameState.spoonCollected ? styles.safe : styles.eliminated}> 
-                      {p.gameState.spoonCollected && p.gameState.roundWinner && 'WINNER' }
-                      {p.gameState.spoonCollected && !p.gameState.roundWinner && 'SAFE' }
-                      {!p.gameState.spoonCollected && 'ELIMINATED' }
-                    </div>
-                  </h3>
-                }
-              </Flexbox>
               <Flexbox>
                 {renderHand(p)}
                 <div className={styles.pile} style={{ marginTop: roundComplete && p.gameState.roundWinner ? '156px' : '78px'}}> 
                   { p.gameState.pile.length === 0  && <div className={styles.pilePlaceholder}/>}
                   { p.gameState.pile.length > 0 && renderPile(p.gameState.pile.length)}
                 </div>
+              </Flexbox>
+              <Flexbox>
+                <h4 className={styles.name}> 
+                  {p.nickname} 
+                  {p.gameState.dealer ? ' (DEALER)' : ''}
+                </h4> 
+                {roundComplete && 
+                  <h4>
+                    <div className={p.gameState.spoonCollected ? styles.safe : styles.eliminated}> 
+                      {p.gameState.spoonCollected && p.gameState.roundWinner && 'WINNER' }
+                      {p.gameState.spoonCollected && !p.gameState.roundWinner && 'SAFE' }
+                      {!p.gameState.spoonCollected && 'ELIMINATED' }
+                    </div>
+                  </h4>
+                }
               </Flexbox>
            </Flexbox >
           )

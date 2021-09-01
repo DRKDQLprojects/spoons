@@ -3,7 +3,6 @@
   text-transform: uppercase;
   text-shadow: 0px 4px 4px #00000026;
   font-weight: 900;
-  font-size: 24px;
   margin: 0
 }
 
@@ -23,7 +22,6 @@
   background: #B8E3ED;
   cursor: pointer;
   box-shadow: 0px 7px 0px rgba(0, 0, 0, 0.1);
-  margin-top: -7px;
 }
 
 .button:active:not(:disabled) {
@@ -50,7 +48,6 @@
   background: rgba(205, 85, 79, 0.5);
   cursor: pointer;
   box-shadow: 0px 7px 0px rgba(0, 0, 0, 0.1);
-  margin-top: -7px;
 }
 
 .danger:active:not(:disabled) {
@@ -78,11 +75,10 @@
   background: #A4F0A2;
   cursor: pointer;
   box-shadow: 0px 7px 0px rgba(0, 0, 0, 0.1);
-  margin-top: -7px;
 }
 
 .success:active:not(:disabled) {
-  background: #3DAC3B;
+  background: #A4F0A2;
   cursor: pointer;
   box-shadow: none;
 }

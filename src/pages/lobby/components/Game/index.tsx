@@ -174,13 +174,15 @@ const Game = (props: GameProps) => {
   const collectSpoon = () => {
     const winner = currentPlayers.filter(p => p.gameState.roundWinner).length === 0
     if (winner) {
-      firebase.database().ref(`${currentLobby.id}/players/${myPlayer.id}/gameState`).set({
-        ...myPlayer.gameState,
-        spoonCollected: true,
-        roundWinner: true
+      firebase.database().ref(`${currentLobby.id}/players/${myPlayer.id}/gameState`).transaction((currentValue) => {
+        return {
+          ...currentValue,
+          spoonCollected: true,
+          roundWinner: true
+        }
       })
     } else {
-      firebase.database().ref(`${currentLobby.id}/players/${myPlayer.id}/gameState/spoonCollected`).set(true)
+      firebase.database().ref(`${currentLobby.id}/players/${myPlayer.id}/gameState/spoonCollected`).transaction(() => { return true })
     }
   }
 
@@ -190,43 +192,34 @@ const Game = (props: GameProps) => {
     return hand.filter(c => c.value === value).length === 4
   }
 
-  const discard = (card: Card) => {
-    const newHand = myPlayer.gameState.hand.map(c => {
-      if (c === card) return myPlayer.gameState.cardDrawn
-      return c
+  const discard = (card: Card) => {    
+    firebase.database().ref(`${currentLobby.id}/players/${myPlayer.id}/gameState`).transaction((currentValue) => {
+      const newHand = currentValue.hand.map((c: any) => {
+        if (c.value === card.value && c.suit === card.suit) return myPlayer.gameState.cardDrawn
+        return c
+      })
+      return {
+        ...currentValue,
+        hand: currentValue.hand ? newHand : currentValue.hand,
+        cardDrawn: currentValue.cardDrawn ? null : currentValue.cardDrawn
+      }
     })
-    const nextPlayer = currentPlayers.filter(p => p.id === myPlayer.gameState.nextPlayerId)[0]
-    const playersDb = convertToDBPlayers(currentPlayers)
 
-    firebase.database().ref(`${currentLobby.id}/players`).set({
-      ...playersDb,
-      [myPlayer.id]: {
-        ...myPlayer,
-        id: null,
-        gameState: {
-          ...myPlayer.gameState,
-          hand: newHand,
-          cardDrawn: null
-        }
-      },
-      [nextPlayer.id]: {
-        ...nextPlayer,
-        gameState: {
-          ...nextPlayer.gameState,
-          pile: nextPlayer.gameState.pile ? nextPlayer.gameState.pile.concat([card]) : [card]
-        }
+    firebase.database().ref(`${currentLobby.id}/players/${myPlayer.gameState.nextPlayerId}/gameState`).transaction((currentValue) => {
+      return  {
+        ...currentValue,
+        pile: currentValue.pile ? currentValue.pile.concat([card]) : [card]
       }
     })
   }
 
   const drawFromPile = () => {
-    const pile = myPlayer.gameState.pile
-    const cardDrawn = pile[0]
-
-    firebase.database().ref(`${currentLobby.id}/players/${currentMyPlayer.id}/gameState/`).set({
-      ...myPlayer.gameState,
-      cardDrawn: cardDrawn,
-      pile: pile.splice(1, pile.length)
+    firebase.database().ref(`${currentLobby.id}/players/${currentMyPlayer.id}/gameState/`).transaction((currentValue) => {
+      return {
+        ...currentValue,
+        cardDrawn: currentValue.cardDrawn ? null : currentValue.pile[0],
+        pile: currentValue.pile ? currentValue.pile.splice(1, currentValue.pile.length) : null
+      }
     })
   }
 
@@ -271,8 +264,6 @@ const Game = (props: GameProps) => {
 
     const nextPlayer = remainingPlayers.filter(p => p.id === myPlayer.gameState.nextPlayerId)[0]
     const nextOpponents = findOpponents(nextPlayer, remainingPlayers)
-    let pileLength = 0;
-    if (nextPlayer.gameState.pile) pileLength = nextPlayer.gameState.pile.length
 
     if (nextPlayer.gameState.spoonCollected) {
       if (nextPlayer.gameState.roundWinner) {
@@ -299,9 +290,6 @@ const Game = (props: GameProps) => {
 
     const previousPlayer = remainingPlayers.filter(p => p.id === myPlayer.gameState.previousPlayerId)[0]
     const previousOpponents = findOpponents(previousPlayer, remainingPlayers)
-    let pileLength = 0;
-
-    if (previousPlayer.gameState.pile) pileLength = previousPlayer.gameState.pile.length
 
     if (previousPlayer.gameState.spoonCollected) {
       if (previousPlayer.gameState.roundWinner) {
@@ -343,7 +331,7 @@ const Game = (props: GameProps) => {
             }
           </Flexbox>
           <Logo text="Spoons"/>
-          <Flexbox column center>
+          <Flexbox column end>
             <h1> YOU: {currentMyPlayer.nickname} </h1>
           </Flexbox>
         </Grid>
@@ -353,7 +341,7 @@ const Game = (props: GameProps) => {
       <div className={styles.container}>
         <Grid 
           gridTemplateColumns=""
-          gridTemplateRows="1fr 3fr"
+          gridTemplateRows="0.5fr 3fr"
         >
           {/* ---------- OPPONENTS IN TOP ROW */}
           <OpponentsTop
@@ -370,10 +358,7 @@ const Game = (props: GameProps) => {
               roundComplete={roundComplete}
             />
             {/* --------------- PLAYER ACTIONS */}
-            <Grid
-              gridTemplateColumns=""
-              gridTemplateRows="1fr 1fr"
-            >
+            <Flexbox column spaceEvenly>
               <Board
                 peekTimerOn={peekTimerOn}
                 myPlayer={myPlayer}
@@ -403,7 +388,7 @@ const Game = (props: GameProps) => {
                 fourOfAKind={fourOfAKind}
                 drawFromPile={drawFromPile}
               /> 
-            </Grid>
+            </Flexbox>
 
             {/* ---------- OPPONENTS ON THE RIGHT */}
             <OpponentsRight
