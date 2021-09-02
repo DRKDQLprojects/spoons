@@ -13,7 +13,6 @@ import Loader from 'src/shared/components/Loader'
 import Logo from 'src/shared/components/Logo'
 import TextField from 'src/shared/components/TextField'
 import Button from 'src/shared/components/Button'
-import Flexbox from 'src/shared/layout/Flexbox'
 import Container from 'src/shared/layout/Container'
 
 const Join: NextPage = () => {
@@ -145,30 +144,31 @@ const Join: NextPage = () => {
   if (joining) return (<Loader message="Joining lobby..."/> )
   return (
     <Fullscreen center>
-      <Logo text="Spoons"/>
-      <Container center> 
-        <h1> Joining {`${host}'s`} Lobby </h1>
-      </Container>
-      <h3> Nickname </h3> 
-      <br/>
-      <TextField 
-        type="text" 
-        value={nickname} 
-        onPaste={e => e.preventDefault()} 
-        onChange={e => changeNickname(e.target.value.replace(/[^a-zA-Z\d]/ig, ""))}
-        maxLength={20}
-        placeholder={'E.g. Marc7890'}
-        error={nicknameError !== ''}
-      />
-      {nicknameError && 
-        <> 
-          <br/>
-          {nicknameError}
-          <br/>
-        </>
-      }
-      <br/>
       <div className={styles.container}>
+        <Logo text="Spoons" fontSize="90px"/>
+        <Container center> 
+          <h2> Joining {`${host}'s`} Lobby </h2>
+        </Container>
+        <br/>
+        <h3> Enter your nickname </h3> 
+        <br/>
+        <TextField 
+          type="text" 
+          value={nickname} 
+          onPaste={e => e.preventDefault()} 
+          onChange={e => changeNickname(e.target.value.replace(/[^a-zA-Z\d]/ig, ""))}
+          maxLength={20}
+          placeholder={'E.g. Marc6789'}
+          error={nicknameError !== ''}
+        />
+        {nicknameError && 
+          <> 
+            <br/>
+            {nicknameError}
+            <br/>
+          </>
+        }
+        <br/>
         <Button onClick={joinLobby} primary disabled={false}> Join Lobby </Button>
       </div>
     </Fullscreen>
