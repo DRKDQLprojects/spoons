@@ -1,3 +1,4 @@
+import Container from 'src/shared/layout/Container';
 import styles from './Loader.module.css'
 
 type LoaderProps = {
@@ -7,7 +8,9 @@ type LoaderProps = {
 const Loader = (props: LoaderProps) => {
   return (
     <div className={styles.container}> 
-      <h1> {props.message} </h1>
+      <Container center>
+        <h1> {props.message} </h1>
+      </Container>
     </div>
   )
 }

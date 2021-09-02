@@ -77,30 +77,30 @@ const Home: NextPage = () => {
   if (loading) return (<Loader message="Creating lobby..."/>)
   return (
     <Fullscreen center>
-      <Logo text="Spoons" fontSize="120px"/>
-      <h3> Nickname </h3> 
-      <br/>
-      <TextField
-        type="text"
-        value={nickname}
-        onPaste={e => e.preventDefault()} 
-        onChange={e => nicknameChanged(e.target.value.replace(/[^a-zA-Z\d]/ig, ""))}
-        maxLength={15}
-        placeholder={'E.g. Derek1234'}
-        error={error !== ''}
-      />
-      {error && 
-        <> 
-          <br/>
-          {error}
-          <br/>
-        </>
-      }
-      <br/>
       <div className={styles.container}>
-        <Button onClick={createLobby} primary disabled={false}> Create Lobby </Button>
+        <Logo text="Spoons"/>
+        <h3> Nickname </h3> 
+        <br/>
+        <TextField
+          type="text"
+          value={nickname}
+          onPaste={e => e.preventDefault()} 
+          onChange={e => nicknameChanged(e.target.value.replace(/[^a-zA-Z\d]/ig, ""))}
+          maxLength={15}
+          placeholder={'E.g. Derek1234'}
+          error={error !== ''}
+        />
+        {error && 
+          <> 
+            <br/>
+            {error}
+            <br/>
+          </>
+        }
+        <br/>
+          <Button onClick={createLobby} primary disabled={false}> Create Lobby </Button>
+        <br/>
       </div>
-      <br/>
     </Fullscreen>
   )
 }

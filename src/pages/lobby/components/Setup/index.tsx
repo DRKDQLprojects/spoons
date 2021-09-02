@@ -1,7 +1,7 @@
 import { CopyToClipboard } from 'react-copy-to-clipboard'
 import { LobbyInfo, Player } from 'src/types'
 import firebase from 'src/firebase/client'
-import { Dispatch, SetStateAction, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { setupBoard } from 'src/shared/helpers'
 
 import styles from './Setup.module.css'
@@ -30,6 +30,9 @@ const Setup = (props: SetupProps) => {
 
   const [seconds, setSeconds] = useState(-1)
   const [copiedTimerOn, setCopiedTimerOn] = useState(false)
+
+  const [width, setWidth] = useState(-1)
+  const [scale, setScale] = useState<string>('1')
 
   // ***** START GAME *****
   const startGame = () => {
@@ -114,7 +117,7 @@ const Setup = (props: SetupProps) => {
       )
     })
 
-    for (let i = 0; i < 9 - players.length; i++) {
+    for (let i = 0; i < 10 - players.length; i++) {
       elems.push(
         <div key={`lobby-empty-player-${i}`} className={styles.emptyPlayer}>
           <Grid 
@@ -133,16 +136,35 @@ const Setup = (props: SetupProps) => {
 
     return elems
   }
+
+  useEffect(() => {
+    setWidth(window.screen.width)
+    window.addEventListener('resize', calculateScale)
+    return (() => window.removeEventListener('resize', calculateScale))
+  }, [])
+
+  const calculateScale = () => {
+    const height = window.screen.height
+    const baseHeight = 735
+
+    if (height > baseHeight) {
+      setScale('1')
+    } else {
+      setScale((height / baseHeight).toString())
+    }
+    setWidth(window.screen.width)
+  }
   
   // ********** RENDER **********
   return (
-    <div className={styles.container}>
-      <div className={styles.navbar}>
-          <Logo text="Spoons"/>
-      </div>
+    <>
+    <div className={styles.navbar}>
+        <Logo text="Spoons"/>
+    </div>
+    <div className={styles.container} style={{ transform: `scale(${scale})`, transformOrigin: 'top'}}>
       <Grid 
-        gridTemplateColumns="2fr 3fr"
-        gridTemplateRows=""
+        gridTemplateColumns={width > 650 ? "2fr 3fr" : ''}
+        gridTemplateRows={width > 650 ? '' : '1fr 1fr'}
       > 
         <div className={styles.gridItem}>
           <Flexbox center>
@@ -293,6 +315,7 @@ const Setup = (props: SetupProps) => {
         </div>
       </Grid>
     </div>
+    </>
   )
 }
 

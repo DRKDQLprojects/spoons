@@ -1,7 +1,6 @@
 .container {
- margin-left: 20px;
- margin-right: 20px;
- height: 75%
+ height: 520px;
+ margin: 0px 20px 20px 20px
 }
 
 .gridItem {
@@ -53,7 +52,47 @@
 }
 
 .navbar {
-  margin-left: 20px;
-  margin-right: 20px;
+  margin-left: 50px;
+  margin-right: 50px;
   padding: 10px
+}
+
+@media screen and (max-width: 1000px) {
+  .navbar {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+
+  .container {
+    text-align: left;
+    margin-left: 0px;
+    margin-right: 0px;
+    width: 100%;
+  }
+}
+
+@media screen and (max-width:650px) {
+
+  .container {
+    margin-left: 10px;
+    margin-right: 10px;
+    text-align: center;
+  }
+
+  .gridItem {
+    height: 500px;
+  }
+
+  .scrollablePlayers {
+    height: 110px;
+    display: flex;
+    flex-direction: row;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    white-space: nowrap
+  }
+
+  .emptyPlayer {
+    display: inline-block;
+  }
 }
