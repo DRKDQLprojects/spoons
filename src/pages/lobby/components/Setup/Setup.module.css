@@ -1,7 +1,8 @@
 .container {
- margin-left: 20px;
- margin-right: 20px;
- height: 75%
+ margin: 0px 0px 0px 0px;
+ padding-left: 20px;
+ padding-right: 20px;
+ height: 450px;
 }
 
 .gridItem {
@@ -12,23 +13,24 @@
   background: rgba(131, 86, 204, 0.3);
   border: 12px solid #FFFFFF;
   border-radius: 20px;
-  height: 50%;
+  height: 450px;
 }
 
 .scrollablePlayers {
-  overflow: scroll;
+  overflow-y: scroll;
+  overflow-x: hidden;
   width: 100%;
   border: 3px rgba(0,0,0,0.1) solid;
   padding: 10px;
 }
 
 .scrollableSettings {
-  overflow: scroll;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 300px;
   width: 100%;
   border: 3px rgba(0,0,0,0.1) solid;
   padding: 10px;
-
-  height: 80%;
 }
 
 
@@ -53,7 +55,52 @@
 }
 
 .navbar {
-  margin-left: 20px;
-  margin-right: 20px;
+  margin-left: 50px;
+  margin-right: 50px;
   padding: 10px
+}
+
+@media (max-width: 1000px) {
+  .container {
+    text-align: left;
+    margin-left: 0px;
+    margin-right: 0px;
+    padding-right: 20px;
+    padding-left: 20px;
+    width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+
+  .container {
+    margin: 0;
+    padding-left: 10px;
+    padding-right: 2px;
+  }
+
+  .gridItem {
+    height: 300px;
+    width: 400px;
+  } 
+
+  .scrollablePlayers {
+    height: 110px;
+    display: flex;
+    flex-direction: row;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    white-space: nowrap
+  }
+
+  .player {
+    margin: 0;
+    padding: 2px 15px 2px 15px;
+  }
+
+  .emptyPlayer {
+    display: inline-block;
+    margin: 0;
+    padding: 2px 15px 2px 15px;
+  }
 }

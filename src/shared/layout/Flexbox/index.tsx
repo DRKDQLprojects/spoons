@@ -13,10 +13,11 @@ type FlexboxProps = {
 
 const Flexbox : FunctionComponent<FlexboxProps> = (props) => {
   const getStyle = () => {
-    const { center, column, end, spaceEvenly} = props
+    const { center, column, end, spaceEvenly, spaceBetween} = props
     if (center && column) return styles.columnCenter
     if (end && column) return styles.columnEnd
     if (spaceEvenly && column) return styles.columnSpaceEvenly
+    if (spaceBetween && column) return styles.columnSpaceBetween
     if (column) return styles.column
 
     if (spaceEvenly) return styles.rowSpaceEvenly

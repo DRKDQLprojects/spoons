@@ -1,7 +1,7 @@
 import { CopyToClipboard } from 'react-copy-to-clipboard'
 import { LobbyInfo, Player } from 'src/types'
 import firebase from 'src/firebase/client'
-import { Dispatch, SetStateAction, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { setupBoard } from 'src/shared/helpers'
 
 import styles from './Setup.module.css'
@@ -30,6 +30,9 @@ const Setup = (props: SetupProps) => {
 
   const [seconds, setSeconds] = useState(-1)
   const [copiedTimerOn, setCopiedTimerOn] = useState(false)
+
+  const [width, setWidth] = useState(-1)
+  const [scale, setScale] = useState<string>('1')
 
   // ***** START GAME *****
   const startGame = () => {
@@ -94,7 +97,7 @@ const Setup = (props: SetupProps) => {
               gridTemplateColumns="3fr 1fr"
               gridTemplateRows=""
             >
-            <Flexbox column center>
+            <Flexbox column={width > 700} noWrap={width <= 700} center={width > 700} spaceBetween={width <= 700}>
               <Flexbox>
                 {player.nickname} 
               </Flexbox>
@@ -114,7 +117,7 @@ const Setup = (props: SetupProps) => {
       )
     })
 
-    for (let i = 0; i < 9 - players.length; i++) {
+    for (let i = 0; i < 10 - players.length; i++) {
       elems.push(
         <div key={`lobby-empty-player-${i}`} className={styles.emptyPlayer}>
           <Grid 
@@ -133,16 +136,33 @@ const Setup = (props: SetupProps) => {
 
     return elems
   }
+
+  useEffect(() => {
+    setWidth(window.screen.width)
+    window.addEventListener('resize', calculateScale)
+    return (() => window.removeEventListener('resize', calculateScale))
+  }, [])
+
+  const calculateScale = () => {
+    const height = window.screen.height
+    const baseHeight = 600
+
+    if (height < 600) {
+      setScale((height / baseHeight).toString())
+    }
+    setWidth(window.screen.width)
+  }
   
   // ********** RENDER **********
   return (
-    <div className={styles.container}>
-      <div className={styles.navbar}>
-          <Logo text="Spoons"/>
-      </div>
+    <>
+    <div className={styles.navbar}>
+        <Logo text="Spoons"/>
+    </div>
+    <div className={styles.container} style={{ transform: `scale(${scale})`, transformOrigin: 'top'}}>
       <Grid 
-        gridTemplateColumns="2fr 3fr"
-        gridTemplateRows=""
+        gridTemplateColumns={width > 700 ? "2fr 3fr" : ''}
+        gridTemplateRows={width > 700 ? '' : '1fr 1fr'}
       > 
         <div className={styles.gridItem}>
           <Flexbox center>
@@ -150,7 +170,7 @@ const Setup = (props: SetupProps) => {
           </Flexbox>
           <h3> YOU </h3>
           <div className={styles.player}>
-            <Flexbox column> 
+            <Flexbox column={width > 700}> 
               <Flexbox>
                 {myPlayer.nickname} 
               </Flexbox>
@@ -171,128 +191,130 @@ const Setup = (props: SetupProps) => {
           <Flexbox center>
             <h2> Settings & Modes </h2>
           </Flexbox>
-          <div className={styles.scrollableSettings}>
-          <Container>
-            <h3> DEALER </h3>
-            <Flexbox>
-                <Radio 
-                  id="dealer-random" 
-                  label="RANDOM"
-                  checked={settings.dealer.on && settings.dealer.default} 
-                  disabled={!myPlayer.isHost} 
-                  onChange={() => updateDealerDefault(true)}
-                />
-
-                <Radio 
-                  id="dealer-winner" 
-                  label="WINNER"
-                  checked={settings.dealer.on && !settings.dealer.default} 
-                  disabled={!myPlayer.isHost} 
-                  onChange={() => updateDealerDefault(false)}
-                />
-
-                <Radio 
-                  id="dealer-off" 
-                  label="OFF"
-                  checked={!settings.dealer.on} 
-                  disabled={!myPlayer.isHost} 
-                  onChange={() => updateDealerOn(false, true)}
-                />
-            </Flexbox>
-          </Container>
-          
-          <Container>
-            <h3> PLAYER POSITIONS </h3>
-            <Flexbox>
-                <Radio 
-                  id="shuffle-off" 
-                  label="LOBBY"
-                  checked={!settings.shuffle} 
-                  disabled={!myPlayer.isHost} 
-                  onChange={() => updatePlayerPositions(false)}
-                />
-
-                <Radio 
-                  id="shuffle-on" 
-                  label="SHUFFLE"
-                  checked={settings.shuffle} 
-                  disabled={!myPlayer.isHost} 
-                  onChange={() => updatePlayerPositions(true)}
-                />
-            </Flexbox>
-          </Container>
-          <Container>
-            <h3> PEEKING </h3>
-            <h4> Timer </h4>
-            <Flexbox>
-              { [2,3,4,5].map(time => {
-                  return (
+          <Flexbox column spaceBetween noWrap> 
+            <div className={styles.scrollableSettings}>
+              <Container>
+                <h3> DEALER </h3>
+                <Flexbox>
                     <Radio 
-                      key={`peek-timer-${time}`}
-                      id={`peek-timer-${time}`}
-                      label={`${time}s`}
-                      checked={time === settings.peek.timer}
-                      onChange={() => updatePeekTimer(time)}
-                      disabled={!myPlayer.isHost}
+                      id="dealer-random" 
+                      label="RANDOM"
+                      checked={settings.dealer.on && settings.dealer.default} 
+                      disabled={!myPlayer.isHost} 
+                      onChange={() => updateDealerDefault(true)}
                     />
-                  )
-                })
-              }
-            </Flexbox>
-            
-            <h4> Cooldown </h4>
-            <Flexbox>
-              { [2,3,4,5].map(time => {
-                  return (
+
                     <Radio 
-                      key={`peek-cooldown-${time}`}
-                      id={`peek-cooldown-${time}`}
-                      label={`${time}s`}
-                      checked={time === settings.peek.cooldown}
-                      onChange={() => updatePeekCooldown(time)}
-                      disabled={!myPlayer.isHost}
+                      id="dealer-winner" 
+                      label="WINNER"
+                      checked={settings.dealer.on && !settings.dealer.default} 
+                      disabled={!myPlayer.isHost} 
+                      onChange={() => updateDealerDefault(false)}
                     />
-                  )
-                })
-              }
-            </Flexbox>
-          </Container>
-          </div>
-          <div style={{display: 'flex'}}>
-            <CopyToClipboard 
-                text={`${process.env.NEXT_PUBLIC_BASE_URL}/join?code=${lobbyId}`}
-                onCopy={() => {}}
-              >
-              <div style={{ padding: '20px'}}>
-                <Button primary disabled={false} onClick={() => { setSeconds(2); setCopiedTimerOn(true); }}> 
-                  { copiedTimerOn ? 'COPIED!' : 'INVITE'  }
-                </Button>
-              </div>
-            </CopyToClipboard>
-            <div style={{ padding: '20px'}}>
-              { myPlayer.isHost && 
-                <Button 
-                  success
-                  disabled={!myPlayer.isHost}
-                  onClick={() => startGame()}
-                > 
-                  Start
-                </Button>
-              }
-              {!myPlayer.isHost && 
-                <Flexbox column center>
-                  <h2>
-                    Waiting for host to start game...
-                  </h2>
+
+                    <Radio 
+                      id="dealer-off" 
+                      label="OFF"
+                      checked={!settings.dealer.on} 
+                      disabled={!myPlayer.isHost} 
+                      onChange={() => updateDealerOn(false, true)}
+                    />
                 </Flexbox>
-              }
+              </Container>
+              
+              <Container>
+                <h3> PLAYER POSITIONS </h3>
+                <Flexbox>
+                    <Radio 
+                      id="shuffle-off" 
+                      label="LOBBY"
+                      checked={!settings.shuffle} 
+                      disabled={!myPlayer.isHost} 
+                      onChange={() => updatePlayerPositions(false)}
+                    />
+
+                    <Radio 
+                      id="shuffle-on" 
+                      label="SHUFFLE"
+                      checked={settings.shuffle} 
+                      disabled={!myPlayer.isHost} 
+                      onChange={() => updatePlayerPositions(true)}
+                    />
+                </Flexbox>
+              </Container>
+              <Container>
+                <h3> PEEKING </h3>
+                <h4> Timer </h4>
+                <Flexbox>
+                  { [2,3,4,5].map(time => {
+                      return (
+                        <Radio 
+                          key={`peek-timer-${time}`}
+                          id={`peek-timer-${time}`}
+                          label={`${time}s`}
+                          checked={time === settings.peek.timer}
+                          onChange={() => updatePeekTimer(time)}
+                          disabled={!myPlayer.isHost}
+                        />
+                      )
+                    })
+                  }
+                </Flexbox>
+                
+                <h4> Cooldown </h4>
+                <Flexbox>
+                  { [2,3,4,5].map(time => {
+                      return (
+                        <Radio 
+                          key={`peek-cooldown-${time}`}
+                          id={`peek-cooldown-${time}`}
+                          label={`${time}s`}
+                          checked={time === settings.peek.cooldown}
+                          onChange={() => updatePeekCooldown(time)}
+                          disabled={!myPlayer.isHost}
+                        />
+                      )
+                    })
+                  }
+                </Flexbox>
+              </Container>
             </div>
 
-          </div>
-          
+            <Flexbox noWrap>
+              <CopyToClipboard 
+                  text={`${process.env.NEXT_PUBLIC_BASE_URL}/join?code=${lobbyId}`}
+                  onCopy={() => {}}
+                >
+                <div style={{ padding: '20px'}}>
+                  <Button primary disabled={false} onClick={() => { setSeconds(2); setCopiedTimerOn(true); }}> 
+                    { copiedTimerOn ? 'COPIED!' : 'INVITE'  }
+                  </Button>
+                </div>
+              </CopyToClipboard>
+              <div style={{ padding: '20px'}}>
+                { myPlayer.isHost && 
+                  <Button 
+                    success
+                    disabled={!myPlayer.isHost}
+                    onClick={() => startGame()}
+                  > 
+                    Start
+                  </Button>
+                }
+                {!myPlayer.isHost && 
+                  <Flexbox column center>
+                    <h2>
+                      Waiting for host to start game...
+                    </h2>
+                  </Flexbox>
+                }
+              </div>
+            </Flexbox>
+          </Flexbox>
         </div>
       </Grid>
     </div>
+    </>
   )
 }
 

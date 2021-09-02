@@ -1,14 +1,18 @@
 .container {
   text-align: center;
-  padding: 5px;
-  margin-top: 20px;
-  padding-top: 5px;
+  margin-top: 5px;
+
 }
 
 .text {
   color: white;
   -webkit-text-stroke: 0.5px white;
-  font-size: 80px;
-  margin: 5px 0px 0px 0px;
+  font-size: 65px;
+  margin: 0px
 }
 
+@media (max-width: 650px) {
+  .text {
+    font-size: 40px;
+  }
+}
