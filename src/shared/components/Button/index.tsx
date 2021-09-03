@@ -8,7 +8,7 @@ type ButtonProps = {
   danger?: boolean,
   success?: boolean,
   disabled: boolean,
-  small?: boolean
+  stretch?: boolean
 }
 
 const Button : FunctionComponent<ButtonProps> = (props) => {
@@ -25,10 +25,10 @@ const Button : FunctionComponent<ButtonProps> = (props) => {
       className={getStyle()} 
       onClick={props.onClick}
       disabled={props.disabled}
+      style={props.stretch ? { height: '100%', width: '100%' } : {}}
     > 
       <p 
         className={styles.text}
-        style={props.small ? { fontSize:'16px'} : {} }
       > 
         {props.children} 
       </p>

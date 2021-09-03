@@ -75,12 +75,14 @@ const Board: FunctionComponent<BoardProps> = (props) => {
   }
 
   return (
-    <div className={styles.container}>
+    <Flexbox column center>
       {/* ---------- DURING PEEK */}
       {(peekTimerOn || myPlayer.gameState.spoonCollected || spectating) && (
-        <Flexbox column spaceBetween>
+        <Flexbox column center>
           { (!myPlayer.gameState.spoonCollected && !roundComplete && !spectating) && 
-            <h2>Timer: {seconds}</h2>
+            <Flexbox center> 
+              <h2>Timer: {seconds}</h2>
+            </Flexbox>
           }
           <Flexbox spaceEvenly> 
             {spoons()}
@@ -93,20 +95,22 @@ const Board: FunctionComponent<BoardProps> = (props) => {
           {currentRound === currentPlayers.length - 1 && 
             (
               <Flexbox column>
+                <Flexbox center>
                 <h2 className={styles.collectIndicator}> {props.fourOfAKind() && 'COLLECT NOW!'} </h2>
+                </Flexbox>
                 <Flexbox spaceEvenly> 
                   {spoons()}
                 </Flexbox>
               </Flexbox>
             )
           }
-
           {currentRound < currentPlayers.length - 1 &&
             <Button 
               onClick={props.peek} 
               disabled={peekCooldownOn || spectating}
               success={props.fourOfAKind()}
               primary={!props.fourOfAKind()}
+              stretch
             >
               {peekCooldownOn && `Wait (${seconds})`}
               {!peekCooldownOn && props.fourOfAKind() && 'Collect your spoon!'}
@@ -137,7 +141,7 @@ const Board: FunctionComponent<BoardProps> = (props) => {
                         </Button>
                     </div>
                   </Flexbox>
-               </>
+              </>
               }
               {/* ------- NEXT ROUND */}
               {currentRound < currentPlayers.length - 1 &&
@@ -172,16 +176,15 @@ const Board: FunctionComponent<BoardProps> = (props) => {
             }
             {currentRound < currentPlayers.length - 1 && 
               <h1> 
-                {currentPlayers.length - 1 - currentRound < 1 && `${currentPlayers.length - 1 - currentRound} rounds to go! Waiting for host... `} 
+                {currentPlayers.length - 1 - currentRound > 1 && `${currentPlayers.length - 1 - currentRound} rounds to go! Waiting for host...`} 
                 {currentPlayers.length - 1 - currentRound === 1 && '1 round to go! Waiting for host...'} 
-              
               </h1>
             }
             </>
           }
         </Flexbox>
       }
-    </div>
+    </Flexbox>
   )
 }
 

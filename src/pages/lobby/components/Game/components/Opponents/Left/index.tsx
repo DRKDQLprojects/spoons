@@ -41,14 +41,14 @@ const OpponentsLeft: FunctionComponent<OpponentsLeftType>  = (props) => {
           <div 
             key={`opponent-pile-card-${i}`}
             className={styles.pileCard} 
-            style={{marginLeft: `0px`, marginTop: `${-i}px`, boxShadow: '0px 4px 0px rgba(0, 0, 0, 0.1)'}}
+            style={{marginLeft: `${i}px`, boxShadow: '-4px 0px 0px rgba(0, 0, 0, 0.1)'}}
           />
         )
       } else {
         elems.push(
           <div 
             className={styles.pileCard} 
-            style={{marginLeft: `0px`, marginTop: `${-i}px`}}
+            style={{marginLeft: `${i}px`}}
           />
         )
       }
@@ -74,50 +74,51 @@ const OpponentsLeft: FunctionComponent<OpponentsLeftType>  = (props) => {
     return fullHand.map((card, index) => {
       if (roundComplete && p.gameState.roundWinner) {
         if (index === 4) {
-          return (
-            <div 
-              className={styles.winnerCard} 
-              key={`opponent-card-${index}`} 
-              style={{ color: card.suit === 'diamond' || card.suit === 'heart' ?  'red' : '', marginTop: `${156 - (index*52) - 10}px`, marginLeft: '10px' }}>
-                <h4> {getSuit(card.suit)} </h4>
-                <h4> {card.value} </h4>
-            </div> 
-          )
+          return null
         }
         return (
           <div 
             className={styles.winnerCard} 
             key={`opponent-card-${index}`} 
-            style={ { color: card.suit === 'diamond' || card.suit === 'heart' ? 'red' : '', marginTop: `${156 - (index*52)}px` }}
+            style={ { color: card.suit === 'diamond' || card.suit === 'heart' ? 'red' : '', marginTop: `${(-10)}px`, border: '3px green solid' }}
           >
             <h4> {getSuit(card.suit)} </h4>
             <h4> {card.value} </h4>
           </div>
         )
       }
+      if (index === 4) {
+        return (
+          <div 
+            className={styles.card} 
+            key={`opponent-card-${index}`}
+            style={{marginTop: `-50px`, marginLeft: `15px`}}
+          /> )
+      }
       return (
         <div 
           className={styles.card} 
           key={`opponent-card-${index}`}
-          style={{marginTop: `${78 - (index*26)}px`}}
+          style={{marginTop: `${index > 0 ? -26 : 0}px`}}
         /> 
       )
     })
   }
 
   return (
-    <div style={{marginLeft: '20px'}}> 
+    
     <Flexbox column spaceEvenly={opponents.length >= 6}> 
+      <div style={{marginLeft: '20px'}}> 
         {renderOpponents().map(p => {
           return (
             <Flexbox key={`opponent-${p.id}`} column>
-              <Flexbox>
+              <Flexbox column>
                 {renderHand(p)}
-                <div className={styles.pile} style={{ marginTop: roundComplete && p.gameState.roundWinner ? '156px' : '78px'}}> 
-                  { p.gameState.pile.length === 0  && <div className={styles.pilePlaceholder}/>}
-                  { p.gameState.pile.length > 0 && renderPile(p.gameState.pile.length)}
-                </div>
               </Flexbox>
+              <div className={styles.pile}> 
+                { p.gameState.pile.length === 0  && <div className={styles.pilePlaceholder}/>}
+                { p.gameState.pile.length > 0 && renderPile(p.gameState.pile.length)}
+              </div>
               <Flexbox>
                 <h4 className={styles.name}> 
                   {p.nickname} 
@@ -137,8 +138,9 @@ const OpponentsLeft: FunctionComponent<OpponentsLeftType>  = (props) => {
           )
         })
       }
+      </div>
     </Flexbox>
-    </div>
+   
   )
 }
 

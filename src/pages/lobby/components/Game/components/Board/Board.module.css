@@ -1,9 +1,5 @@
 /* BOARD */
 
-.container {
-  height: 130px;
-}
-
 .spoons {
   display: flex;
   flex-direction: row;
@@ -32,6 +28,7 @@
   font-size: 10px;
   display: none;
   margin-top: -50px;
+  margin-left: 15px;
 }
 
 .spoon:hover:not(:disabled) + .spoonCollectedLabel:first-of-type {

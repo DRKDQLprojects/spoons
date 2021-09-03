@@ -1,12 +1,11 @@
+.pile {
+  height: 70px;
+  width: 50px;
+  margin-right: 5px;
+}
 
 .hand {
   margin-left: 0px
-}
-
-.pile {
-  height: 70px;
-  width: 104px;
-  margin-top: 80px;
 }
 
 .pileCard {
@@ -24,7 +23,7 @@
   color: white;
   position: absolute;
 
-  box-shadow: -2px 2px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: -2px -4px 0px rgba(0, 0, 0, 0.1);
 }
 
 .pilePlaceholder {
@@ -52,7 +51,6 @@
 
   background-color: purple;
   color: white;
-  position: absolute;
 }
 
 .safe {

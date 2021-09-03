@@ -94,7 +94,7 @@ const Setup = (props: SetupProps) => {
     let elems = []
 
     elems.push(
-      <div className={styles.myPlayer}>
+      <div className={styles.myPlayer} key={`lobby-${myPlayer.id}`}>
         <Flexbox column center>
           <Flexbox center> 
             <h2> {myPlayer.nickname} {myPlayer.isHost && '(HOST)'} </h2>

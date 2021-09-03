@@ -1,6 +1,6 @@
 
 import styles from './PlayerActions.module.css'
-import { FunctionComponent, useState } from 'react'
+import { FunctionComponent, useEffect, useState } from 'react'
 import { Card, Player } from 'src/types'
 
 import Flexbox from 'src/shared/layout/Flexbox'
@@ -27,7 +27,18 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
   const cardDrawn = myPlayer.gameState.cardDrawn
   const pileLength = myPlayer.gameState.pile.length
 
+  const [width, setWidth] = useState(-1)
   const [topPileCardHovered, setTopPileCardHovered] = useState(false)
+
+  useEffect(() => {
+    setWidth(window.screen.width)
+    window.addEventListener('resize', calculateNewWidth)
+    return (() => window.removeEventListener('resize', calculateNewWidth))
+  }, [])
+
+  const calculateNewWidth = () => {
+    setWidth(window.screen.width)
+  }
 
   const getSuit = (suit: string) => {
     if (suit === 'club') return '♣'
@@ -44,7 +55,12 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
         elems.push(
           <button 
             className={styles.topPileCard} 
-            style={{marginLeft: topPileCardHovered ? `-5px`: `${pileLength-i}px` }}
+            style={
+              {
+                marginLeft: topPileCardHovered ? `-5px`: `0px`,
+                marginTop: pileLength === 1 ? '0px' : `${width > 850 ? -100 : -70}px`
+              }
+            }
             onClick={() => { props.drawFromPile(); setTopPileCardHovered(false)}}
             disabled={cardDrawn !== undefined || roundComplete || spectating}
             onMouseEnter={() => setTopPileCardHovered(true)}
@@ -61,14 +77,14 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
           </button>
           )
       } else {
-        elems.push(<div key={`pile-card-${i}`}  className={styles.pileCard} style={{marginLeft: `${pileLength-i}px`}}/>)
+        elems.push(<div key={`pile-card-${i}`}  className={styles.pileCard} style={{marginLeft: `${i === 0 ? pileLength : pileLength-i}px`, marginTop: `${i === 0 ? 0 : (width > 850 ? -100 : -70)}px` }}/>)
       }
     }
     return elems
   }
 
   return (
-    <Flexbox column>
+    <Flexbox column center>
       <Flexbox center>
         { spectating && 
           <span>
@@ -77,7 +93,7 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
         }
         <h3>
           {spectating && `SPECTATING: ${myPlayer.nickname}`} 
-          {!spectating && 'YOU'}
+          {!spectating && `${myPlayer.nickname} (YOU)`}
           {myPlayer.gameState.dealer ? ' (DEALER)' : ''}
           {safeMessage && <span className={safeMessage === 'ELIMINATED' ? styles.eliminated : styles.safe}> {safeMessage} </span>}
         </h3>
@@ -87,6 +103,7 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
           </span>
         }
       </Flexbox>
+      <br/>
       <Flexbox center>
         {myPlayer.gameState.hand.map((card, index) => {
           return (

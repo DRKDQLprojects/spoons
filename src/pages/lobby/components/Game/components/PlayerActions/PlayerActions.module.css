@@ -44,6 +44,7 @@
 
 .pile {
   height: 100px;
+  width: 70px;
 }
 
 .pileCard {
@@ -59,7 +60,6 @@
 
   background-color: purple;
   color: white;
-  position: absolute;
 
   box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
 }
@@ -96,7 +96,7 @@
   justify-content: center;
   align-items: center;
 
-  position: absolute;
+  text-align: center;
 }
 
 .safe {
@@ -135,7 +135,7 @@
 
 .discardText {
   color: red;
-  margin-left: -10px;
+  margin-left: 12px;
   margin-top: -95px;
   font-weight: 900;
   font-size: 10px;
@@ -144,4 +144,36 @@
 
 .card:hover:not(:disabled) + .discardText:first-of-type {
   display: inline;
+}
+
+@media (max-width: 850px) {
+  .card, .cardPlaceholder, .pilePlaceholder, .pileCard, .topPileCard, .pile {
+    height: 70px;
+    width: 50px;
+  }
+
+  .card {
+    margin-right: 5px;
+  }
+
+  .cardDrawn {
+    margin-left: 20px;
+  }
+
+  .topPileCard > h4 {
+    font-size: 12px;
+  }
+
+  .discardText {
+    color: red;
+    margin-left: 7px;
+    margin-top: -65px;
+    font-weight: 600;
+    font-size: 8px;
+    display: none;
+  }
+
+  .pilePlaceholder {
+    font-size: 12px;
+  }
 }

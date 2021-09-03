@@ -45,14 +45,14 @@ const OpponentsRight: FunctionComponent<OpponentsRightType>  = (props) => {
         elems.push(
           <div 
             className={styles.pileCard} 
-            style={{marginLeft: `0px`, marginTop: `${pileLength-i}px`, boxShadow: '0px -4px 0px rgba(0, 0, 0, 0.1)'}}
+            style={{marginLeft: `${- (pileLength - i)}px`, boxShadow: '4px 0px 0px rgba(0, 0, 0, 0.1)'}}
           />
         )
       } else {
         elems.push(
           <div 
             className={styles.pileCard} 
-            style={{marginLeft: `0px`, marginTop: `${pileLength-i}px`}}
+            style={{ marginLeft: `${- (pileLength - i)}px`}}
           />
         )
       }
@@ -76,67 +76,74 @@ const OpponentsRight: FunctionComponent<OpponentsRightType>  = (props) => {
     }
 
     return fullHand.map((card, index) => {
+      const i = fullHand.length - index - 1
       if (roundComplete && p.gameState.roundWinner) {
         if (index === 4) {
-          return (
-            <div 
-              className={styles.winnerCard} 
-              key={`opponent-card-${index}`} 
-              style={{ color: card.suit === 'diamond' || card.suit === 'heart' ?  'red' : '', marginTop: `${index*52 + 10}px`, marginRight: '10px' }}>
-              <h4> {card.value} </h4>
-              <h4> {getSuit(card.suit)} </h4>
-            </div> 
-          )
+          return null
         }
         return (
           <div 
             className={styles.winnerCard} 
-            key={`opponent-card-${index}`} 
-            style={{ color: card.suit === 'diamond' || card.suit === 'heart' ?  'red' : '', marginTop: `${index*52}px` }}>
+            key={`opponent-card-${i}`} 
+            style={{ color: card.suit === 'diamond' || card.suit === 'heart' ?  'red' : '', marginTop: `${-10}px`, border: "3px green solid"}}>
             <h4> {card.value} </h4>
             <h4> {getSuit(card.suit)} </h4>
           </div> 
         )
       }
+      if (i === 0 && p.gameState.cardDrawn) {
+        return (
+          <div 
+            className={styles.card} 
+            key={`opponent-card-${i}`}
+            style={{marginTop: '-50px', marginLeft: '-15px'}}
+          /> )
+      }
       return (
         <div 
           className={styles.card} 
-          key={`opponent-card-${index}`}
-          style={{ marginTop: `${index*25}px` }}
+          key={`opponent-card-${i}`}
+          style={{ marginTop: `${i === fullHand.length - 1 ? 60 : -70 }px` }}
         /> 
       )
     })
   }
 
   return (
-    <div style={{marginRight: '20px'}}> 
     <Flexbox column spaceEvenly={opponents.length >= 6}> 
+      <div style={{ marginRight: '20px'}}>
         {renderOpponents().map(p => {
           return (
-            <Flexbox key={`opponent-${p.id}`} column>
-              <Flexbox end>
-                <h4> {p.nickname} {p.gameState.dealer ? '(DEALER)' : ''}</h4>
-                {roundComplete && 
-                <h4 className={p.gameState.spoonCollected ? styles.safe : styles.eliminated}> 
-                  {p.gameState.spoonCollected && p.gameState.roundWinner && 'WINNER' }
-                  {p.gameState.spoonCollected && !p.gameState.roundWinner && 'SAFE' }
-                  {!p.gameState.spoonCollected && 'ELIMINATED' }
-                </h4>
-                }
-              </Flexbox>
-              <Flexbox end>
-                <div className={styles.pile}> 
-                  { p.gameState.pile.length === 0  && <div className={styles.pilePlaceholder}/>}
-                  { p.gameState.pile.length > 0 && renderPile(p.gameState.pile.length)}
-                </div>
-                {renderHand(p)}
-              </Flexbox>
+            <Flexbox key={`opponent-${p.id}`} end>
+                <Flexbox column>
+                  <Flexbox end>
+                    <h4> {p.nickname} {p.gameState.dealer ? '(DEALER)' : ''}</h4>
+                    {roundComplete && 
+                    <h4 className={p.gameState.spoonCollected ? styles.safe : styles.eliminated}> 
+                      {p.gameState.spoonCollected && p.gameState.roundWinner && 'WINNER' }
+                      {p.gameState.spoonCollected && !p.gameState.roundWinner && 'SAFE' }
+                      {!p.gameState.spoonCollected && 'ELIMINATED' }
+                    </h4>
+                    }
+                  </Flexbox>
+                  <Flexbox end>
+                    <div className={styles.pile}> 
+                      { p.gameState.pile.length === 0  && <div className={styles.pilePlaceholder}/>}
+                      { p.gameState.pile.length > 0 && renderPile(p.gameState.pile.length)}
+                    </div>
+                  </Flexbox>
+                  <Flexbox end>
+                    <Flexbox column>
+                      {renderHand(p)}
+                    </Flexbox>
+                  </Flexbox>
+                </Flexbox>
            </Flexbox >
           )
         })
       }
+      </div>
     </Flexbox>
-    </div>
   )
 }
 

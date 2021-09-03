@@ -2,7 +2,7 @@
 .pile {
   height: 50px;
   width: 70px;
-  margin-left: 80px;
+  margin: 5px 0px 0px 0px;
 }
 
 .pileCard {
@@ -20,7 +20,7 @@
   color: white;
   position: absolute;
 
-  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: -2px 2px 0px rgba(0, 0, 0, 0.1);
 }
 
 .pilePlaceholder {
@@ -48,7 +48,6 @@
 
   background-color: purple;
   color: white;
-  position: absolute;
 }
 
 .safe {
@@ -82,7 +81,6 @@
   color: black;
   background-color: white;
   padding-left: 5px;
-  position: absolute;
 }
 
 .winnerCard > h4 {

@@ -5,16 +5,19 @@ import firebase from 'src/firebase/client'
 import { convertToDBPlayers, setupBoard } from 'src/shared/helpers';
 
 import styles from './Game.module.css'
+import Fullscreen from 'src/shared/layout/Fullscreen';
 import Loader from 'src/shared/components/Loader'
-import Logo from 'src/shared/components/Logo';
 import Flexbox from 'src/shared/layout/Flexbox';
-import Grid from 'src/shared/layout/Grid';
-import Button from 'src/shared/components/Button';
+import OldGrid from 'src/shared/layout/Grid';
 import PlayerActions from './components/PlayerActions';
 import OpponentsTop from './components/Opponents/Top';
 import Board from './components/Board';
 import OpponentsLeft from './components/Opponents/Left';
 import OpponentsRight from './components/Opponents/Right';
+
+import { Grid } from '@material-ui/core';
+import Logo from 'src/shared/components/Logo';
+import Button from 'src/shared/components/Button';
 
 type GameProps = {
   lobby: LobbyInfo,
@@ -45,19 +48,36 @@ const Game = (props: GameProps) => {
   const [loading, setLoading] = useState(true)
   const [spectating, setSpectating] = useState(false)
 
+  const [width, setWidth] = useState(-1)
+  const [scale, setScale] = useState<string>('1')
+
   useEffect(() => {
     if (currentRound !== 0) {
       mapLobbyToUI()
+      setWidth(window.screen.width)
+      window.addEventListener('resize', calculateScale)
+      return (() => window.removeEventListener('resize', calculateScale))
     } else {
       setLoading(true)
     }
   }, [props])
 
+  const calculateScale = () => {
+    const height = window.screen.height
+    const width = window.screen.width
+
+    const baseHeight = 715
+    const baseWidth = 1100
+
+    setScale(`${(850 < width && width < baseWidth) ? (width / baseWidth) : 1 }, ${height < baseHeight ? (height / baseHeight) : 1}`)
+    setWidth(window.screen.width)
+  }
+
   const mapLobbyToUI = () => {
     const unorderedRemainingPlayers = currentPlayers.filter(p => p.gameState.remaining)
     const remainingPlayers = orderPlayers(unorderedRemainingPlayers);
 
-    const numSpoonsLeft = remainingPlayers.filter(p => !p.gameState.spoonCollected).length - 1
+    const numSpoonsLeft = remainingPlayers.filter(p => p.gameState && !p.gameState.spoonCollected).length - 1
 
     if (currentMyPlayer.gameState.remaining) {
       const opponents = findOpponents(currentMyPlayer, remainingPlayers)
@@ -316,39 +336,40 @@ const Game = (props: GameProps) => {
   if (loading) return <Loader message="Organsing your table..."/>
 
   return (
-    <> 
-      {/* --------------- NAVBAR   */}
-      <div className="navbar">
-        <Grid 
-          gridTemplateColumns="1fr 1fr 1fr"
-          gridTemplateRows=""
-        >
-          <Flexbox column center> 
-            { currentMyPlayer.isHost && 
-              <div className={styles.backButton}> 
-                <Button disabled={false} onClick={() => backToLobby()} primary> LOBBY </Button>  
-              </div>
-            }
-          </Flexbox>
-          <Logo text="Spoons"/>
-          <Flexbox column end>
-            <h1> YOU: {currentMyPlayer.nickname} </h1>
-          </Flexbox>
-        </Grid>
-      </div>
+    <Fullscreen>
+      <Grid 
+        container
+        direction="column"
+        justify="center"
+        alignItems="center"
+      >
+        {/* --------------- NAVBAR   */}
+        <div className={styles.navbar}>
+            <Flexbox column> 
+              <Flexbox> 
+                <Logo text="Spoons"/>
+              </Flexbox>
+              { currentMyPlayer.isHost && 
+                <div className={styles.backButton}> 
+                  <Button disabled={false} onClick={() => backToLobby()} primary> LOBBY </Button>  
+                </div>
+              }
+              <br/>
+            </Flexbox>
+        </div>
       
       {/* ---------------  GAME */}
-      <div className={styles.container}>
-        <Grid 
+      <div className={styles.container} style={{ transform: `scale(${scale})`, transformOrigin: 'top'}}>
+        <OldGrid 
           gridTemplateColumns=""
-          gridTemplateRows="0.5fr 3fr"
+          gridTemplateRows="1fr 1fr 1fr"
         >
           {/* ---------- OPPONENTS IN TOP ROW */}
           <OpponentsTop
             opponents={opponents}
             roundComplete={roundComplete}
           />
-          <Grid 
+          <OldGrid 
             gridTemplateColumns="1fr 3fr 1fr"
             gridTemplateRows=""
           >
@@ -358,47 +379,46 @@ const Game = (props: GameProps) => {
               roundComplete={roundComplete}
             />
             {/* --------------- PLAYER ACTIONS */}
-            <Flexbox column spaceEvenly>
-              <Board
-                peekTimerOn={peekTimerOn}
-                myPlayer={myPlayer}
-                spectating={spectating}
-                roundComplete={roundComplete}
-                seconds={seconds}
-                currentRound={currentRound}
-                currentMyPlayer={currentMyPlayer}
-                currentPlayers={currentPlayers}
-                peekCooldownOn={peekCooldownOn}
-                cancelPeek={cancelPeek}
-                collectSpoon={collectSpoon}
-                numSpoonsLeft={numSpoonsLeft}
-                fourOfAKind={fourOfAKind}
-                peek={peek}
-                backToLobby={backToLobby}
-                nextRound={nextRound}
-              />
-              <PlayerActions
-                myPlayer={myPlayer}
-                spectating={spectating}
-                roundComplete={roundComplete}
-                safeMessage={safeMessage}
-                spectateNext={spectateNext}
-                spectatePrevious={spectatePrevious}
-                discard={discard}
-                fourOfAKind={fourOfAKind}
-                drawFromPile={drawFromPile}
-              /> 
-            </Flexbox>
+            <Board
+              peekTimerOn={peekTimerOn}
+              myPlayer={myPlayer}
+              spectating={spectating}
+              roundComplete={roundComplete}
+              seconds={seconds}
+              currentRound={currentRound}
+              currentMyPlayer={currentMyPlayer}
+              currentPlayers={currentPlayers}
+              peekCooldownOn={peekCooldownOn}
+              cancelPeek={cancelPeek}
+              collectSpoon={collectSpoon}
+              numSpoonsLeft={numSpoonsLeft}
+              fourOfAKind={fourOfAKind}
+              peek={peek}
+              backToLobby={backToLobby}
+              nextRound={nextRound}
+            />
 
             {/* ---------- OPPONENTS ON THE RIGHT */}
             <OpponentsRight
               opponents={opponents}
               roundComplete={roundComplete}
             />
-          </Grid>
-        </Grid>
-      </div>
-    </>
+          </OldGrid>
+          <PlayerActions
+            myPlayer={myPlayer}
+            spectating={spectating}
+            roundComplete={roundComplete}
+            safeMessage={safeMessage}
+            spectateNext={spectateNext}
+            spectatePrevious={spectatePrevious}
+            discard={discard}
+            fourOfAKind={fourOfAKind}
+            drawFromPile={drawFromPile}
+          /> 
+        </OldGrid>
+        </div>
+      </Grid>
+    </Fullscreen>
   )
 }
 
