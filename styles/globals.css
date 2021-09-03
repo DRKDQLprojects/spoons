@@ -55,3 +55,22 @@ label {
 * {
   box-sizing: border-box;
 }
+
+@media (max-width: 600px) {
+
+  h1 {
+    font-size: 28px;
+  }
+
+  h2 {
+    font-size: 22px;
+  }
+
+  h3 {
+    font-size: 16px;
+  }
+
+  p, label {
+    font-size: 12px;
+  }
+}

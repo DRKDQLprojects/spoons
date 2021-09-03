@@ -7,11 +7,14 @@ import { setupBoard } from 'src/shared/helpers'
 import styles from './Setup.module.css'
 import Logo from 'src/shared/components/Logo'
 import Flexbox from 'src/shared/layout/Flexbox'
-import Grid from 'src/shared/layout/Grid'
+import OldGrid from 'src/shared/layout/Grid'
 import Button from 'src/shared/components/Button'
 import Radio from 'src/shared/components/Radio'
 import useInterval from 'react-useinterval'
 import Container from 'src/shared/layout/Container'
+
+import { Grid } from '@material-ui/core'
+import Fullscreen from 'src/shared/layout/Fullscreen'
 
 type SetupProps = {
   myPlayer: Player,
@@ -92,21 +95,30 @@ const Setup = (props: SetupProps) => {
 
     elems.push(
       <div className={styles.myPlayer}>
-        <Flexbox center>
-          <h2> {myPlayer.nickname} {myPlayer.isHost && '(HOST)'} </h2>
+        <Flexbox column center>
+          <Flexbox center> 
+            <h2> {myPlayer.nickname} {myPlayer.isHost && '(HOST)'} </h2>
+          </Flexbox>
         </Flexbox>
       </div>
     )
     players.filter(p => p.id !== myPlayer.id).forEach(player => {
       elems.push(
         <div key={`lobby-${player.id}`} className={styles.player}>
-            <Grid
+            <OldGrid
               gridTemplateColumns="1fr 1fr"
               gridTemplateRows=""
             >
               <Flexbox noWrap>
                 <Flexbox column center>
-                  <h3> {player.nickname} {player.isHost && '(HOST)'} </h3>
+                  <Flexbox>
+                    <h3> {player.nickname} </h3>
+                  </Flexbox>
+                  {player.isHost && 
+                    <Flexbox>
+                      (HOST)
+                    </Flexbox>
+                  }
                 </Flexbox>
               </Flexbox>
               {myPlayer.isHost &&
@@ -114,7 +126,7 @@ const Setup = (props: SetupProps) => {
                   Kick
                 </Button>
               }
-            </Grid>
+            </OldGrid>
         </div>
       )
     })
@@ -122,7 +134,7 @@ const Setup = (props: SetupProps) => {
     for (let i = 0; i < 10 - players.length; i++) {
       elems.push(
         <div key={`lobby-empty-player-${i}`} className={styles.emptyPlayer}>
-          <Grid 
+          <OldGrid 
               gridTemplateColumns="3fr 1fr"
               gridTemplateRows=""
             >
@@ -131,7 +143,7 @@ const Setup = (props: SetupProps) => {
                 Empty
               </Flexbox>
             </Flexbox>
-          </Grid>
+          </OldGrid>
         </div>
       )
     }
@@ -149,44 +161,37 @@ const Setup = (props: SetupProps) => {
     const height = window.screen.height
     const width = window.screen.width
 
-    const baseHeight = width > 850 ? 650 : 715
-    const baseWidth = 850
+    const baseHeight = 715
+    const baseWidth = 1100
 
-    if (width <= 850) {
-      if (height < baseHeight) {
-        setScale(`${width / baseWidth}, ${height / baseHeight}`.toString())
-      } else {
-        setScale((width / baseWidth).toString())
-      }
-    } else {
-      if (height < baseHeight) {
-        setScale((height / baseHeight).toString())
-      }
-    }
+    setScale(`${(850 < width && width < baseWidth) ? (width / baseWidth) : 1 }, ${height < baseHeight ? (height / baseHeight) : 1}`)
     setWidth(window.screen.width)
   }
   
   // ********** RENDER **********
   return (
-    <>
-    <div className={styles.navbar}>
-        <Logo text="Spoons"/>
-    </div>
-    <div className={styles.container} style={{ transform: `scale(${scale})`, transformOrigin: width > 850 ? 'top' : 'top left'}}>
-      <Grid 
-        gridTemplateColumns={width > 850 ? "2fr 3fr" : ''}
-        gridTemplateRows={width > 850 ? '' : '1fr 1fr'}
-      > 
-        <div className={width > 850 ? styles.gridItem : styles.mobileGridItem}>
+    <Fullscreen>
+      <Logo text="Spoons"/>
+      <Grid
+        container
+        direction={width > 850 ? 'row' : 'column'}
+        justifyContent="center"
+        alignItems="center"
+        style={{ transform: `scale(${scale})`, transformOrigin: 'top'}}
+      >
+        <div 
+          className={width > 850 ? styles.gridItem : styles.mobileGridItem}
+        >
           <Flexbox center>
             <h2> Lobby {`${players.length}/10`} </h2> 
           </Flexbox>
           <h3> PLAYERS </h3>
+          <br/>
           <div className={styles.scrollablePlayers}>
             {renderPlayers()}
           </div>
         </div>
-
+        <div style={{ width: '20px'}}/>
         <div className={styles.gridItem}>
           <Flexbox center>
             <h2> Settings & Modes </h2>
@@ -195,6 +200,7 @@ const Setup = (props: SetupProps) => {
             <div className={styles.scrollableSettings}>
               <Container>
                 <h3> DEALER </h3>
+                <br/>
                 <Flexbox>
                     <Radio 
                       id="dealer-random" 
@@ -224,6 +230,7 @@ const Setup = (props: SetupProps) => {
               
               <Container>
                 <h3> PLAYER POSITIONS </h3>
+                <br/>
                 <Flexbox>
                     <Radio 
                       id="shuffle-off" 
@@ -244,6 +251,7 @@ const Setup = (props: SetupProps) => {
               </Container>
               <Container>
                 <h3> PEEKING </h3>
+                <br/>
                 <h4> Timer </h4>
                 <Flexbox>
                   { [2,3,4,5].map(time => {
@@ -304,7 +312,7 @@ const Setup = (props: SetupProps) => {
                 {!myPlayer.isHost && 
                   <Flexbox column center>
                     <h2>
-                      Waiting for host to start game...
+                      Waiting for host...
                     </h2>
                   </Flexbox>
                 }
@@ -313,8 +321,7 @@ const Setup = (props: SetupProps) => {
           </Flexbox>
         </div>
       </Grid>
-    </div>
-    </>
+    </Fullscreen>
   )
 }
 

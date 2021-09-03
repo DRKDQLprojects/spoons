@@ -208,41 +208,26 @@ const Lobby: NextPage = () => {
 
   // ********** RENDER **********
   if (loading || pageLoading) {
-    return (
-      <Fullscreen center>
-        <Loader message="Getting lobby information..."/>
-      </Fullscreen>
-    )
+    return (<Loader message="Getting lobby information..."/>)
   } else if (pageLoading) {
-    return (
-      <Fullscreen center>
-         <Loader message="..."/>
-      </Fullscreen>
-    )
+    return (<Loader message="..."/>)
   } else if (renderCountdown) {
+    return ( <Countdown seconds={seconds}/>)
+  } else if (renderGame) {
     return (
-      <Fullscreen center>
-        <Countdown seconds={seconds}/>
-      </Fullscreen>
+      <Game 
+        lobby={lobby} 
+        myPlayer={myPlayer}
+      />
     )
-  }else {
+  } else {
     return (
-      <Fullscreen>
-        {renderGame && 
-          <Game 
-            lobby={lobby} 
-            myPlayer={myPlayer}
-          />
-        }
-        {!renderGame && 
-          <Setup 
-            lobby={lobby} 
-            myPlayer={myPlayer} 
-            removePlayer={removePlayer}
-            setSeconds={setSeconds}
-          />
-        }
-      </Fullscreen>
+      <Setup 
+        lobby={lobby} 
+        myPlayer={myPlayer} 
+        removePlayer={removePlayer}
+        setSeconds={setSeconds}
+      />
     )
   }
 }

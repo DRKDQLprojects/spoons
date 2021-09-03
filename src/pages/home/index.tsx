@@ -4,12 +4,12 @@ import { useRouter } from 'next/router'
 import firebase from 'src/firebase/client'
 import { emptyGameState } from 'src/types'
 
-import styles from './Home.module.css'
 import Loader from 'src/shared/components/Loader'
-import Fullscreen from 'src/shared/layout/Fullscreen'
 import Button from 'src/shared/components/Button'
 import TextField from 'src/shared/components/TextField'
 import Logo from 'src/shared/components/Logo'
+
+import { Grid } from '@material-ui/core'
 
 const Home: NextPage = () => {
 
@@ -76,8 +76,22 @@ const Home: NextPage = () => {
   // ***** RENDER *****
   if (loading) return (<Loader message="Creating lobby..."/>)
   return (
-    <Fullscreen center>
-      <div className={styles.container}>
+    <Grid
+      container
+      spacing={0}
+      direction="column"
+      justify="center"
+      alignItems="center"
+      style={{minHeight: '100vh'}}
+    >
+
+      <Grid
+        container
+        spacing={0}
+        direction="column"
+        justify="center"
+        alignItems="center"
+      >
         <Logo text="Spoons" fontSize="90px"/>
         <h3> Enter your Nickname </h3> 
         <br/>
@@ -86,7 +100,7 @@ const Home: NextPage = () => {
           value={nickname}
           onPaste={e => e.preventDefault()} 
           onChange={e => nicknameChanged(e.target.value.replace(/[^a-zA-Z\d]/ig, ""))}
-          maxLength={15}
+          maxLength={10}
           placeholder={'E.g. Derek1234'}
           error={error !== ''}
         />
@@ -99,8 +113,8 @@ const Home: NextPage = () => {
         }
         <br/>
         <Button onClick={createLobby} primary disabled={false}> Create Lobby </Button>
-      </div>
-    </Fullscreen>
+      </Grid>
+    </Grid>
   )
 }
 

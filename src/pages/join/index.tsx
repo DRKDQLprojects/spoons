@@ -7,13 +7,12 @@ import { useList } from 'react-firebase-hooks/database';
 import { convertToPlayers } from 'src/shared/helpers'
 import useInterval from 'react-useinterval'
 
-import styles from './Join.module.css'
-import Fullscreen from 'src/shared/layout/Fullscreen'
 import Loader from 'src/shared/components/Loader'
 import Logo from 'src/shared/components/Logo'
 import TextField from 'src/shared/components/TextField'
 import Button from 'src/shared/components/Button'
-import Container from 'src/shared/layout/Container'
+import { Grid } from '@material-ui/core'
+import Fullscreen from 'src/shared/layout/Fullscreen'
 
 const Join: NextPage = () => {
 
@@ -143,14 +142,18 @@ const Join: NextPage = () => {
   if (loading) return (<Loader message="Attempting to find lobby..."/>)
   if (joining) return (<Loader message="Joining lobby..."/> )
   return (
-    <Fullscreen center>
-      <div className={styles.container}>
+    <Fullscreen>
+      <Grid
+        container
+        spacing={0}
+        direction="column"
+        justify="center"
+        alignItems="center"
+      >
         <Logo text="Spoons" fontSize="90px"/>
-        <Container center> 
-          <h2> Joining {`${host}'s`} Lobby </h2>
-        </Container>
+        <h2> Joining {`${host}'s`} Lobby </h2>
         <br/>
-        <h3> Enter your nickname </h3> 
+        <h3> Enter your Nickname </h3> 
         <br/>
         <TextField 
           type="text" 
@@ -170,7 +173,7 @@ const Join: NextPage = () => {
         }
         <br/>
         <Button onClick={joinLobby} primary disabled={false}> Join Lobby </Button>
-      </div>
+      </Grid>
     </Fullscreen>
   )
 }

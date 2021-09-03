@@ -16,17 +16,17 @@
 }
 
 .radio input[type="radio"]:hover + label {
-  background: #B8E3ED;
+  background: #71C7DA;
   box-shadow: 0px 7px 0px rgba(0, 0, 0, 0.1);
 }
 
 .radio input[type="radio"]:focus + label {
-  background: #B8E3ED;
+  background: #71C7DA;
   box-shadow: 0px 7px 0px rgba(0, 0, 0, 0.1);
 }
 
 .radio input[type="radio"]:checked + label {
-  background: #71C7DA;
+  background: #1A9CD3;
 }
 
 
