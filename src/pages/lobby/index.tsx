@@ -11,7 +11,6 @@ import Setup from './components/Setup'
 import Countdown from './components/Countdown'
 import Game from './components/Game'
 import Loader from 'src/shared/components/Loader'
-import Fullscreen from 'src/shared/layout/Fullscreen'
 import { convertToPlayers } from 'src/shared/helpers'
 
 const Lobby: NextPage = () => {

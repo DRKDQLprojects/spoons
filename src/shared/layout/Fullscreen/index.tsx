@@ -1,4 +1,3 @@
-
 import { FunctionComponent } from 'react'
 import { Grid } from '@material-ui/core';
 
@@ -10,9 +9,13 @@ const Fullscreen : FunctionComponent<any> = (props) => {
       direction="column"
       justifyContent="center"
       alignItems="center"
-      style={{minHeight: '100vh'}}
-    >
-      {props.children}
+      style={{
+        minHeight: '100vh'
+      }}
+    > 
+      <div>
+        {props.children}
+      </div>
     </Grid>
   )
 }

@@ -11,6 +11,8 @@ import Logo from 'src/shared/components/Logo'
 
 import { Grid } from '@material-ui/core'
 import AvatarPicker from 'src/shared/components/Avatar/AvatarPicker'
+import Fullscreen from 'src/shared/layout/Fullscreen'
+import Flexbox from 'src/shared/layout/Flexbox'
 
 const Home: NextPage = () => {
 
@@ -65,15 +67,7 @@ const Home: NextPage = () => {
   // ***** RENDER *****
   if (loading) return (<Loader message="Creating lobby..."/>)
   return (
-    <Grid
-      container
-      spacing={0}
-      direction="column"
-      justifyContent="center"
-      alignItems="center"
-      style={{minHeight: '100vh'}}
-    >
-
+    <Fullscreen>
       <Grid
         container
         spacing={0}
@@ -92,15 +86,17 @@ const Home: NextPage = () => {
         <br/>
         <h3> Enter your Nickname </h3> 
         <br/>
-        <TextField
-          type="text"
-          value={nickname}
-          onPaste={e => e.preventDefault()} 
-          onChange={e => nicknameChanged(e.target.value.replace(/[^a-zA-Z\d]/ig, ""))}
-          maxLength={10}
-          placeholder={'E.g. Derek1234'}
-          error={error !== ''}
-        />
+        <Flexbox center>
+          <TextField
+            type="text"
+            value={nickname}
+            onPaste={e => e.preventDefault()} 
+            onChange={e => nicknameChanged(e.target.value.replace(/[^a-zA-Z\d]/ig, ""))}
+            maxLength={10}
+            placeholder={'E.g. Derek1234'}
+            error={error !== ''}
+          />
+        </Flexbox>
         {error && 
           <> 
             <br/>
@@ -111,7 +107,7 @@ const Home: NextPage = () => {
         <br/>
         <Button onClick={createLobby} primary disabled={false}> Create Lobby </Button>
       </Grid>
-    </Grid>
+    </Fullscreen>
   )
 }
 

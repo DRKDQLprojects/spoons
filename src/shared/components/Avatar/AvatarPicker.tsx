@@ -1,5 +1,4 @@
 import { FunctionComponent  } from "react";
-import Image from 'next/image';
 import styles from './Avatar.module.css';
 import Flexbox from "src/shared/layout/Flexbox";
 import Avatar from ".";

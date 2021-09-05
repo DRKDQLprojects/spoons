@@ -1,4 +1,4 @@
-import Document, { Html, Head, Main, NextScript } from 'next/document'
+import Document, { Html, Head, Main, NextScript } from 'next/document';
 
 class MyDocument extends Document {
   render() {
@@ -10,7 +10,11 @@ class MyDocument extends Document {
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet"/>
         <link href="https://fonts.googleapis.com/css?family=Luckiest+Guy&display=swap" rel="stylesheet" />
         </Head>
-        <body>
+        <body style={{ 
+          // backgroundImage: `url(${require('/public/assets/Background.png')})`,
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'cover',
+        }}>
           <Main />
           <NextScript />
         </body>

@@ -7,7 +7,6 @@ import { setupBoard } from 'src/shared/helpers'
 import styles from './Setup.module.css'
 import Logo from 'src/shared/components/Logo'
 import Flexbox from 'src/shared/layout/Flexbox'
-import OldGrid from 'src/shared/layout/Grid'
 import Button from 'src/shared/components/Button'
 import Radio from 'src/shared/components/Radio'
 import useInterval from 'react-useinterval'
@@ -184,7 +183,9 @@ const Setup = (props: SetupProps) => {
   // ********** RENDER **********
   return (
     <Fullscreen>
-      <Logo size={300}/>
+      <Flexbox center>
+        <Logo size={75}/>
+      </Flexbox>
       <Grid
         container
         direction={width > 850 ? 'row' : 'column'}

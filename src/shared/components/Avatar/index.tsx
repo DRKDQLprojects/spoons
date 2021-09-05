@@ -1,5 +1,5 @@
 import { FunctionComponent  } from "react";
-import Image from 'next/image';
+import Flexbox from "src/shared/layout/Flexbox";
 import styles from './Avatar.module.css';
 
 type AvatarProps = {
@@ -13,12 +13,14 @@ const Avatar: FunctionComponent<AvatarProps> = (props) => {
       className={styles.avatarBorder}
       style={{ height: `${(props.size && props.size + 5) || 110}px` , width: `${(props.size && props.size + 5) || 110}px`}}
     >
-      <Image
-        src={`/assets/avatars/${props.number < 0 ? 'empty' : props.number}.svg`}
-        alt='Avatar'
-        height={props.size || 100}
-        width={props.size || 100}
-      />
+      <Flexbox center>
+        <img
+          src={require(`/public/assets/avatars/${props.number < 0 ? 'empty' : props.number}.svg`)}
+          alt='Avatar'
+          height={props.size || 100}
+          width={props.size || 100}
+        />
+      </Flexbox>
     </div>
   )
 }

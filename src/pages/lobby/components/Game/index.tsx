@@ -15,8 +15,6 @@ import Board from './components/Board';
 import OpponentsLeft from './components/Opponents/Left';
 import OpponentsRight from './components/Opponents/Right';
 
-import { Grid } from '@material-ui/core';
-import Logo from 'src/shared/components/Logo';
 import Button from 'src/shared/components/Button';
 
 type GameProps = {

@@ -11,7 +11,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name="description" content="Online multiplayer version of the card game called Spoons" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Component {...pageProps} /> 
+      <Component {...pageProps}/> 
     </>
   )
 }
