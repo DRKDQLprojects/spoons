@@ -4,6 +4,7 @@ import { FunctionComponent, useEffect, useState } from 'react'
 import { Card, Player } from 'src/types'
 
 import Flexbox from 'src/shared/layout/Flexbox'
+import Avatar from 'src/shared/components/Avatar'
 
 type PlayerActionsProps = {
   myPlayer: Player,
@@ -91,20 +92,30 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
             <button className={styles.spectating} onClick={props.spectateNext}> {'<'}</button> 
           </span>
         }
-        <h3>
-          {spectating && `SPECTATING: ${myPlayer.nickname}`} 
-          {!spectating && `${myPlayer.nickname} (YOU)`}
-          {myPlayer.gameState.dealer ? ' (DEALER)' : ''}
-          {safeMessage && <span className={safeMessage === 'ELIMINATED' ? styles.eliminated : styles.safe}> {safeMessage} </span>}
-        </h3>
+        <Flexbox column center>
+          <Flexbox center>
+            <Avatar
+              number={myPlayer.avatar}
+              size={40}
+            />
+          </Flexbox>
+          <Flexbox center>
+            <h3 style={{ marginTop: '5px'}}>
+              {spectating && `SPECTATING: ${myPlayer.nickname}`} 
+              {!spectating && `${myPlayer.nickname} (YOU)`}
+              {myPlayer.gameState.dealer ? ' (DEALER)' : ''}
+              {safeMessage && <span className={safeMessage === 'ELIMINATED' ? styles.eliminated : styles.safe}> {safeMessage} </span>}
+            </h3>
+          </Flexbox>
+        </Flexbox>
         { spectating && 
           <span>
             <button className={styles.spectating} onClick={props.spectatePrevious}> {'>'} </button>
           </span>
         }
       </Flexbox>
-      <br/>
-      <Flexbox center>
+      <div style={{ height: '5px'}}> </div>
+      <Flexbox center noWrap>
         {myPlayer.gameState.hand.map((card, index) => {
           return (
             <Flexbox key={`card-${index}`}  column>

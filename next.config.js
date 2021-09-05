@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
   reactStrictMode: true,
-  basePath: '/spoons',
-  assetPrefix: '/spoons/'
+  // basePath: '/spoons', // COMMENT THIS OUT WHEN DEVELOPING LOCALLY
+  // assetPrefix: '/spoons/'
 }

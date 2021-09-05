@@ -13,11 +13,12 @@ import TextField from 'src/shared/components/TextField'
 import Button from 'src/shared/components/Button'
 import { Grid } from '@material-ui/core'
 import Fullscreen from 'src/shared/layout/Fullscreen'
+import AvatarPicker from 'src/shared/components/Avatar/AvatarPicker'
 
 const Join: NextPage = () => {
 
   const [nickname, setNickname] = useState('')
-  const [avatar, setAvatar] = useState('')
+  const [avatar, setAvatar] = useState(0)
 
   const router = useRouter()
   const [snapshots, loading, error] = useList(firebase.database().ref())
@@ -152,8 +153,17 @@ const Join: NextPage = () => {
         justifyContent="center"
         alignItems="center"
       >
-        <Logo text="Spoons" fontSize="90px"/>
+        <Logo/>
+        <br/>
         <h2> Joining {`${host}'s`} Lobby </h2>
+        <br/>
+        <h3> Choose your Avatar </h3> 
+        <br/>
+        <AvatarPicker
+          number={avatar}
+          onNext={() => setAvatar((avatar + 1) % 8)}
+          onPrevious={() => setAvatar(avatar === 0 ? 7 : avatar - 1)}
+        />
         <br/>
         <h3> Enter your Nickname </h3> 
         <br/>

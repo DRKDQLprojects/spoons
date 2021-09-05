@@ -22,9 +22,10 @@
   border: 3px solid white;
   border-radius: 10px;
   box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
 }
 
-.spoon:hover:not(:disabled) {
+.spoon:active:not(:disabled) {
   box-shadow: none;
 }
 
@@ -36,10 +37,12 @@
   margin-left: 15px;
 }
 
-.spoon:hover:not(:disabled) + .spoonCollectedLabel:first-of-type {
+.spoon:hover:not(:disabled) + .spoonCollectedLabel:first-of-type{
   display: inline;
+  cursor: pointer;
 }
 
 .collectIndicator{
   text-shadow: 0px 4px 4px #00000026;
+  margin-bottom: 10px;
 }

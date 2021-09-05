@@ -6,10 +6,9 @@ type CountdownProps = {
 }
 
 const Countdown = (props: CountdownProps) => {
-  const text = (props.seconds > 0 && props.seconds <= 5) ? `Starting in ${props.seconds}...` : 'Starting now'
   return ( 
     <Fullscreen>
-      <h1 className={styles.text}> {text} </h1>
+      <h1 className={styles.text}> {props.seconds} </h1>
     </Fullscreen>
   )
 }

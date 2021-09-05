@@ -15,6 +15,8 @@ import Container from 'src/shared/layout/Container'
 
 import { Grid } from '@material-ui/core'
 import Fullscreen from 'src/shared/layout/Fullscreen'
+import AvatarPicker from 'src/shared/components/Avatar/AvatarPicker'
+import Avatar from 'src/shared/components/Avatar'
 
 type SetupProps = {
   myPlayer: Player,
@@ -44,12 +46,14 @@ const Setup = (props: SetupProps) => {
       return
     } else {
       const newPlayers = setupBoard(players, settings, gameStatus.round)
-      const numSpoons = Object.keys(newPlayers).length - 1
+      const numRounds = Object.keys(newPlayers).length - 1
+      const numSpoons = numRounds
       let spoons = [];
       for (let i = 0; i < numSpoons; i++) { spoons.push(0)}
       firebase.database().ref(lobbyId).set({
         gameStatus: {
           ...gameStatus,
+          numRounds: numRounds,
           countdownStarted: true,
           spoons: spoons
         },
@@ -81,6 +85,14 @@ const Setup = (props: SetupProps) => {
     firebase.database().ref(`${lobbyId}/settings/peek/cooldown`).set(value)
   }
 
+  const updateAvatar = (value: number) => {
+    firebase.database().ref(`${lobbyId}/players/${myPlayer.id}`).set({ 
+      ...myPlayer, 
+      id: '', 
+      avatar: value
+    })
+  }
+
   // ***** TIMER FOR COPIED LABEL *****
   useInterval(() => {
     if (seconds > 0) {
@@ -99,38 +111,37 @@ const Setup = (props: SetupProps) => {
 
     elems.push(
       <div className={styles.myPlayer} key={`lobby-${myPlayer.id}`}>
-        <Flexbox column center>
-          <Flexbox center> 
-            <h3> {myPlayer.nickname} {myPlayer.isHost && '(HOST)'} </h3>
-          </Flexbox>
+        <Flexbox column center noWrap>
+            <Flexbox center>
+              <AvatarPicker
+                number={myPlayer.avatar}
+                size={50}
+                onPrevious={() => { updateAvatar(myPlayer.avatar === 0 ? 7 : myPlayer.avatar - 1)}}
+                onNext={() => updateAvatar((myPlayer.avatar + 1) % 8)}
+              />
+            </Flexbox>
+            <Flexbox center>
+              <h3> {myPlayer.nickname} {myPlayer.isHost && '(HOST)'} </h3>
+            </Flexbox>
         </Flexbox>
       </div>
     )
     players.filter(p => p.id !== myPlayer.id).forEach(player => {
       elems.push(
         <div key={`lobby-${player.id}`} className={styles.player}>
-            <OldGrid
-              gridTemplateColumns="1fr 1fr"
-              gridTemplateRows=""
-            >
-              <Flexbox noWrap>
-                <Flexbox column center>
-                  <Flexbox>
-                    <h3> {player.nickname} </h3>
-                  </Flexbox>
-                  {player.isHost && 
-                    <Flexbox>
-                      (HOST)
-                    </Flexbox>
-                  }
-                </Flexbox>
-              </Flexbox>
-              {myPlayer.isHost &&
-                <Button onClick={() => props.removePlayer(lobbyId, player.id)} danger disabled={false}>
-                  Kick
-                </Button>
-              }
-            </OldGrid>
+          <Flexbox column noWrap>
+            <Flexbox center>
+              <Avatar number={player.avatar} size={45}/>
+            </Flexbox>
+            <Flexbox center>
+              <h3> {player.nickname} {player.isHost && ' (HOST)'} </h3>
+            </Flexbox>
+            {myPlayer.isHost &&
+              <Button onClick={() => props.removePlayer(lobbyId, player.id)} danger disabled={false}>
+                Kick
+              </Button>
+            }
+          </Flexbox>
         </div>
       )
     })
@@ -138,16 +149,14 @@ const Setup = (props: SetupProps) => {
     for (let i = 0; i < 10 - players.length; i++) {
       elems.push(
         <div key={`lobby-empty-player-${i}`} className={styles.emptyPlayer}>
-          <OldGrid 
-              gridTemplateColumns="3fr 1fr"
-              gridTemplateRows=""
-            >
-            <Flexbox column center>
-              <Flexbox>
-                Empty
-              </Flexbox>
+          <Flexbox column center noWrap>
+            <Flexbox center>
+              <Avatar size={45} number={-1}/>
             </Flexbox>
-          </OldGrid>
+            <Flexbox center>
+              <p> Empty </p>
+            </Flexbox>
+          </Flexbox>
         </div>
       )
     }
@@ -175,7 +184,7 @@ const Setup = (props: SetupProps) => {
   // ********** RENDER **********
   return (
     <Fullscreen>
-      <Logo text="Spoons"/>
+      <Logo size={300}/>
       <Grid
         container
         direction={width > 850 ? 'row' : 'column'}
@@ -189,7 +198,6 @@ const Setup = (props: SetupProps) => {
           <Flexbox center>
             <h2> Lobby {`${players.length}/10`} </h2> 
           </Flexbox>
-          <h3> PLAYERS </h3>
           <br/>
           <div className={styles.scrollablePlayers}>
             {renderPlayers()}
@@ -295,7 +303,7 @@ const Setup = (props: SetupProps) => {
             <Flexbox noWrap>
               <CopyToClipboard 
                   text={`${process.env.NEXT_PUBLIC_BASE_URL}/join?code=${lobbyId}`}
-                  onCopy={() => {}}
+                  onCopy={() => { }}
                 >
                 <div style={{ padding: '20px'}}>
                   <Button primary disabled={false} onClick={() => { setSeconds(2); setCopiedTimerOn(true); }}> 

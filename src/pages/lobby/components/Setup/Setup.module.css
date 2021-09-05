@@ -36,9 +36,7 @@
 .myPlayer {
   background: rgba(131,86,204,1);
   border: 3px solid #FFFFFF;
-  box-sizing: border-box;
-  width: 100%;
-  padding: 20px 30px 20px 30px;
+  padding: 10px;
   margin-bottom: 10px;
 }
 
@@ -46,21 +44,16 @@
 .player {
   background: rgba(255, 255, 255, 0.1);
   border: 3px solid #FFFFFF;
-  box-sizing: border-box;
   border-radius: 30px;
-  width: 100%;
-  padding: 10px 20px 10px 20px;
+  padding: 10px;
   margin-bottom: 10px;
-  height: 85px;
 }
 
 .emptyPlayer {
   background: rgba(0, 0, 0, 0.2);
   border: 3px solid #FFFFFF;
-  box-sizing: border-box;
   border-radius: 30px;
-  width: 100%;
-  padding: 30px;
+  padding: 10px;
   margin-bottom: 10px;
 }
 
@@ -93,7 +86,6 @@
   }
 
   .scrollablePlayers {
-    height: 120px;
     display: flex;
     flex-direction: row;
     overflow-x: scroll;
@@ -102,7 +94,6 @@
   }
 
   .player, .emptyPlayer, .myPlayer {
-    height: 90px;
     display: inline-block;
     margin-right: 10px;
   }

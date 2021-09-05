@@ -1,27 +1,13 @@
 export type LobbyInfo = {
   id: string,
-  gameStatus : {
-    round: number,
-    countdownStarted: boolean,
-    spoons: number[]
-  }, 
+  gameStatus : GameStatus, 
   players: Player[],
-  settings: {
-    dealer: {
-      default: boolean,
-      on: boolean,
-    },
-    peek : {
-      cooldown: number,
-      timer: number
-    },
-    shuffle: boolean
-  }
+  settings: Settings
 }
 
 export type Player = {
   id: string,
-  avatar: string,
+  avatar: number,
   isHost: boolean,
   nickname: string,
   gameState: PlayerGameState
@@ -64,6 +50,25 @@ export type PlayerGameState = {
   roundWinner: boolean
 }
 
+export type GameStatus = {
+  round: number,
+  numRounds: number,
+  countdownStarted: boolean,
+  spoons: number[]
+}
+
+export type Settings = {
+  dealer: {
+    default: boolean,
+    on: boolean,
+  },
+  peek : {
+    cooldown: number,
+    timer: number
+  },
+  shuffle: boolean
+}
+
 // Empty Types
 
 export const emptyGameState : PlayerGameState = {
@@ -80,31 +85,36 @@ export const emptyGameState : PlayerGameState = {
 
 export const emptyPlayer : Player = {
   id: '',
-  avatar: '',
+  avatar: 0,
   isHost: false,
   nickname: '',
   gameState: emptyGameState
 }
 
+export const emptyGameStatus : GameStatus = {
+  round: 0,
+  numRounds: 0,
+  countdownStarted: false,
+  spoons: []
+}
+
+export const emptySettings : Settings = {
+  dealer: {
+    on: true,
+    default: true,
+  },
+  peek : {
+    cooldown: 2,
+    timer: 4
+  },
+  shuffle: false
+}
+
 export const emptyLobbyInfo : LobbyInfo = {
   id: '',
-  gameStatus : {
-    round: 0,
-    countdownStarted: false,
-    spoons: []
-  }, 
+  gameStatus : emptyGameStatus, 
   players: [],
-  settings: {
-    dealer: {
-      on: true,
-      default: true,
-    },
-    peek : {
-      cooldown: 4,
-      timer: 4
-    },
-    shuffle: false
-  }
+  settings: emptySettings
 }
 
 

@@ -4,6 +4,7 @@ import { Player } from "src/types"
 import styles from './Left.module.css'
 
 import Flexbox from "src/shared/layout/Flexbox"
+import Avatar from "src/shared/components/Avatar"
 
 type OpponentsLeftType = {
   opponents: Player[],
@@ -52,6 +53,7 @@ const OpponentsLeft: FunctionComponent<OpponentsLeftType>  = (props) => {
       } else {
         elems.push(
           <div 
+            key={`opponent-pile-card-${i}`}
             className={styles.pileCard} 
             style={{marginLeft: `${i}px`}}
           />
@@ -115,7 +117,11 @@ const OpponentsLeft: FunctionComponent<OpponentsLeftType>  = (props) => {
     <Flexbox column noWrap> 
         {renderOpponents().map(p => {
           return (
-            <div key={`opponent-${p.id}`} style={{marginLeft: '20px', marginBottom: '10px', height: '200px'}}> 
+            <div key={`opponent-${p.id}`} style={{marginTop: '10px', marginLeft: '20px', marginBottom: '10px', height: '200px'}}> 
+            <Avatar
+              number={p.avatar}
+              size={25}
+            />
             <Flexbox>
               <h4 className={styles.name}> 
                 {p.nickname} 

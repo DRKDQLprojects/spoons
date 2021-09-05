@@ -4,6 +4,7 @@ import { Player } from "src/types"
 import styles from './Right.module.css'
 
 import Flexbox from "src/shared/layout/Flexbox"
+import Avatar from "src/shared/components/Avatar"
 
 type OpponentsRightType = {
   opponents: Player[],
@@ -117,8 +118,14 @@ const OpponentsRight: FunctionComponent<OpponentsRightType>  = (props) => {
         {renderOpponents().map(p => {
           return (
             <div key={`opponent-${p.id}`} style={{ marginRight: '20px', marginBottom: '10px', height: '200px'}}>
-            <Flexbox  column>
+            <Flexbox column>
                 <Flexbox column>
+                  <Flexbox end>
+                    <Avatar
+                      number={p.avatar}
+                      size={25}
+                    />
+                  </Flexbox>
                   <Flexbox end>
                     <h4> {p.nickname} {p.gameState.dealer ? '(DEALER)' : ''}</h4>
                     {roundComplete && 

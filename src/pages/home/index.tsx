@@ -2,7 +2,7 @@ import type { NextPage } from 'next'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import firebase from 'src/firebase/client'
-import { emptyGameState } from 'src/types'
+import { emptyGameState, emptyGameStatus, emptySettings } from 'src/types'
 
 import Loader from 'src/shared/components/Loader'
 import Button from 'src/shared/components/Button'
@@ -10,11 +10,12 @@ import TextField from 'src/shared/components/TextField'
 import Logo from 'src/shared/components/Logo'
 
 import { Grid } from '@material-ui/core'
+import AvatarPicker from 'src/shared/components/Avatar/AvatarPicker'
 
 const Home: NextPage = () => {
 
   const [nickname, setNickname] = useState('')
-  const [avatar, setAvatar] = useState('')
+  const [avatar, setAvatar] = useState(0)
 
   const [error, setError] = useState('')
 
@@ -39,20 +40,8 @@ const Home: NextPage = () => {
     }
 
     const lobbyId = firebase.database().ref().push({
-      gameStatus: {
-        round: 0,
-        countdownStarted: false
-      },
-      settings: {
-        dealer: {
-          on: true,
-          default: true
-        },
-        peek: {
-          timer: 4,
-          cooldown: 4
-        }
-      }
+      gameStatus: emptyGameStatus,
+      settings: emptySettings
     }).key as string
     const playerId = firebase.database().ref(`${lobbyId}/players`).push().key as string
     firebase.database().ref(`${lobbyId}/players/${playerId}`).set({
@@ -92,7 +81,15 @@ const Home: NextPage = () => {
         justifyContent="center"
         alignItems="center"
       >
-        <Logo text="Spoons" fontSize="90px"/>
+        <Logo/>
+        <h3> Choose your Avatar </h3> 
+        <br/>
+        <AvatarPicker
+         number={avatar}
+         onPrevious={() => { setAvatar(avatar === 0 ? 7 : avatar - 1)}}
+         onNext={() => { setAvatar((avatar + 1) % 8)}}
+        />
+        <br/>
         <h3> Enter your Nickname </h3> 
         <br/>
         <TextField

@@ -1,6 +1,9 @@
 html,
 body {
-  background: linear-gradient(180deg, rgba(131,86,204,1) 0%, rgba(113,199,218,1) 100%);
+  /* background: linear-gradient(180deg, rgba(131,86,204,1) 0%, rgba(113,199,218,1) 100%); */
+  background-image: url('/assets/Background.png');
+  background-repeat: no-repeat;
+  background-size: cover;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
   font-family: 'Montserrat', sans-serif;
@@ -34,6 +37,7 @@ h4 {
 
 p {
   font-size: 16px;
+  margin: 0px 0px 0px 0px;
 }
 
 input, button {

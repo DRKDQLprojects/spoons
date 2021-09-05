@@ -4,6 +4,7 @@ import { Player } from "src/types"
 import styles from './Top.module.css'
 
 import Flexbox from "src/shared/layout/Flexbox"
+import Avatar from "src/shared/components/Avatar"
 
 type OpponentsTopType = {
   opponents: Player[],
@@ -125,17 +126,27 @@ const OpponentsTop: FunctionComponent<OpponentsTopType>  = (props) => {
             <Flexbox key={`opponent-${p.id}`} column>
                 <div className={styles.container}>
                   <Flexbox center>
-                    <h4> 
-                      {p.nickname} 
-                      {p.gameState.dealer ? ' (DEALER)' : ''}
-                      {roundComplete && 
-                        <span className={p.gameState.spoonCollected ? styles.safe : styles.eliminated}> 
-                          {p.gameState.spoonCollected && p.gameState.roundWinner && 'WINNER' }
-                          {p.gameState.spoonCollected && !p.gameState.roundWinner && 'SAFE' }
-                          {!p.gameState.spoonCollected && 'ELIMINATED' }
-                        </span>
-                      }
-                    </h4>
+                    <Flexbox column noWrap>
+                      <Flexbox center>
+                        <Avatar
+                          number={p.avatar}
+                          size={25}
+                        />
+                      </Flexbox>
+                      <Flexbox center>
+                        <h4> 
+                          {p.nickname} 
+                          {p.gameState.dealer ? ' (DEALER)' : ''}
+                          {roundComplete && 
+                            <span className={p.gameState.spoonCollected ? styles.safe : styles.eliminated}> 
+                              {p.gameState.spoonCollected && p.gameState.roundWinner && 'WINNER' }
+                              {p.gameState.spoonCollected && !p.gameState.roundWinner && 'SAFE' }
+                              {!p.gameState.spoonCollected && 'ELIMINATED' }
+                            </span>
+                          }
+                        </h4>
+                      </Flexbox>
+                    </Flexbox>
                   </Flexbox>
                   <div style={{ height: '5px'}}/>
                   <Flexbox>

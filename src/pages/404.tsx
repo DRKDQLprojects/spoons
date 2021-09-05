@@ -15,7 +15,7 @@ export default function Custom404() {
         alignItems="center"
         style={{ textAlign: 'center'}}
       >
-        <Logo text="404"/>
+        <Logo error/>
         <br/>
         <h2 >You look lost! No worries, we are here to help!</h2>
         <br/>

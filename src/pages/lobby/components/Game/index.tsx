@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { LobbyInfo, Player, Card, emptyGameState, emptyPlayer } from 'src/types';
+import { LobbyInfo, Player, Card, emptyGameState, emptyPlayer, emptyGameStatus } from 'src/types';
 import useInterval from 'react-useinterval';
 import firebase from 'src/firebase/client'
 import { convertToDBPlayers, convertToPlayers, setupBoard } from 'src/shared/helpers';
@@ -266,6 +266,7 @@ const Game = (props: GameProps) => {
   const nextRound = () => {
     const newPlayers = setupBoard(currentPlayers, currentSettings, currentRound)
     const numSpoons = convertToPlayers(newPlayers).filter(p => p.gameState.remaining).length - 1
+
     let spoons = []
     for (let i = 0; i < numSpoons; i++) { spoons.push(0) }
     firebase.database().ref(currentLobby.id).set({
@@ -291,10 +292,7 @@ const Game = (props: GameProps) => {
     firebase.database().ref(currentLobby.id).set({
       ...currentLobby,
       id: null,
-      gameStatus: {
-        round: 0,
-        countdownStarted: false
-      },
+      gameStatus: emptyGameStatus,
       players: dbPlayers
     })
   }
@@ -352,9 +350,7 @@ const Game = (props: GameProps) => {
     setMyPlayer(previousPlayer)
     setOpponents(previousOpponents)
   }
-
-  console.log(currentLobby.gameStatus.spoons)
-
+  
   if (loading) return <Loader message="Organsing your table..."/>
 
   return (
@@ -400,6 +396,7 @@ const Game = (props: GameProps) => {
                 roundComplete={roundComplete}
                 seconds={seconds}
                 currentRound={currentRound}
+                numRounds={currentGameStatus.numRounds}
                 currentMyPlayer={currentMyPlayer}
                 currentPlayers={currentPlayers}
                 peekCooldownOn={peekCooldownOn}
@@ -413,17 +410,6 @@ const Game = (props: GameProps) => {
                 width={width}
               />
               <br/>
-              <PlayerActions
-                myPlayer={myPlayer}
-                spectating={spectating}
-                roundComplete={roundComplete}
-                safeMessage={safeMessage}
-                spectateNext={spectateNext}
-                spectatePrevious={spectatePrevious}
-                discard={discard}
-                fourOfAKind={fourOfAKind}
-                drawFromPile={drawFromPile}
-              /> 
             </Flexbox>
             {/* ---------- OPPONENTS ON THE RIGHT */}
             <OpponentsRight
@@ -432,6 +418,17 @@ const Game = (props: GameProps) => {
               width={width}
             />
           </OldGrid>
+          <PlayerActions
+            myPlayer={myPlayer}
+            spectating={spectating}
+            roundComplete={roundComplete}
+            safeMessage={safeMessage}
+            spectateNext={spectateNext}
+            spectatePrevious={spectatePrevious}
+            discard={discard}
+            fourOfAKind={fourOfAKind}
+            drawFromPile={drawFromPile}
+          /> 
         </Flexbox>
         </div>
     </Fullscreen>
