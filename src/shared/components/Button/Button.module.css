@@ -1,0 +1,82 @@
+/*  TEXT */
+.text {
+  text-transform: uppercase;
+  text-shadow: 0px 4px 4px #00000026;
+  font-weight: 900;
+  margin: 0
+}
+
+/* VARIANTS */
+
+/* --- PRIMARY */
+.button {
+  background: #1A9CD3;
+  border: 8px solid #FFFFFF;
+  border-radius: 4px;
+  padding: 10px 40px 10px 40px;
+}
+
+.button:hover:not(:disabled) {
+  background: #71C7DA;
+  cursor: pointer;
+  box-shadow: 0px 7px 0px rgba(0, 0, 0, 0.1);
+}
+
+.button:active:not(:disabled) {
+  background: #71C7DA;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.button:disabled {
+  background: #71C7DA;
+}
+
+/* --- DANGER */
+.danger {
+  background: #CD554F;
+  border: 8px solid #FFFFFF;
+  border-radius: 4px;
+  padding: 10px 40px 10px 40px;
+}
+
+.danger:hover:not(:disabled) {
+  background: rgba(205, 85, 79, 0.5);
+  cursor: pointer;
+  box-shadow: 0px 7px 0px rgba(0, 0, 0, 0.1);
+}
+
+.danger:active:not(:disabled) {
+  background: rgba(205, 85, 79, 0.5);
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.danger:disabled {
+  background: rgba(205, 85, 79, 0.5);
+  box-shadow: -7px 7px 0px rgba(0, 0, 0, 0.1);
+}
+
+/* --- SUCCESS */
+.success {
+  background: #3DAC3B;
+  border: 8px solid #FFFFFF;
+  border-radius: 4px;
+  padding: 10px 40px 10px 40px;
+}
+
+.success:hover:not(:disabled) {
+  background: #A4F0A2;
+  cursor: pointer;
+  box-shadow: 0px 7px 0px rgba(0, 0, 0, 0.1);
+}
+
+.success:active:not(:disabled) {
+  background: #A4F0A2;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.success:disabled {
+  background: #A4F0A2;
+}
