@@ -84,7 +84,7 @@ const Home: NextPage = () => {
       >
         <Logo/>
         <br/>
-        <h2> Avatar </h2> 
+        <h2> Choose your Avatar </h2> 
         <br/>
         <AvatarPicker
          number={avatar}
@@ -92,7 +92,7 @@ const Home: NextPage = () => {
          onNext={() => { setAvatar((avatar + 1) % 8)}}
         />
         <br/>
-        <h2> Nickname </h2> 
+        <h2> Enter your Nickname </h2> 
         <br/>
         <Flexbox center>
           <TextField

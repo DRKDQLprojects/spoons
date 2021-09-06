@@ -1,12 +1,13 @@
 
-import styles from './PlayerActions.module.css'
-import { FunctionComponent, useEffect, useState } from 'react'
+import styles from './MyPlayer.module.css'
+import { FunctionComponent, useState } from 'react'
 import { Card, Player } from 'src/types'
+import { getSuit } from 'src/shared/helpers'
 
 import Flexbox from 'src/shared/layout/Flexbox'
 import Avatar from 'src/shared/components/Avatar'
 
-type PlayerActionsProps = {
+type MyPlayerProps = {
   myPlayer: Player,
   spectating: boolean,
   roundComplete: boolean,
@@ -16,10 +17,11 @@ type PlayerActionsProps = {
   spectatePrevious: () => void,
   discard: (card: Card) => void,
   fourOfAKind: () => boolean,
-  drawFromPile: () => void
+  drawFromPile: () => void,
+  width: number
 }
 
-const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
+const MyPlayer : FunctionComponent<MyPlayerProps> = (props) => {
 
   const myPlayer = props.myPlayer
   const spectating = props.spectating
@@ -30,26 +32,7 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
   const cardDrawn = myPlayer.gameState.cardDrawn
   const pileLength = myPlayer.gameState.pile.length
 
-  const [width, setWidth] = useState(-1)
   const [topPileCardHovered, setTopPileCardHovered] = useState(false)
-
-  useEffect(() => {
-    setWidth(window.screen.width)
-    window.addEventListener('resize', calculateNewWidth)
-    return (() => window.removeEventListener('resize', calculateNewWidth))
-  }, [])
-
-  const calculateNewWidth = () => {
-    setWidth(window.screen.width)
-  }
-
-  const getSuit = (suit: string) => {
-    if (suit === 'club') return '♣'
-    if (suit === 'diamond') return '♦'
-    if (suit === 'heart') return '♥'
-    if (suit === 'spade') return '♠'
-    return ''
-  }
 
   const pile = (pileLength: number) => {
     const elems = []
@@ -89,6 +72,7 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
     return elems
   }
 
+  const width = props.width
   const cardWidth = width > 850 ? 70 : 50
   const maxPileLength = 52 - 4*(numOfRemainingPlayers) 
 
@@ -110,7 +94,7 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
             <h3 style={{ marginLeft: '5px', marginTop: '5px'}}>
               {spectating && `SPECTATING: ${myPlayer.nickname}`} 
               {!spectating && `${myPlayer.nickname}`}
-              {myPlayer.gameState.dealer ? ' (D)' : ''}
+              {myPlayer.gameState.dealer ? '🤵‍♂️' : ''}
               {(safeMessage && width > 850) && <span className={safeMessage === 'ELIMINATED' ? styles.eliminated : styles.safe}> {safeMessage} </span>}
             </h3>
           </div>
@@ -171,4 +155,4 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
   )
 }
 
-export default PlayerActions;
+export default MyPlayer;

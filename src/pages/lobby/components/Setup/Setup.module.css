@@ -113,7 +113,7 @@
   }
 
   .player, .emptyPlayer, .myPlayer {
-    display: inline-block;
+    display: inline-flex;
     margin-right: 10px;
   }
 }

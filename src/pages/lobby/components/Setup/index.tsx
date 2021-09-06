@@ -139,12 +139,14 @@ const Setup = (props: SetupProps) => {
               <h3 style={{ margin: '5px'}}> {player.nickname} </h3>
               <h2> {player.isHost && '🤴'} </h2>
             </Flexbox>
-            {myPlayer.isHost &&
+          </Flexbox>
+          {myPlayer.isHost &&
+            <Flexbox center>
               <Button onClick={() => props.removePlayer(lobbyId, player.id)} danger disabled={false}>
                 Kick
               </Button>
-            }
-          </Flexbox>
+            </Flexbox>
+          }
         </div>
       )
     })

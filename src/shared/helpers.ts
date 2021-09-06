@@ -213,3 +213,78 @@ const draw = (amount: number, deck: Card[]) : { cards: Card[], remainingDeck: Ca
     remainingDeck: remainingDeck
   }
 }
+
+export const getSuit = (suit: string) => {
+  if (suit === 'club') return '♣'
+  if (suit === 'diamond') return '♦'
+  if (suit === 'heart') return '♥'
+  if (suit === 'spade') return '♠'
+  return ''
+}
+
+export const getMaxPileLength = (numPlayers: number) => {
+  return 52 - 4*(numPlayers)
+}
+
+export const playersToRender = (opponents: Player[], section: 'top' | 'left' | 'bottom' |'right') => {
+
+  const numOpponents = opponents.length
+
+  if (section === 'top') {
+    switch (numOpponents) {
+      case 3:
+        return [opponents[1]]
+      case 4: 
+        return [opponents[1], opponents[2]]
+      case 5:
+        return [opponents[1], opponents[2], opponents[3]]
+      case 6:
+        return [opponents[1], opponents[2], opponents[3], opponents[4]]
+      case 7:
+        return [opponents[1], opponents[2], opponents[3], opponents[4], opponents[5]]
+      case 8:
+      case 9:
+        return [opponents[2], opponents[3], opponents[4], opponents[5], opponents[6]];
+      default:
+        return opponents
+    }
+  }
+
+  if (section === 'left') {
+    switch (numOpponents) {
+      case 3:
+      case 4: 
+      case 5:
+      case 6:
+      case 7:
+        return [opponents[0]];
+      case 8:
+      case 9:
+        return [opponents[1]];
+      default:
+        return []
+    }
+  }
+
+  if (section === 'right') {
+    const numOpponents = opponents.length
+    switch (numOpponents) {
+      case 3:
+        return [opponents[2]]
+      case 4: 
+        return [opponents[3]]
+      case 5:
+        return [opponents[4]];
+      case 6:
+        return [opponents[5]];
+      case 7:
+        return [opponents[6]];
+      case 8:
+      case 9:
+        return [opponents[7]]
+      default:
+        return []
+    }
+  }
+  return []
+}

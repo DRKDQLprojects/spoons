@@ -2,14 +2,10 @@
   display: flex;
 }
 
-.name {
-  margin-left: 5px;
-  margin-top: 5px;
-}
-
 .pile {
   height: 50px;
-  margin: 5px 0px 0px 0px;
+  margin-top: 5px;
+  margin-right: 5px;
 }
 
 .pileCard {
@@ -27,7 +23,7 @@
   color: white;
   position: absolute;
 
-  box-shadow: -2px 2px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: -4px 2px 0px rgba(0, 0, 0, 0.1);
 }
 
 .pilePlaceholder {
@@ -35,11 +31,6 @@
   width: 70px;
   border: 5px black dotted;
   border-radius: 10px;
-  
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
 }
 
 .card {
@@ -76,7 +67,7 @@
 .winnerCard {
   height: 50px;
   width: 70px;
-  border: 3px solid white;
+  border: 3px solid green;
   border-radius: 10px;
 
   display: flex;
@@ -96,13 +87,13 @@
 }
 
 @media (max-width: 850px) {
-  .card, .cardPlaceholder, .pilePlaceholder, .pileCard, .topPileCard {
-    height: 40px;
+  .card, .cardPlaceholder, .pilePlaceholder, .pileCard, .topPileCard, .winnerCard {
+    height: 35px;
     width: 50px;
   }
 
   .pile {
-    height: 40px;
+    height: 35px;
   }
 
   .safeMobile {

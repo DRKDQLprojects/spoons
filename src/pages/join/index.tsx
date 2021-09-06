@@ -157,7 +157,7 @@ const Join: NextPage = () => {
         <br/>
         <h1> Joining {`${host}'s`} Lobby </h1>
         <br/>
-        <h2> Avatar </h2> 
+        <h2> Choose your Avatar </h2> 
         <br/>
         <AvatarPicker
           number={avatar}
@@ -165,7 +165,7 @@ const Join: NextPage = () => {
           onPrevious={() => setAvatar(avatar === 0 ? 7 : avatar - 1)}
         />
         <br/>
-        <h2> Nickname </h2> 
+        <h2> Enter your Nickname </h2> 
         <br/>
         <TextField 
           type="text" 

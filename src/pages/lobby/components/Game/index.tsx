@@ -1,21 +1,24 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { LobbyInfo, Player, Card, emptyGameState, emptyPlayer, emptyGameStatus } from 'src/types';
 import useInterval from 'react-useinterval';
 import firebase from 'src/firebase/client'
-import { convertToDBPlayers, convertToPlayers, setupBoard } from 'src/shared/helpers';
+import { convertToDBPlayers, convertToPlayers, getMaxPileLength, playersToRender, setupBoard } from 'src/shared/helpers';
 
 import styles from './Game.module.css'
 import Fullscreen from 'src/shared/layout/Fullscreen';
 import Loader from 'src/shared/components/Loader'
 import Flexbox from 'src/shared/layout/Flexbox';
 import OldGrid from 'src/shared/layout/Grid';
-import PlayerActions from './components/PlayerActions';
-import OpponentsTop from './components/Opponents/Top';
+
 import Board from './components/Board';
-import OpponentsLeft from './components/Opponents/Left';
-import OpponentsRight from './components/Opponents/Right';
+import PlayerTop from './components/Player/Top';
+import PlayerLeft from './components/Player/Left';
+import PlayerRight from './components/Player/Right';
+
+import MyPlayer from './components/MyPlayer';
 
 import Button from 'src/shared/components/Button';
+import PlayerBottom from './components/Player/Bottom';
 
 type GameProps = {
   lobby: LobbyInfo,
@@ -194,9 +197,6 @@ const Game = (props: GameProps) => {
     const gameStateRef = firebase.database().ref(`${currentLobby.id}/players/${myPlayer.id}/gameState`)
     const clicksToCollect = currentSettings.clicksToCollect
 
-
-    console.log('collect')
-
     // Default
     if (clicksToCollect === 1) {
       const spoonStatusesPosRef = firebase.database().ref(`${currentLobby.id}/gameStatus/spoonStatuses/${pos}`)
@@ -373,6 +373,7 @@ const Game = (props: GameProps) => {
     setMyPlayer(previousPlayer)
     setOpponents(previousOpponents)
   }
+
   
   if (loading) return <Loader message="Organsing your table..."/>
 
@@ -386,31 +387,44 @@ const Game = (props: GameProps) => {
         </div>
         <br/>
         </>
-
       }
         
       {/* ---------------  GAME */}
       <div className={styles.container} style={{ transform: `scale(${scale})`, transformOrigin: 'top'}}>
         <Flexbox column spaceEvenly>
-          {/* ---------- OPPONENTS IN TOP ROW */}
-          <OpponentsTop
-            opponents={opponents}
-            roundComplete={roundComplete}
-            width={width}
-          />
+          {/* ---------- TOP PLAYERS*/}
+
+          <Flexbox spaceEvenly noWrap> 
+            {playersToRender(opponents, 'top').map((player, i) => {
+              return (
+                <>
+                  {(i > 0 && opponents.length !== 1) &&  <div style={{ marginLeft: '10px'}}/>}
+                  <PlayerTop
+                    key={`player-${player.id}`}
+                    player={player}
+                    roundComplete={roundComplete}
+                    width={width}
+                    maxPileLength={getMaxPileLength(opponents.length + 1)}
+                  />
+                </>
+              )
+            })}
+          </Flexbox>
+
           <OldGrid 
-            gridTemplateColumns={opponents.length > 2 ? "1fr 3fr 1fr" : "3fr"}
+            gridTemplateColumns={opponents.length > 2 ? "1fr 4fr 1fr" : "4fr"}
             gridTemplateRows=""
           >
-            {/* -------- OPPONENTS ON THE LEFT */}
+            {/* -------- LEFT PLAYERS*/}
             { opponents.length > 2 &&
-              <OpponentsLeft
-                opponents={opponents}
+              <PlayerLeft
+                player={playersToRender(opponents, 'left')[0]}
                 roundComplete={roundComplete}
                 width={width}
+                maxPileLength={getMaxPileLength(opponents.length + 1)}
               />
             }
-            {/* --------------- PLAYER ACTIONS */}
+            {/* --------------- BOARD */}
             <Board
               peekTimerOn={peekTimerOn}
               myPlayer={myPlayer}
@@ -431,28 +445,49 @@ const Game = (props: GameProps) => {
               backToLobby={backToLobby}
               nextRound={nextRound}
               width={width}
+              opponents={opponents}
             />
-            {/* ---------- OPPONENTS ON THE RIGHT */}
+            {/* ---------- RIGHT PLAYERS*/}
             { opponents.length > 2 &&
-              <OpponentsRight
-                opponents={opponents}
+              <PlayerRight
+                player={playersToRender(opponents, 'right')[0]}
                 roundComplete={roundComplete}
                 width={width}
+                maxPileLength={getMaxPileLength(opponents.length + 1)}
               />
             }
           </OldGrid>
-          <PlayerActions
-            myPlayer={myPlayer}
-            spectating={spectating}
-            roundComplete={roundComplete}
-            safeMessage={safeMessage}
-            numOfRemainingPlayers={currentPlayers.filter(p => p.gameState.remaining).length}
-            spectateNext={spectateNext}
-            spectatePrevious={spectatePrevious}
-            discard={discard}
-            fourOfAKind={fourOfAKind}
-            drawFromPile={drawFromPile}
-          /> 
+          <Flexbox center spaceEvenly noWrap>
+            { opponents.length >= 8 &&
+              <PlayerBottom
+                player={opponents[0]}
+                roundComplete={roundComplete}
+                width={width}
+                maxPileLength={getMaxPileLength(opponents.length + 1)}
+              />
+            }
+            <MyPlayer
+              myPlayer={myPlayer}
+              spectating={spectating}
+              roundComplete={roundComplete}
+              safeMessage={safeMessage}
+              numOfRemainingPlayers={currentPlayers.filter(p => p.gameState.remaining).length}
+              spectateNext={spectateNext}
+              spectatePrevious={spectatePrevious}
+              discard={discard}
+              fourOfAKind={fourOfAKind}
+              drawFromPile={drawFromPile}
+              width={width}
+            /> 
+            { opponents.length === 9 &&
+              <PlayerBottom
+                player={opponents[8]}
+                roundComplete={roundComplete}
+                width={width}
+                maxPileLength={getMaxPileLength(opponents.length + 1)}
+              />
+            }
+          </Flexbox>
         </Flexbox>
         </div>
     </Fullscreen>
