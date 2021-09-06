@@ -63,6 +63,7 @@ const Lobby: NextPage = () => {
             leave()
           }
         } else {
+          alert('Internal Server Error!')
           leave()
         }
       } else {

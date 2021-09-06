@@ -1,7 +1,14 @@
-/* OPPONENTS */
+.flex {
+  display: flex;
+}
+
+.name {
+  margin-left: 5px;
+  margin-top: 5px;
+}
+
 .pile {
   height: 50px;
-  width: 85px;
   margin: 5px 0px 0px 0px;
 }
 
@@ -53,18 +60,17 @@
 .safe {
   color: white;
   background-color: green;
-  padding: 2px 10px 2px 10px;
-  margin-top: 10px;
-  margin-left: 10px;
-  width: 100%;
+  padding: 5px;
+  margin-left: 5px;
+  text-shadow: 0px 4px 4px #00000026;
 }
 
 .eliminated{
   color: white;
   background-color: #CD554F;
-  padding: 2px 10px 2px 2px;
-  margin-top: 10px;
-  margin-left: 10px;
+  padding: 5px;
+  margin-left: 5px;
+  text-shadow: 0px 4px 4px #00000026;
 }
 
 .winnerCard {
@@ -87,4 +93,27 @@
   transform: rotate(-90deg);
   margin: 0;
   padding: 5px;
+}
+
+@media (max-width: 850px) {
+  .card, .cardPlaceholder, .pilePlaceholder, .pileCard, .topPileCard {
+    height: 40px;
+    width: 50px;
+  }
+
+  .pile {
+    height: 40px;
+  }
+
+  .safeMobile {
+    background-color: green;
+    display: flex;
+    padding: 5px;
+  }
+
+  .eliminatedMobile {
+    background-color: #CD554F;
+    display: flex;
+    padding: 5px;
+  }
 }

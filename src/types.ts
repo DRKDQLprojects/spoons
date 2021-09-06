@@ -54,7 +54,7 @@ export type GameStatus = {
   round: number,
   numRounds: number,
   countdownStarted: boolean,
-  spoons: number[]
+  spoonStatuses: SpoonStatus[]
 }
 
 export type Settings = {
@@ -63,11 +63,15 @@ export type Settings = {
     on: boolean,
   },
   peek : {
+    on : boolean,
     cooldown: number,
     timer: number
   },
-  shuffle: boolean
+  shuffle: boolean,
+  clicksToCollect: number
 }
+
+export type SpoonStatus = (boolean | string[])[] // false = not collected yet, true = collected by winner, string[] = IDs of people who have clicked spoon
 
 // Empty Types
 
@@ -95,7 +99,7 @@ export const emptyGameStatus : GameStatus = {
   round: 0,
   numRounds: 0,
   countdownStarted: false,
-  spoons: []
+  spoonStatuses: []
 }
 
 export const emptySettings : Settings = {
@@ -104,10 +108,12 @@ export const emptySettings : Settings = {
     default: true,
   },
   peek : {
+    on: true,
     cooldown: 2,
     timer: 4
   },
-  shuffle: false
+  shuffle: false,
+  clicksToCollect: 1
 }
 
 export const emptyLobbyInfo : LobbyInfo = {

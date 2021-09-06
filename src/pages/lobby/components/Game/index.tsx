@@ -190,34 +190,59 @@ const Game = (props: GameProps) => {
   }
 
   const collectSpoon = (pos: number) => {
-    const winner = currentPlayers.filter(p => p.gameState.roundWinner).length === 0
-
+    
     const gameStateRef = firebase.database().ref(`${currentLobby.id}/players/${myPlayer.id}/gameState`)
-    firebase.database().ref(`${currentLobby.id}/gameStatus/spoons/${pos}`).transaction((currentValue) => {
-      if (currentValue === 0) {
-        if (winner) {
-          gameStateRef.transaction((currentValue) => {
-            if (currentValue)
-            return {
-              ...currentValue,
-              spoonCollected: true,
-              roundWinner: true
-            }
-          })
-        } else {
-          gameStateRef.transaction((currentValue) => {
-            if (currentValue)
-            return {
-              ...currentValue,
-              spoonCollected: true,
-            }
-          })
+    const clicksToCollect = currentSettings.clicksToCollect
+
+
+    console.log('collect')
+
+    // Default
+    if (clicksToCollect === 1) {
+      const spoonStatusesPosRef = firebase.database().ref(`${currentLobby.id}/gameStatus/spoonStatuses/${pos}`)
+
+      spoonStatusesPosRef.transaction((currentValue) => {
+        const winner = currentPlayers.filter(p => p.gameState.roundWinner).length === 0   
+        if (!currentValue) {
+          if (winner) {
+            gameStateRef.transaction((currentValue) => {
+              if (currentValue)
+              return {
+                ...currentValue,
+                spoonCollected: true,
+                roundWinner: true
+              }
+            })
+          } else {
+            gameStateRef.transaction((currentValue) => {
+              if (currentValue)
+              return {
+                ...currentValue,
+                spoonCollected: true,
+              }
+            })
+          }
+          return true
         }
-        return currentValue + 1
-      } else {
+      })
+    } 
+    // Tug of war
+    else {
+      const spoonStatusesRef = firebase.database().ref(`${currentLobby.id}/gameStatus/spoonStatuses`)
+      spoonStatusesRef.transaction((currentValue) => {
+        // TODO:
+
+        // IF WINNER - set the currentValue[pos] = true
+
+        // ELSE - push myPlayer.id into currentValue[pos] 
+        // + get rid of instances of myPlayer.id in other positions
+        // + if myPlayer.id !in currentValue[pos], set all other players in there to 1
+
+        // IF count of myPlayer.id in currentValue[pos] === clicksToCollect, set spoonCollected = true, currentValue[pos] = true
         return currentValue
-      }
-    })
+      })
+    }
+    
   }
 
   const fourOfAKind = () => {
@@ -265,13 +290,13 @@ const Game = (props: GameProps) => {
     const newPlayers = setupBoard(currentPlayers, currentSettings, currentRound)
     const numSpoons = convertToPlayers(newPlayers).filter(p => p.gameState.remaining).length - 1
 
-    let spoons = []
-    for (let i = 0; i < numSpoons; i++) { spoons.push(0) }
+    let spoonStatuses = []
+    for (let i = 0; i < numSpoons; i++) { spoonStatuses.push(false) }
     firebase.database().ref(currentLobby.id).set({
       gameStatus: {
         ...currentLobby.gameStatus,
         countdownStarted: true,
-        spoons: spoons
+        spoonStatuses: spoonStatuses
       },
       players: newPlayers,
       settings: currentSettings
@@ -373,54 +398,55 @@ const Game = (props: GameProps) => {
             roundComplete={roundComplete}
             width={width}
           />
-          <br/>
           <OldGrid 
-            gridTemplateColumns="1fr 3fr 1fr"
+            gridTemplateColumns={opponents.length > 2 ? "1fr 3fr 1fr" : "3fr"}
             gridTemplateRows=""
           >
             {/* -------- OPPONENTS ON THE LEFT */}
-            <OpponentsLeft
-              opponents={opponents}
-              roundComplete={roundComplete}
-              width={width}
-            />
-            {/* --------------- PLAYER ACTIONS */}
-            <Flexbox column noWrap>
-              <br/>
-              <Board
-                peekTimerOn={peekTimerOn}
-                myPlayer={myPlayer}
-                spectating={spectating}
+            { opponents.length > 2 &&
+              <OpponentsLeft
+                opponents={opponents}
                 roundComplete={roundComplete}
-                seconds={seconds}
-                currentRound={currentRound}
-                numRounds={currentGameStatus.numRounds}
-                currentMyPlayer={currentMyPlayer}
-                currentPlayers={currentPlayers}
-                peekCooldownOn={peekCooldownOn}
-                cancelPeek={cancelPeek}
-                collectSpoon={collectSpoon}
-                spoons={currentGameStatus.spoons}
-                fourOfAKind={fourOfAKind}
-                peek={peek}
-                backToLobby={backToLobby}
-                nextRound={nextRound}
                 width={width}
               />
-              <br/>
-            </Flexbox>
-            {/* ---------- OPPONENTS ON THE RIGHT */}
-            <OpponentsRight
-              opponents={opponents}
+            }
+            {/* --------------- PLAYER ACTIONS */}
+            <Board
+              peekTimerOn={peekTimerOn}
+              myPlayer={myPlayer}
+              spectating={spectating}
               roundComplete={roundComplete}
+              seconds={seconds}
+              currentRound={currentRound}
+              numRounds={currentGameStatus.numRounds}
+              currentMyPlayer={currentMyPlayer}
+              currentPlayers={currentPlayers}
+              peekCooldownOn={peekCooldownOn}
+              peekingOn={currentSettings.peek.on}
+              cancelPeek={cancelPeek}
+              collectSpoon={collectSpoon}
+              spoonStatuses={currentGameStatus.spoonStatuses}
+              fourOfAKind={fourOfAKind}
+              peek={peek}
+              backToLobby={backToLobby}
+              nextRound={nextRound}
               width={width}
             />
+            {/* ---------- OPPONENTS ON THE RIGHT */}
+            { opponents.length > 2 &&
+              <OpponentsRight
+                opponents={opponents}
+                roundComplete={roundComplete}
+                width={width}
+              />
+            }
           </OldGrid>
           <PlayerActions
             myPlayer={myPlayer}
             spectating={spectating}
             roundComplete={roundComplete}
             safeMessage={safeMessage}
+            numOfRemainingPlayers={currentPlayers.filter(p => p.gameState.remaining).length}
             spectateNext={spectateNext}
             spectatePrevious={spectatePrevious}
             discard={discard}

@@ -32,29 +32,36 @@ const Home: NextPage = () => {
 
   // ***** CREATE LOBBY *****
   const createLobby = () => {
-    setLoading(true)
-
     // Entered data not valid
     if (!nickname || nickname.length < 3) {
       setError('Your nickname must be at least 3 characters long')
-      setLoading(false)
       return
     }
 
-    const lobbyId = firebase.database().ref().push({
+    setLoading(true)
+
+    // Initial connection
+    firebase.database().ref().push({
       gameStatus: emptyGameStatus,
       settings: emptySettings
-    }).key as string
-    const playerId = firebase.database().ref(`${lobbyId}/players`).push().key as string
-    firebase.database().ref(`${lobbyId}/players/${playerId}`).set({
-      nickname: nickname,
-      avatar: avatar,
-      isHost: true,
-      gameState: emptyGameState
-    }).then(() => {
-      sessionStorage.setItem('lid', lobbyId)
-      sessionStorage.setItem('pid', playerId)
-      router.push('/lobby')
+    }).then(ref => {
+      const lobbyId = ref.key as string
+      const playerId = firebase.database().ref(`${lobbyId}/players`).push().key as string
+
+      firebase.database().ref(`${lobbyId}/players/${playerId}`).set({
+        nickname: nickname,
+        avatar: avatar,
+        isHost: true,
+        gameState: emptyGameState
+      }).then(() => {
+        sessionStorage.setItem('lid', lobbyId)
+        sessionStorage.setItem('pid', playerId)
+        router.push('/lobby')
+      })
+    })
+    .catch(e => {
+      setError("This application is in testing. The developer has disabled it's use")
+      setLoading(false)
     })
   }
 
@@ -76,7 +83,8 @@ const Home: NextPage = () => {
         alignItems="center"
       >
         <Logo/>
-        <h3> Choose your Avatar </h3> 
+        <br/>
+        <h2> Avatar </h2> 
         <br/>
         <AvatarPicker
          number={avatar}
@@ -84,7 +92,7 @@ const Home: NextPage = () => {
          onNext={() => { setAvatar((avatar + 1) % 8)}}
         />
         <br/>
-        <h3> Enter your Nickname </h3> 
+        <h2> Nickname </h2> 
         <br/>
         <Flexbox center>
           <TextField

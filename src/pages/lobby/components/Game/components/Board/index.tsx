@@ -1,9 +1,8 @@
 import { FunctionComponent } from "react";
 import Spoon from "src/assets/spoon";
 import Button from "src/shared/components/Button";
-import Container from "src/shared/layout/Container";
 import Flexbox from "src/shared/layout/Flexbox";
-import { Player } from "src/types";
+import { Player, SpoonStatus } from "src/types";
 
 import styles from './Board.module.css'
 
@@ -18,7 +17,8 @@ type BoardProps = {
   currentMyPlayer: Player,
   currentPlayers: Player[],
   peekCooldownOn: boolean,
-  spoons: number[],
+  spoonStatuses: SpoonStatus[],
+  peekingOn: boolean,
   cancelPeek: () => void,
   collectSpoon: (pos: number) => void,
   fourOfAKind: () => boolean,
@@ -41,18 +41,43 @@ const Board: FunctionComponent<BoardProps> = (props) => {
   const currentMyPlayer = props.currentMyPlayer
   const currentPlayers = props.currentPlayers
   const peekCooldownOn = props.peekCooldownOn
-  const spoonsArray = props.spoons
+  const spoonsArray = props.spoonStatuses
   const width = props.width
+  const peekingOn = props.peekingOn
+
+  let spoonHeight = 75
+  let spoonWidth = 50
+  if (width <= 850) {
+    spoonHeight = 50
+    spoonWidth = 35
+  }
 
   const spoons = () => {
-    let spoonHeight = 75
-    let spoonWidth = 50
-    if (width <= 850) {
-      spoonHeight = 50
-      spoonWidth = 35
-    }
     return (spoonsArray.map((collected, index) => {
-      if (collected === 0) {
+      if (typeof collected === 'boolean' ) {
+        if (collected) {
+          return (
+            <Flexbox key={`spoon-${index}`} column>
+              <div style={{ height: spoonHeight, width: spoonWidth}}/>
+            </Flexbox> 
+          )
+        } else {
+          return (
+            <Flexbox key={`spoon-${index}`} column>
+              <button 
+                onClick={e => props.collectSpoon(index)} 
+                className={styles.spoon} 
+                disabled={!spoonCollectAllowed() || roundComplete || spectating}
+              > 
+                <Spoon 
+                  height={spoonHeight} 
+                  width={spoonWidth}
+                /> 
+              </button>
+            </Flexbox> 
+          )
+        }
+      } else {
         return (
           <Flexbox key={`spoon-${index}`} column>
             <button 
@@ -65,13 +90,6 @@ const Board: FunctionComponent<BoardProps> = (props) => {
                 width={spoonWidth}
               /> 
             </button>
-            <h3 className={styles.spoonCollectedLabel}> Collect </h3>
-          </Flexbox> 
-        )
-      } else {
-        return (
-          <Flexbox key={`spoon-${index}`} column>
-            <div style={{ height: spoonHeight, width: spoonWidth}}/>
           </Flexbox> 
         )
       }
@@ -86,43 +104,47 @@ const Board: FunctionComponent<BoardProps> = (props) => {
     return !myPlayerCollected && (firstSpoonCollected || props.fourOfAKind())
   }
 
-  const getHeight = () => {
-    const numSpoonsLeft = spoonsArray.length
-    if (numSpoonsLeft < 3) {
-      return 200
-    } else if (numSpoonsLeft >= 3 && numSpoonsLeft < 6) {
-      return 200
-    } else if (numSpoonsLeft >= 6 && numSpoonsLeft < 8) {
-      return 300
-    } else {
-      if (width > 850) return 300
-      return 600
+  let roundWinner;
+  let roundLoser;
+  let finalPlayers;
+  if (roundComplete && currentPlayers.filter(p => p.gameState.roundWinner).length > 0 && currentPlayers.filter(p => p.gameState.toBeEliminated).length > 0) {
+    roundWinner = currentPlayers.filter(p => p.gameState.roundWinner)[0].nickname
+    roundLoser = currentPlayers.filter(p => p.gameState.toBeEliminated)[0].nickname
+    if (currentRound === numRounds - 1) {
+      finalPlayers = currentPlayers.filter(p => p.gameState.remaining && !p.gameState.toBeEliminated)
     }
+
   }
+  
 
   return (
-    <div className={styles.container} style={{ height: `${getHeight()}px`}}>
-      <Flexbox column center> 
+    <div style={{ minHeight: `${spoonHeight+85}px`, width: '100%', height: `${currentPlayers.filter(p => p.gameState.remaining).length - 1 < 3 ? spoonHeight+85: ''}px`}}>
+      <Flexbox column center stretch> 
         {/* ----- DURING ROUND */}
         { !roundComplete && 
           <>
             {/* ---------- DURING PEEK */}
-            {(peekTimerOn || myPlayer.gameState.spoonCollected || spectating) && 
+            {(peekTimerOn || myPlayer.gameState.spoonCollected || spectating || !peekingOn) && 
               (<>
-                { !(myPlayer.gameState.spoonCollected || spectating) && 
+                { !(myPlayer.gameState.spoonCollected || spectating || !peekingOn) && 
                   <Flexbox center> 
                     <h2 style={{ marginBottom: '10px'}}>Timer: {seconds}</h2>
                   </Flexbox>
                 }
-                 <div style={{height: '85px'}}>
-                  <Flexbox spaceEvenly noWrap> 
+                { props.fourOfAKind() &&
+                  <Flexbox center>
+                    <h2 className={styles.collectIndicator} style={{ textAlign: 'center'}}> COLLECT NOW! </h2>
+                  </Flexbox>
+                }
+                <div style={{height: '85px'}}>
+                  <Flexbox spaceEvenly noWrap={width > 850}> 
                     {spoons()}
                   </Flexbox>
                 </div>
               </>)
             }
             {/* ---------- PEEK BUTTON */}
-            {!(peekTimerOn || myPlayer.gameState.spoonCollected || spectating) && 
+            {!(peekTimerOn || myPlayer.gameState.spoonCollected || spectating || !peekingOn) && 
               <> 
                 {currentRound === numRounds && 
                   <>
@@ -130,7 +152,7 @@ const Board: FunctionComponent<BoardProps> = (props) => {
                       <h2 className={styles.collectIndicator} style={{ textAlign: 'center'}}> {props.fourOfAKind() && 'COLLECT NOW!'} </h2>
                     </Flexbox>
                     <div style={{height: '85px'}}>
-                      <Flexbox spaceEvenly> 
+                      <Flexbox center> 
                         {spoons()}
                       </Flexbox>
                     </div>
@@ -144,7 +166,7 @@ const Board: FunctionComponent<BoardProps> = (props) => {
                           <h2 className={styles.collectIndicator} style={{ textAlign: 'center'}}> {props.fourOfAKind() && 'COLLECT NOW!'} </h2>
                         </Flexbox>
                         <div style={{height: '85px'}}>
-                          <Flexbox spaceEvenly> 
+                          <Flexbox spaceEvenly noWrap={width > 850}> 
                             {spoons()}
                           </Flexbox>
                         </div>
@@ -180,8 +202,9 @@ const Board: FunctionComponent<BoardProps> = (props) => {
               {currentRound === numRounds && 
                 <>
                   <Flexbox center>
-                    <h1 style={{ textAlign: 'center'}}> Spoons Game Complete! </h1>
+                    <h1 style={{ textAlign: 'center'}}>{roundWinner} WINS THE GAME!</h1> 
                   </Flexbox>
+                  <br/>
                   <Flexbox center>
                     <Button
                       onClick={props.backToLobby}
@@ -197,17 +220,28 @@ const Board: FunctionComponent<BoardProps> = (props) => {
               {currentRound < numRounds &&
                 <>
                   <Flexbox center>
-                    <h1 style={{ textAlign: 'center'}}>
-                      {currentRound < numRounds - 1 ?  `Round ${currentRound} complete. ${numRounds - currentRound} to go!` : `Round ${currentRound} complete. The FINAL ROUND is next!`}
-                    </h1>
+                    { currentRound < numRounds - 1 &&
+                      <Flexbox column>
+                        <h1 style={{ textAlign: 'center'}}> {roundWinner} wins! </h1>
+                        <h3 style={{ textAlign: 'center'}}> {roundLoser} is out! </h3>
+                        <h3 style={{ textAlign: 'center'}}> {numRounds - currentRound + 1} players remain. </h3>
+                      </Flexbox>
+                    }
+                    { currentRound === numRounds - 1 && 
+                      <Flexbox column> 
+                        <h1 style={{ textAlign: 'center'}}> {finalPlayers && finalPlayers[0].nickname} vs. {finalPlayers && finalPlayers[1].nickname} in the FINALE! </h1>
+                        <h3 style={{ textAlign: 'center'}}> {roundLoser} is out! </h3>
+                      </Flexbox>
+                    }
                   </Flexbox>
+                  <br/>
                   <Flexbox center>
                     <Button
                       onClick={props.nextRound}
                       disabled={false}
                       primary
                     > 
-                      Start
+                      Start next round
                     </Button>
                   </Flexbox>
                 </>
@@ -219,15 +253,27 @@ const Board: FunctionComponent<BoardProps> = (props) => {
             <>
             {currentRound === numRounds && 
               <Flexbox column> 
-                <h1 style={{ textAlign: 'center'}}> Spoons Game Complete! </h1> 
+                <h1 style={{ textAlign: 'center'}}>{roundWinner} WINS THE GAME!</h1> 
                 <h3 style={{ textAlign: 'center'}}> Waiting for host to go back to lobby... </h3>
               </Flexbox>
             }
             {currentRound < numRounds && 
               <Flexbox center>
-                <h1 style={{ textAlign: 'center'}}> 
-                {currentRound < numRounds - 1 ?  `Round ${currentRound} complete. ${numRounds - currentRound} to go! Waiting for host...` : `Round ${currentRound} complete. The FINAL ROUND is next! Waiting for host...`}
-                </h1>
+                { currentRound < numRounds - 1 &&
+                  <Flexbox column>
+                    <h1 style={{ textAlign: 'center'}}> {roundWinner} wins! </h1>
+                    <h3 style={{ textAlign: 'center'}}> {roundLoser} is out! </h3>
+                    <h3 style={{ textAlign: 'center'}}> {numRounds - currentRound + 1} players remain. </h3>
+                    <h3 style={{ textAlign: 'center'}}> Waiting for host... </h3>
+                  </Flexbox>
+                }
+                { currentRound === numRounds - 1 && 
+                  <Flexbox column> 
+                    <h1 style={{ textAlign: 'center'}}> {finalPlayers && finalPlayers[0].nickname} vs. {finalPlayers && finalPlayers[1].nickname} in the FINALE! </h1>
+                    <h3 style={{ textAlign: 'center'}}> {roundLoser} is out! </h3>
+                    <h3 style={{ textAlign: 'center'}}> Waiting for host... </h3>
+                  </Flexbox>
+                }
               </Flexbox>
             }
             </>

@@ -9,7 +9,9 @@ type FlexboxProps = {
   spaceEvenly? :boolean,
   spaceBetween?: boolean,
   noWrap?: boolean,
-  stretch?: boolean
+  stretch?: boolean,
+  fullWidth?: boolean,
+  fullHeight?: boolean
 }
 
 const Flexbox : FunctionComponent<FlexboxProps> = (props) => {
@@ -30,8 +32,12 @@ const Flexbox : FunctionComponent<FlexboxProps> = (props) => {
   return (
     <div 
       className={getStyle()} 
-      style={{flexWrap: props.noWrap ? 'nowrap' : 'wrap', height: props.stretch ? '100%' : '', width: props.stretch ? '100%' : ''}}> {props.children} 
-    
+      style={{
+        flexWrap: props.noWrap ? 'nowrap' : 'wrap', 
+        height: (props.stretch || props.fullHeight) ? '100%' : '', 
+        width: (props.stretch || props.fullWidth) ? '100%' : ''}}
+    > 
+      {props.children} 
     </div>
   )
 }

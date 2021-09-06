@@ -40,28 +40,23 @@ const Setup = (props: SetupProps) => {
 
   // ***** START GAME *****
   const startGame = () => {
-    if (players.length == 1) {
-      alert('You need at least 2 players to start')
-      return
-    } else {
-      const newPlayers = setupBoard(players, settings, gameStatus.round)
-      const numRounds = Object.keys(newPlayers).length - 1
-      const numSpoons = numRounds
-      let spoons = [];
-      for (let i = 0; i < numSpoons; i++) { spoons.push(0)}
-      firebase.database().ref(lobbyId).set({
-        gameStatus: {
-          ...gameStatus,
-          numRounds: numRounds,
-          countdownStarted: true,
-          spoons: spoons
-        },
-        players: newPlayers,
-        settings: {
-          ...settings
-        }
-      })
-    }
+    const newPlayers = setupBoard(players, settings, gameStatus.round)
+    const numRounds = Object.keys(newPlayers).length - 1
+    const numSpoons = numRounds
+    let spoonStatuses = [];
+    for (let i = 0; i < numSpoons; i++) { spoonStatuses.push(false)}
+    firebase.database().ref(lobbyId).set({
+      gameStatus: {
+        ...gameStatus,
+        numRounds: numRounds,
+        countdownStarted: true,
+        spoonStatuses: spoonStatuses
+      },
+      players: newPlayers,
+      settings: {
+        ...settings
+      }
+    })
   }
 
   // ***** UPDATE GAME SETTINGS *****
@@ -77,11 +72,20 @@ const Setup = (props: SetupProps) => {
   const updatePlayerPositions = (value: boolean) => {
     firebase.database().ref(`${lobbyId}/settings/shuffle`).set(value)
   }
+
+  const updatePeekOn = (value: boolean) => {
+    firebase.database().ref(`${lobbyId}/settings/peek/on`).set(value)
+  }
+
   const updatePeekTimer = (value: number) => {
     firebase.database().ref(`${lobbyId}/settings/peek/timer`).set(value)
   }
   const updatePeekCooldown = (value: number) => {
     firebase.database().ref(`${lobbyId}/settings/peek/cooldown`).set(value)
+  }
+
+  const updateClicksToCollect = (value: number) => {
+    firebase.database().ref(`${lobbyId}/settings/clicksToCollect`).set(value)
   }
 
   const updateAvatar = (value: number) => {
@@ -103,9 +107,7 @@ const Setup = (props: SetupProps) => {
   }, copiedTimerOn ? 1000 : null)
 
   // ***** PLAYERS LIST *****
-
   const renderPlayers = () => {
-
     let elems = []
 
     elems.push(
@@ -119,8 +121,9 @@ const Setup = (props: SetupProps) => {
                 onNext={() => updateAvatar((myPlayer.avatar + 1) % 8)}
               />
             </Flexbox>
-            <Flexbox center>
-              <h3> {myPlayer.nickname} {myPlayer.isHost && '(HOST)'} </h3>
+            <Flexbox center noWrap>
+              <h3 style={{ margin: '5px'}}> {myPlayer.nickname} </h3>
+              <h2> {myPlayer.isHost && '🤴'} </h2>
             </Flexbox>
         </Flexbox>
       </div>
@@ -132,8 +135,9 @@ const Setup = (props: SetupProps) => {
             <Flexbox center>
               <Avatar number={player.avatar} size={45}/>
             </Flexbox>
-            <Flexbox center>
-              <h3> {player.nickname} {player.isHost && ' (HOST)'} </h3>
+            <Flexbox center noWrap>
+              <h3 style={{ margin: '5px'}}> {player.nickname} </h3>
+              <h2> {player.isHost && '🤴'} </h2>
             </Flexbox>
             {myPlayer.isHost &&
               <Button onClick={() => props.removePlayer(lobbyId, player.id)} danger disabled={false}>
@@ -196,21 +200,42 @@ const Setup = (props: SetupProps) => {
         <div 
           className={width > 850 ? styles.gridItem : styles.mobileGridItem}
         >
-          <Flexbox center>
-            <h2> Lobby {`${players.length}/10`} </h2> 
+          <Flexbox center fullWidth>
+            <h1> Lobby {`${players.length}/10`} </h1> 
           </Flexbox>
           <br/>
           <div className={styles.scrollablePlayers}>
             {renderPlayers()}
           </div>
         </div>
-        <div style={{ width: '20px'}}/>
+        {width > 850 && <div style={{ width: '20px'}}/>}
         <div className={styles.gridItem}>
-          <Flexbox center>
-            <h2> Settings & Modes </h2>
+          <Flexbox center stretch>
+            <h1> Settings </h1>
           </Flexbox>
           <Flexbox column spaceBetween noWrap> 
             <div className={styles.scrollableSettings}>
+              <Container>
+                <h3> PLAYER POSITIONS </h3>
+                <br/>
+                <Flexbox>
+                    <Radio 
+                      id="shuffle-off" 
+                      label="LOBBY"
+                      checked={!settings.shuffle} 
+                      disabled={!myPlayer.isHost} 
+                      onChange={() => updatePlayerPositions(false)}
+                    />
+
+                    <Radio 
+                      id="shuffle-on" 
+                      label="SHUFFLE"
+                      checked={settings.shuffle} 
+                      disabled={!myPlayer.isHost} 
+                      onChange={() => updatePlayerPositions(true)}
+                    />
+                </Flexbox>
+              </Container>
               <Container>
                 <h3> DEALER </h3>
                 <br/>
@@ -240,65 +265,84 @@ const Setup = (props: SetupProps) => {
                     />
                 </Flexbox>
               </Container>
-              
-              <Container>
-                <h3> PLAYER POSITIONS </h3>
-                <br/>
-                <Flexbox>
-                    <Radio 
-                      id="shuffle-off" 
-                      label="LOBBY"
-                      checked={!settings.shuffle} 
-                      disabled={!myPlayer.isHost} 
-                      onChange={() => updatePlayerPositions(false)}
-                    />
-
-                    <Radio 
-                      id="shuffle-on" 
-                      label="SHUFFLE"
-                      checked={settings.shuffle} 
-                      disabled={!myPlayer.isHost} 
-                      onChange={() => updatePlayerPositions(true)}
-                    />
-                </Flexbox>
-              </Container>
               <Container>
                 <h3> PEEKING </h3>
                 <br/>
-                <h4> Timer </h4>
+
                 <Flexbox>
-                  { [2,3,4,5].map(time => {
-                      return (
-                        <Radio 
-                          key={`peek-timer-${time}`}
-                          id={`peek-timer-${time}`}
-                          label={`${time}s`}
-                          checked={time === settings.peek.timer}
-                          onChange={() => updatePeekTimer(time)}
-                          disabled={!myPlayer.isHost}
-                        />
-                      )
-                    })
-                  }
+                  <Radio 
+                    id="peeking-on" 
+                    label="ON"
+                    checked={settings.peek.on} 
+                    disabled={!myPlayer.isHost} 
+                    onChange={() => updatePeekOn(true)}
+                  />
+
+                  <Radio 
+                    id="peeking-off" 
+                    label="OFF"
+                    checked={!settings.peek.on} 
+                    disabled={!myPlayer.isHost} 
+                    onChange={() => updatePeekOn(false)}
+                  />
                 </Flexbox>
-                
-                <h4> Cooldown </h4>
-                <Flexbox>
-                  { [2,3,4,5].map(time => {
-                      return (
-                        <Radio 
-                          key={`peek-cooldown-${time}`}
-                          id={`peek-cooldown-${time}`}
-                          label={`${time}s`}
-                          checked={time === settings.peek.cooldown}
-                          onChange={() => updatePeekCooldown(time)}
-                          disabled={!myPlayer.isHost}
-                        />
-                      )
-                    })
-                  }
-                </Flexbox>
+
+                { settings.peek.on && 
+                  <>
+                    <h4> Timer </h4>
+                    <Flexbox>
+                      { [2,3,4,5].map(time => {
+                          return (
+                            <Radio 
+                              key={`peek-timer-${time}`}
+                              id={`peek-timer-${time}`}
+                              label={`${time}s`}
+                              checked={time === settings.peek.timer}
+                              onChange={() => updatePeekTimer(time)}
+                              disabled={!myPlayer.isHost}
+                            />
+                          )
+                        })
+                      }
+                    </Flexbox>
+                    
+                    <h4> Cooldown </h4>
+                    <Flexbox>
+                      { [2,3,4,5].map(time => {
+                          return (
+                            <Radio 
+                              key={`peek-cooldown-${time}`}
+                              id={`peek-cooldown-${time}`}
+                              label={`${time}s`}
+                              checked={time === settings.peek.cooldown}
+                              onChange={() => updatePeekCooldown(time)}
+                              disabled={!myPlayer.isHost}
+                            />
+                          )
+                        })
+                      }
+                    </Flexbox>
+                  </>
+                }
               </Container>
+              <br/>
+              <h3> CLICKS TO COLLECT </h3>
+              <br/>
+              <Flexbox>
+                { [1, 2, 3, 4, 5].map(num => {
+                    return (
+                      <Radio 
+                        key={`clicks-to-collect-${num}`}
+                        id={`clicks-to-collect-${num}`}
+                        label={`${num}`}
+                        checked={num === settings.clicksToCollect}
+                        onChange={() => updateClicksToCollect(num)}
+                        disabled={!myPlayer.isHost}
+                      />
+                    )
+                  })
+                }
+              </Flexbox>
             </div>
 
             <Flexbox noWrap>
@@ -306,25 +350,26 @@ const Setup = (props: SetupProps) => {
                   text={`${process.env.NEXT_PUBLIC_BASE_URL}/join?code=${lobbyId}`}
                   onCopy={() => { }}
                 >
-                <div style={{ padding: '20px'}}>
+                <div className={styles.buttonPadding}>
                   <Button primary disabled={false} onClick={() => { setSeconds(2); setCopiedTimerOn(true); }}> 
                     { copiedTimerOn ? 'COPIED!' : 'INVITE'  }
                   </Button>
                 </div>
               </CopyToClipboard>
-              <div style={{ padding: '20px'}}>
+              <div className={styles.buttonPadding}>
                 { myPlayer.isHost && 
                   <Button 
                     success
-                    disabled={!myPlayer.isHost}
+                    disabled={!myPlayer.isHost || players.length === 1}
                     onClick={() => startGame()}
                   > 
-                    Start
+                    {players.length > 1 && 'Start'}
+                    {players.length === 1 && 'Waiting for players...'}
                   </Button>
                 }
                 {!myPlayer.isHost && 
                   <Flexbox column center>
-                    <h2>
+                    <h2 style={{ marginTop: '10px'}}>
                       Waiting for host...
                     </h2>
                   </Flexbox>

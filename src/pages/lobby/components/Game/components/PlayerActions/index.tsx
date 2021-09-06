@@ -11,6 +11,7 @@ type PlayerActionsProps = {
   spectating: boolean,
   roundComplete: boolean,
   safeMessage: string,
+  numOfRemainingPlayers: number,
   spectateNext: () => void,
   spectatePrevious: () => void,
   discard: (card: Card) => void,
@@ -24,6 +25,7 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
   const spectating = props.spectating
   const roundComplete = props.roundComplete
   const safeMessage = props.safeMessage
+  const numOfRemainingPlayers = props.numOfRemainingPlayers
 
   const cardDrawn = myPlayer.gameState.cardDrawn
   const pileLength = myPlayer.gameState.pile.length
@@ -64,16 +66,19 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
             }
             onClick={() => { props.drawFromPile(); setTopPileCardHovered(false)}}
             disabled={cardDrawn !== undefined || roundComplete || spectating}
-            onMouseEnter={() => setTopPileCardHovered(true)}
-            onMouseLeave={() => setTopPileCardHovered(false)}
+            onMouseEnter={() => { if (width > 850) { setTopPileCardHovered(true) }}}
+            onMouseLeave={() => { if (width > 850) { setTopPileCardHovered(false) }}}
             key={`pile-card-${i}`} 
           > 
 
             { (spectating || roundComplete) && ''}
             { !(spectating || roundComplete) &&  
-              <h4>
-                {cardDrawn ? '' : 'DRAW'}
-              </h4>
+              <>
+                <h4>
+                  {cardDrawn ? '🚫' : 'DRAW'}
+                </h4>
+                {cardDrawn ? '' : pileLength}
+              </>
             }
           </button>
           )
@@ -84,7 +89,11 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
     return elems
   }
 
+  const cardWidth = width > 850 ? 70 : 50
+  const maxPileLength = 52 - 4*(numOfRemainingPlayers) 
+
   return (
+    <div className={styles.container}>
     <Flexbox column>
       <Flexbox center>
         { spectating && 
@@ -92,21 +101,19 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
             <button className={styles.spectating} onClick={props.spectateNext}> {'<'}</button> 
           </span>
         }
-        <Flexbox column center>
-          <Flexbox center>
+        <Flexbox center>
+          <div className={safeMessage && width <= 850 ? (safeMessage === 'ELIMINATED' ? styles.eliminatedMobile : styles.safeMobile ) : styles.flex}>
             <Avatar
               number={myPlayer.avatar}
-              size={40}
+              size={30}
             />
-          </Flexbox>
-          <Flexbox center>
-            <h3 style={{ marginTop: '5px'}}>
+            <h3 style={{ marginLeft: '5px', marginTop: '5px'}}>
               {spectating && `SPECTATING: ${myPlayer.nickname}`} 
-              {!spectating && `${myPlayer.nickname} (YOU)`}
-              {myPlayer.gameState.dealer ? ' (DEALER)' : ''}
-              {safeMessage && <span className={safeMessage === 'ELIMINATED' ? styles.eliminated : styles.safe}> {safeMessage} </span>}
+              {!spectating && `${myPlayer.nickname}`}
+              {myPlayer.gameState.dealer ? ' (D)' : ''}
+              {(safeMessage && width > 850) && <span className={safeMessage === 'ELIMINATED' ? styles.eliminated : styles.safe}> {safeMessage} </span>}
             </h3>
-          </Flexbox>
+          </div>
         </Flexbox>
         { spectating && 
           <span>
@@ -130,7 +137,7 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
                   <h4> {card.value} </h4>
                 </Flexbox>
               </button>
-              <h3 className={styles.discardText}> REMOVE </h3>
+              { width > 850 && <h3 className={styles.discardText}> REMOVE </h3> }
             </Flexbox>
           )
         })}
@@ -149,17 +156,18 @@ const PlayerActions : FunctionComponent<PlayerActionsProps> = (props) => {
                     <h4> {cardDrawn.value} </h4>
                   </Flexbox>
                 </button>
-                <h3 className={styles.discardText}> REMOVE </h3>
+                { width > 850 && <h3 className={styles.discardText}> REMOVE </h3> }
               </Flexbox>
           } 
           { !cardDrawn && <div className={styles.cardPlaceholder}/> }
         </div>
-        <div className={styles.pile}>
+        <div className={styles.pile} style={{ width: `${cardWidth + maxPileLength}px`}}>
             { pileLength > 0 && pile(pileLength)}
             {!(pileLength > 0 || (roundComplete && !spectating))  && <h4 className={styles.pilePlaceholder}> Wait for card </h4>}
         </div>
       </Flexbox>
     </Flexbox>
+    </div>
   )
 }
 

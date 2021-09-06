@@ -1,4 +1,3 @@
-
 import { FunctionComponent  } from "react"
 import { Player } from "src/types"
 import styles from './Right.module.css'
@@ -44,19 +43,21 @@ const OpponentsRight: FunctionComponent<OpponentsRightType>  = (props) => {
 
   const renderPile = (pileLength: number) => {
     const elems = []
-    for (let i = pileLength - 1; i >= 0; i--) {
-      if (i === 0 && pileLength !== 1) {
+    for (let i = 0; i < pileLength; i++) {
+      if (i === pileLength - 1) {
         elems.push(
           <div 
             className={styles.pileCard} 
-            style={{marginLeft: `${- (pileLength - i)}px`, boxShadow: '4px 0px 0px rgba(0, 0, 0, 0.1)'}}
-          />
+            style={{marginRight: `${i}px`, boxShadow: '4px 0px 0px rgba(0, 0, 0, 0.1)'}}
+          >
+            {!roundComplete && `${pileLength}`}
+          </div>
         )
       } else {
         elems.push(
           <div 
             className={styles.pileCard} 
-            style={{ marginLeft: `${- (pileLength - i)}px`}}
+            style={{ marginRight: `${i}px`}}
           />
         )
       }
@@ -79,6 +80,10 @@ const OpponentsRight: FunctionComponent<OpponentsRightType>  = (props) => {
       fullHand = p.gameState.hand.concat([p.gameState.cardDrawn])
     }
 
+    const cardHeight = width > 850 ? 50 : 40
+    const marginTopMarker1 = width > 850 ? 65 : 45
+    const marginTopMarker2 = width > 850 ? -72 : -55
+
     return fullHand.map((card, index) => {
       const i = fullHand.length - index - 1
       if (roundComplete && p.gameState.roundWinner) {
@@ -89,7 +94,7 @@ const OpponentsRight: FunctionComponent<OpponentsRightType>  = (props) => {
           <div 
             className={styles.winnerCard} 
             key={`opponent-card-${i}`} 
-            style={{ color: card.suit === 'diamond' || card.suit === 'heart' ?  'red' : '', marginTop: `${-10}px`, border: "3px green solid"}}>
+            style={{ color: card.suit === 'diamond' || card.suit === 'heart' ?  'red' : '', marginTop: `${index === 0 ? 0 : -15}px`, border: "5px green solid"}}>
             <h4> {card.value} </h4>
             <h4> {getSuit(card.suit)} </h4>
           </div> 
@@ -100,54 +105,55 @@ const OpponentsRight: FunctionComponent<OpponentsRightType>  = (props) => {
           <div 
             className={styles.card} 
             key={`opponent-card-${i}`}
-            style={{marginTop: '-50px', marginLeft: '-15px'}}
+            style={{marginTop: `-${cardHeight}px`, marginLeft: '-15px'}}
           /> )
       }
       return (
         <div 
           className={styles.card} 
           key={`opponent-card-${i}`}
-          style={{ marginTop: `${i === fullHand.length - 1 ? 60 : -70 }px` }}
+          style={{ marginTop: `${i === fullHand.length - 1 ? marginTopMarker1 : marginTopMarker2 }px` }}
         /> 
       )
     })
   }
 
+  const cardWidth = width > 850 ? 70 : 50
+  const maxPileLength = 52 - (4*(opponents.length + 1)) + 3
+
   return (
     <Flexbox column noWrap> 
         {renderOpponents().map(p => {
           return (
-            <div key={`opponent-${p.id}`} style={{ marginRight: '20px', marginBottom: '10px', height: '200px'}}>
+            <div key={`opponent-${p.id}`} style={{ marginRight: width > 850 ? '20px' : '5px', marginBottom: width > 850 ? '35px' : '10px', height: width > 850 ? '180px' : '155px'}}>
             <Flexbox column>
-                <Flexbox column>
-                  <Flexbox end>
-                    <Avatar
-                      number={p.avatar}
-                      size={25}
-                    />
-                  </Flexbox>
-                  <Flexbox end>
-                    <h4> {p.nickname} {p.gameState.dealer ? '(DEALER)' : ''}</h4>
-                    {roundComplete && 
+              <Flexbox end noWrap>
+                <div className={roundComplete && width <= 850 ? (p.gameState.spoonCollected ? styles.safeMobile : styles.eliminatedMobile ) : styles.flex}>
+                  <Avatar
+                    number={p.avatar}
+                    size={25}
+                  />
+                  <h4 style={{ marginLeft: '5px', marginTop: '5px'}}> {p.nickname} {p.gameState.dealer ? '(D)' : ''}</h4>
+                  {(roundComplete && width > 850) && 
                     <h4 className={p.gameState.spoonCollected ? styles.safe : styles.eliminated}> 
                       {p.gameState.spoonCollected && p.gameState.roundWinner && 'WINNER' }
                       {p.gameState.spoonCollected && !p.gameState.roundWinner && 'SAFE' }
                       {!p.gameState.spoonCollected && 'ELIMINATED' }
                     </h4>
-                    }
-                  </Flexbox>
-                  <Flexbox end>
-                    <div className={styles.pile}> 
-                      { p.gameState.pile.length === 0  && <div className={styles.pilePlaceholder}/>}
-                      { p.gameState.pile.length > 0 && renderPile(p.gameState.pile.length)}
-                    </div>
-                  </Flexbox>
-                  <Flexbox end>
-                    <Flexbox column>
-                      {renderHand(p)}
-                    </Flexbox>
-                  </Flexbox>
+                  }
+                </div>
+              </Flexbox>
+              <Flexbox end>
+                <div className={styles.pile} style={{ width: `${cardWidth + maxPileLength}px`}}> 
+                    { p.gameState.pile.length === 0  && <div className={styles.pilePlaceholder}/>}
+                    { p.gameState.pile.length > 0 && renderPile(p.gameState.pile.length)}
+                </div>
+              </Flexbox>
+              <Flexbox end>
+                <Flexbox column>
+                  {renderHand(p)}
                 </Flexbox>
+              </Flexbox>
            </Flexbox >
            </div>
           )

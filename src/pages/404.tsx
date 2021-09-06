@@ -15,16 +15,15 @@ export default function Custom404() {
         alignItems="center"
         style={{ textAlign: 'center'}}
       >
-        <Logo error/>
+        <h1> You look lost! No worries, we are here to help! </h1>
         <br/>
-        <h2 >You look lost! No worries, we are here to help!</h2>
+        <h3>
+          If you tried to join a game, make sure the link is entered correctly.
+        </h3>
         <br/>
-        <p>
-          If you tried to join a game, make sure the link or code is entered correctly.
-        </p>
-        <p>
+        <h3>
           Otherwise, head back to the homepage and Create a Lobby!
-        </p>
+        </h3>
         <br/>
         <Button 
           onClick={()=> router.push("/")}

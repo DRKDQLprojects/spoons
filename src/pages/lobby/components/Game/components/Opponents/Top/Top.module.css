@@ -1,5 +1,8 @@
+.flex {
+  display: flex;
+}
+
 .pile {
-  height: 85px;
   width: 50px;
   margin-right: 5px;
 }
@@ -56,16 +59,16 @@
 .safe {
   color: white;
   background-color: green;
-  padding: 2px 10px 2px 10px;
-  margin-left: 10px;
+  padding: 5px;
+  margin-left: 5px;
   text-shadow: 0px 4px 4px #00000026;
 }
 
 .eliminated{
   color: white;
   background-color: #CD554F;
-  padding: 2px 10px 2px 10px;
-  margin-left: 10px;
+  padding: 5px;
+  margin-left: 5px;
   text-shadow: 0px 4px 4px #00000026;
 }
 
@@ -84,4 +87,31 @@
   background-color: white;
   margin-right: 10px;
   position: absolute;
+}
+
+@media (max-width: 850px) {
+  .card, .cardPlaceholder, .pilePlaceholder, .pileCard, .topPileCard, .winnerCard {
+    height: 50px;
+    width: 40px;
+  }
+
+  .pile {
+    width: 40px;
+  }
+
+  .hand {
+    margin-left: -5px;
+  }
+
+  .safeMobile {
+    background-color: green;
+    display: flex;
+    padding: 5px;
+  }
+
+  .eliminatedMobile {
+    background-color: #CD554F;
+    display: flex;
+    padding: 5px;
+  }
 }

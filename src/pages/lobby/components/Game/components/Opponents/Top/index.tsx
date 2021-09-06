@@ -1,4 +1,3 @@
-
 import { FunctionComponent  } from "react"
 import { Player } from "src/types"
 import styles from './Top.module.css'
@@ -46,13 +45,15 @@ const OpponentsTop: FunctionComponent<OpponentsTopType>  = (props) => {
   const renderPile = (pileLength: number) => {
     const elems = []
     for (let i = pileLength - 1; i >= 0; i--) {
-      if (i === 0 && pileLength !== 1) {
+      if (i === 0) {
         elems.push(
           <div 
             key={`opponent-pile-card-${i}`} 
             className={styles.pileCard} 
             style={{marginTop: `${pileLength - i}px`, boxShadow: '0px -4px 0px rgba(0, 0, 0, 0.1)'}}
-          />
+          >
+            {!roundComplete && `${pileLength}`}
+          </div>
         )
       } else {
         elems.push(
@@ -75,6 +76,12 @@ const OpponentsTop: FunctionComponent<OpponentsTopType>  = (props) => {
       fullHand = p.gameState.hand.concat([p.gameState.cardDrawn])
     }
 
+    const cardHeight = width > 850 ? 70 : 50
+    const cardWidth = width > 850 ? 50 : 40
+
+    const marginLeftMarker = width > 850 ? 75 : 45
+    const cardShift = width > 850 ? 2 : 3
+
     return fullHand.map((card, index) => {
       const i = fullHand.length - index - 1
       if (roundComplete && p.gameState.roundWinner) {
@@ -85,7 +92,7 @@ const OpponentsTop: FunctionComponent<OpponentsTopType>  = (props) => {
           <div 
             className={styles.winnerCard} 
             key={`opponent-card-${i}`} 
-            style={{ color: card.suit === 'diamond' || card.suit === 'heart' ?  'red' : '', marginLeft: `${i*40}px`, marginTop: `0px`, border: '3px green solid'}}
+            style={{ color: card.suit === 'diamond' || card.suit === 'heart' ?  'red' : '', marginLeft: `${i*35}px`, marginTop: `0px`, border: '5px green solid'}}
           >
             <h4> {getSuit(card.suit)} </h4>
             <h4> {card.value} </h4>
@@ -97,7 +104,7 @@ const OpponentsTop: FunctionComponent<OpponentsTopType>  = (props) => {
           className={styles.card} 
           key={`opponent-card-${i}`}
           id={`${i}`}
-          style={{ marginLeft: `0px`, marginTop: `-55px`}}
+          style={{ marginLeft: `${width > 850 ? 0 : 5}px`, marginTop: `${-(cardHeight - 15)}px`}}
         /> 
       }
       return (
@@ -105,7 +112,7 @@ const OpponentsTop: FunctionComponent<OpponentsTopType>  = (props) => {
           className={styles.card} 
           key={`opponent-card-${i}`}
           id={`${i}`}
-          style={{ marginLeft: `${index === 0 ? 75 : 75 - 25*(index)}px`, marginTop: `${i === fullHand.length - 1 ? 0 : -70}px`}}
+          style={{ marginLeft: `${index === 0 ? marginLeftMarker : marginLeftMarker - (cardWidth/cardShift)*(index)}px`, marginTop: `${i === fullHand.length - 1 ? 0 : -cardHeight}px`}}
         /> 
       )
     })
@@ -119,38 +126,42 @@ const OpponentsTop: FunctionComponent<OpponentsTopType>  = (props) => {
     return ''
   }
 
+  const cardHeight = width > 850 ? 70 : 50
+  const maxPileLength = 52 - 4*(opponents.length + 1) - 6
+
+  const renderedOpponents = renderOpponents()
   return (
     <Flexbox spaceEvenly noWrap> 
-        {renderOpponents().map(p => {
+        {renderedOpponents.map((p,i) => {
           return (
             <Flexbox key={`opponent-${p.id}`} column>
-                <div className={styles.container}>
+                <div style={{ marginRight : (renderedOpponents.length > 1 && i < renderedOpponents.length - 1) ? '10px': '0px', marginBottom: '10px'}}>
                   <Flexbox center>
                     <Flexbox column noWrap>
                       <Flexbox center>
-                        <Avatar
-                          number={p.avatar}
-                          size={25}
-                        />
-                      </Flexbox>
-                      <Flexbox center>
-                        <h4> 
-                          {p.nickname} 
-                          {p.gameState.dealer ? ' (DEALER)' : ''}
-                          {roundComplete && 
-                            <span className={p.gameState.spoonCollected ? styles.safe : styles.eliminated}> 
-                              {p.gameState.spoonCollected && p.gameState.roundWinner && 'WINNER' }
-                              {p.gameState.spoonCollected && !p.gameState.roundWinner && 'SAFE' }
-                              {!p.gameState.spoonCollected && 'ELIMINATED' }
-                            </span>
-                          }
-                        </h4>
+                        <div className={roundComplete && width <= 850 ? (p.gameState.spoonCollected ? styles.safeMobile : styles.eliminatedMobile ) : styles.flex}>
+                          <Avatar
+                            number={p.avatar}
+                            size={25}
+                          />
+                          <h4 style={{ marginLeft: '5px', marginTop: '5px'}}> 
+                            {p.nickname} 
+                            {p.gameState.dealer ? ' (D)' : ''}
+                            {(roundComplete && width > 850) && 
+                              <span className={p.gameState.spoonCollected ? styles.safe : styles.eliminated}> 
+                                {p.gameState.spoonCollected && p.gameState.roundWinner && 'WINNER' }
+                                {p.gameState.spoonCollected && !p.gameState.roundWinner && 'SAFE' }
+                                {!p.gameState.spoonCollected && 'ELIMINATED' }
+                              </span>
+                            }
+                          </h4>
+                        </div>
                       </Flexbox>
                     </Flexbox>
                   </Flexbox>
                   <div style={{ height: '5px'}}/>
                   <Flexbox>
-                    <div className={styles.pile}> 
+                    <div className={styles.pile} style={{ height: `${cardHeight + maxPileLength}px`}}> 
                           { p.gameState.pile.length === 0  && <div className={styles.pilePlaceholder}/>}
                           { p.gameState.pile.length > 0 && renderPile(p.gameState.pile.length)}
                     </div>
