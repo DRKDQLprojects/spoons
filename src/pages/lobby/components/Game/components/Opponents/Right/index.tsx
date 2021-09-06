@@ -122,7 +122,7 @@ const OpponentsRight: FunctionComponent<OpponentsRightType>  = (props) => {
   const maxPileLength = 52 - (4*(opponents.length + 1)) + 3
 
   return (
-    <Flexbox column noWrap> 
+    <Flexbox end noWrap> 
         {renderOpponents().map(p => {
           return (
             <div key={`opponent-${p.id}`} style={{ marginRight: width > 850 ? '20px' : '5px', marginBottom: width > 850 ? '35px' : '10px', height: width > 850 ? '180px' : '155px'}}>
