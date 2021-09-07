@@ -9,12 +9,12 @@ module.exports = withPlugins([
       strip: true,
       verbose: true
     },
-    imagesPublicPath: '/spoons/_next/static/images/', // PROD ONLY
-    // imagesPublicPath: '/_next/static/images/' // LOCAL ONLY
+    // imagesPublicPath: '/spoons/_next/static/images/', // PROD ONLY
+    imagesPublicPath: '/_next/static/images/' // LOCAL ONLY
   }],
   {
     reactStrictMode: true,
-    basePath: '/spoons', // PROD ONLY
-    assetPrefix: '/spoons/' // PROD ONLY
+    // basePath: '/spoons', // PROD ONLY
+    // assetPrefix: '/spoons/' // PROD ONLY
   }
 ])
