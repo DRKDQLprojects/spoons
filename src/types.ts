@@ -71,7 +71,7 @@ export type Settings = {
   clicksToCollect: number
 }
 
-export type SpoonStatus = (boolean | string[])[] // false = not collected yet, true = collected by winner, string[] = IDs of people who have clicked spoon
+export type SpoonStatus = boolean | string[] // false = not collected yet, true = collected by winner, string[] = IDs of people who have clicked spoon
 
 // Empty Types
 

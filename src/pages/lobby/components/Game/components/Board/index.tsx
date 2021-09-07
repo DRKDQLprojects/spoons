@@ -1,5 +1,6 @@
 import { FunctionComponent } from "react";
 import Spoon from "src/assets/spoon";
+import Avatar from "src/shared/components/Avatar";
 import Button from "src/shared/components/Button";
 import Flexbox from "src/shared/layout/Flexbox";
 import { Player, SpoonStatus } from "src/types";
@@ -45,13 +46,13 @@ const Board: FunctionComponent<BoardProps> = (props) => {
   const width = props.width
   const peekingOn = props.peekingOn
 
-  const opponents = props.opponents
-
   let spoonHeight = 75
   let spoonWidth = 50
+  let avatarSize = 10
   if (width <= 850) {
     spoonHeight = 50
     spoonWidth = 35
+    avatarSize = 7
   }
 
   const spoons = () => {
@@ -76,12 +77,40 @@ const Board: FunctionComponent<BoardProps> = (props) => {
                   width={spoonWidth}
                 /> 
               </button>
+              <Flexbox>
+
+              </Flexbox>
             </Flexbox> 
           )
         }
       } else {
+
+        const opponentsInBattleIds: string[] = []
+
+        collected.forEach((id) => {
+          if (id !== myPlayer.id) {
+            if (opponentsInBattleIds.filter(_id => _id === id).length === 0) {
+              opponentsInBattleIds.push(id)
+            }
+          }
+        })
+
         return (
           <Flexbox key={`spoon-${index}`} column>
+            <Flexbox column>
+              { opponentsInBattleIds.map(id => {
+                return <Flexbox key={`spoon-battle-indicator-opponent-${id}`}>
+                  { collected.map((_id: string) => {
+                      if (_id === id) {
+                        const opponent = currentPlayers.filter(p => p.id === _id)[0]
+                        return <Avatar number={opponent.avatar} size={avatarSize}/>
+                      }
+                      return null
+                    })
+                  }
+                </Flexbox>
+              })}
+            </Flexbox>
             <button 
               onClick={e => props.collectSpoon(index)} 
               className={styles.spoon} 
@@ -92,6 +121,13 @@ const Board: FunctionComponent<BoardProps> = (props) => {
                 width={spoonWidth}
               /> 
             </button>
+            <Flexbox>
+              { collected.map((id: string) => {
+                  if (id === myPlayer.id) return <Avatar number={myPlayer.avatar} size={avatarSize}/>
+                  return null
+                })
+              }
+            </Flexbox>
           </Flexbox> 
         )
       }
@@ -131,7 +167,7 @@ const Board: FunctionComponent<BoardProps> = (props) => {
         height: `${currentPlayers.filter(p => p.gameState.remaining).length - 1 < 3 ? spoonHeight+85 : getHeight()}px`
       }}
     >
-      <Flexbox column center stretch> 
+      <Flexbox column center stretch noWrap> 
         {/* ----- DURING ROUND */}
         { !roundComplete && 
           <>

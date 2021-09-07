@@ -21,7 +21,6 @@
 }
 
 .spoon:active:not(:disabled) {
-  margin-top: 5px;
   box-shadow: none;
 }
 

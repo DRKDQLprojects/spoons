@@ -331,7 +331,7 @@ const Setup = (props: SetupProps) => {
               <h3> CLICKS TO COLLECT </h3>
               <br/>
               <Flexbox>
-                { [1, 2, 3, 4, 5].map(num => {
+                { [1, 2, 3, 4, 5, 6, 7].map(num => {
                     return (
                       <Radio 
                         key={`clicks-to-collect-${num}`}

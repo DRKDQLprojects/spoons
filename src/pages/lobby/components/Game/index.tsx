@@ -195,6 +195,7 @@ const Game = (props: GameProps) => {
   const collectSpoon = (pos: number) => {
     
     const gameStateRef = firebase.database().ref(`${currentLobby.id}/players/${myPlayer.id}/gameState`)
+
     const clicksToCollect = currentSettings.clicksToCollect
 
     // Default
@@ -230,16 +231,82 @@ const Game = (props: GameProps) => {
     else {
       const spoonStatusesRef = firebase.database().ref(`${currentLobby.id}/gameStatus/spoonStatuses`)
       spoonStatusesRef.transaction((currentValue) => {
-        // TODO:
+        const spoonValue = currentValue[pos]
 
-        // IF WINNER - set the currentValue[pos] = true
+        if (typeof spoonValue === 'boolean') {
+          // Spoon already collected
+          if (spoonValue) return currentValue
+          // First click on the spoon, add your player ID, remove your player ID from everywhere else
+          return currentValue.map((v: any, i: number) => {
+            if (i === pos) return [myPlayer.id]
+            if (typeof v !== 'boolean') { 
+              const filtered = v.filter((x: any) => x !== myPlayer.id) 
+              if (filtered.length === 0) return false 
+              return filtered
+            }
+            return v
+          })
+        // Clicking in progress
+        } else {
 
-        // ELSE - push myPlayer.id into currentValue[pos] 
-        // + get rid of instances of myPlayer.id in other positions
-        // + if myPlayer.id !in currentValue[pos], set all other players in there to 1
+          const winner = currentPlayers.filter(p => p.gameState.roundWinner).length === 0
+          const willCollectSpoon = spoonValue.filter((v: any) => v === myPlayer.id).length + 1 === clicksToCollect
 
-        // IF count of myPlayer.id in currentValue[pos] === clicksToCollect, set spoonCollected = true, currentValue[pos] = true
-        return currentValue
+          // Winner of spoon
+          if (winner && willCollectSpoon) {
+            gameStateRef.transaction((currentValue) => {
+              if (currentValue)
+              return {
+                ...currentValue,
+                spoonCollected: true,
+                roundWinner: true
+              }
+            })
+            return currentValue.map((v: any, i: number) => {
+              if (i === pos) return true
+              return v
+            })
+          }
+
+          // First click on a spoon someone is taking: Battle occurs - add yourself to list, and lower occurence of other players (RESET TO 1 FOR NOW), remove yourself from others
+          if (spoonValue.filter((v: any) => v === myPlayer.id).length === 0) {
+            return currentValue.map((v: any, i: number) => {
+              if (i === pos) {
+                const idsInBattle: any[] = []
+                v.forEach((id: any, j: number) => {
+                  if (idsInBattle.filter(_id => _id === id).length === 0) {
+                    idsInBattle.push(id)
+                  }
+                })
+                return [myPlayer.id].concat(idsInBattle)
+              }
+              if (typeof v !== 'boolean') { 
+                const filtered = v.filter((x: any) => x !== myPlayer.id) 
+                if (filtered.length === 0) return false 
+                return filtered
+              }
+              return v
+            })
+          }
+          if (spoonValue.filter((v: any) => v === myPlayer.id).length > 0) {
+            return currentValue.map((v: any, i: number) => {
+              if (i === pos) {
+                if (willCollectSpoon) {
+                  gameStateRef.transaction((currentValue) => {
+                    if (currentValue)
+                    return {
+                      ...currentValue,
+                      spoonCollected: true
+                    }
+                  })
+                  return true
+                } 
+                return v.concat([myPlayer.id])
+              }
+              return v
+            })
+          }
+        }
       })
     }
     
