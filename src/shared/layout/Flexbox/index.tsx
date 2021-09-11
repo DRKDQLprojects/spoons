@@ -24,6 +24,7 @@ const Flexbox : FunctionComponent<FlexboxProps> = (props) => {
     if (column) return styles.column
 
     if (spaceEvenly) return styles.rowSpaceEvenly
+    if (spaceBetween) return styles.rowSpaceBetween
     if (end) return styles.rowEnd
     if (center) return styles.rowCenter
     return styles.row

@@ -195,7 +195,6 @@ const Game = (props: GameProps) => {
   const collectSpoon = (pos: number) => {
     
     const gameStateRef = firebase.database().ref(`${currentLobby.id}/players/${myPlayer.id}/gameState`)
-
     const clicksToCollect = currentSettings.clicksToCollect
 
     // Default
@@ -229,87 +228,106 @@ const Game = (props: GameProps) => {
     } 
     // Tug of war
     else {
-      const spoonStatusesRef = firebase.database().ref(`${currentLobby.id}/gameStatus/spoonStatuses`)
-      spoonStatusesRef.transaction((currentValue) => {
-        const currentSpoon = currentValue[pos]
 
-        if (typeof currentSpoon === 'boolean') {
-          // Spoon already collected
-          if (currentSpoon) return currentValue
-          // First click on the spoon, add your player ID, remove your player ID from everywhere else
-          return currentValue.map((spoonStatus: any, i: number) => {
-            if (i === pos) return [myPlayer.id]
-            if (typeof spoonStatus !== 'boolean') { 
-              const filtered = spoonStatus.filter((clicker: any) => clicker !== myPlayer.id) 
-              if (filtered.length === 0) return false 
-              return filtered
+      const currentValue = currentGameStatus.spoonStatuses
+      const currentSpoon = currentValue[pos]
+
+      const spoonStatusesRef = firebase.database().ref(`${currentLobby.id}/gameStatus/spoonStatuses`)
+      const currentSpoonRef = firebase.database().ref(`${currentLobby.id}/gameStatus/spoonStatuses/${pos}`)
+
+      if (typeof currentSpoon === 'boolean') {
+        // Spoon already collected
+        if (currentSpoon) return;
+        // First click on the spoon, add your player ID
+        currentSpoonRef.transaction((currentValue) => {
+          return [myPlayer.id]
+        })
+
+        // Remove player id from everywhere else
+        currentValue.map((spoonStatus: any, index: number) => {
+          if (typeof spoonStatus !== 'boolean' && index !== pos) { 
+            const filtered = spoonStatus.filter((clicker: any) => clicker !== myPlayer.id) 
+
+            firebase.database().ref(`${currentLobby.id}/gameStatus/spoonStatuses/${index}`).transaction(currentValue => {
+              if (filtered.length === 0) {
+                return false
+              } else {
+                return filtered
+              }
+            })
+          }
+        })
+      // Clicking in progress
+      } else {
+
+        const winner = currentPlayers.filter(p => p.gameState.roundWinner).length === 0
+        const willCollectSpoon = currentSpoon.filter((clicker: any) => clicker === myPlayer.id).length + 1 === clicksToCollect
+
+        // Winner of spoon
+        if (winner && willCollectSpoon) {
+
+          currentSpoonRef.transaction(currentValue => {
+            return true
+          })
+          gameStateRef.transaction((currentValue) => {
+            if (currentValue)
+            return {
+              ...currentValue,
+              spoonCollected: true,
+              roundWinner: true
+            }
+          })
+        }
+
+        // First click on a spoon someone is taking: Battle occurs
+        if (currentSpoon.filter((clicker: any) => clicker === myPlayer.id).length === 0) {
+          currentValue.map((spoonStatus: any, i: number) => {
+            // Add yourself to list and reset others to 1
+            if (i === pos) {
+              const idsInBattle: any[] = []
+              spoonStatus.forEach((id: any, j: number) => {
+                if (idsInBattle.filter(_id => _id === id).length === 0) {
+                  idsInBattle.push(id)
+                }
+              })
+              currentSpoonRef.transaction(currentValue => {
+                return [myPlayer.id].concat(idsInBattle)
+              })
+            }
+            // Remove yourself from other lists
+            if (typeof spoonStatus !== 'boolean' && i !== pos) { 
+              const filtered = spoonStatus.filter((x: any) => x !== myPlayer.id) 
+              firebase.database().ref(`${currentLobby.id}/gameStatus/spoonStatuses/${i}`).transaction(currentValue => {
+                if (filtered.length === 0) {
+                  return false
+                } else {
+                  return filtered
+                }
+              })
             }
             return spoonStatus
           })
-        // Clicking in progress
-        } else {
-
-          const winner = currentPlayers.filter(p => p.gameState.roundWinner).length === 0
-          const willCollectSpoon = currentSpoon.filter((clicker: any) => clicker === myPlayer.id).length + 1 === clicksToCollect
-
-          // Winner of spoon
-          if (winner && willCollectSpoon) {
-            gameStateRef.transaction((currentValue) => {
-              if (currentValue)
+        }
+        // Already clicked on the spoon
+        if (currentSpoon.filter((clicker: any) => clicker === myPlayer.id).length > 0) {
+          if (willCollectSpoon) {
+            gameStateRef.transaction((currentValue: any) => {
               return {
                 ...currentValue,
-                spoonCollected: true,
-                roundWinner: true
+                spoonCollected: true
               }
             })
-            return currentValue.map((spoonStatus: any, i: number) => {
-              if (i === pos) return true
-              return spoonStatus
+            currentSpoonRef.transaction(currentValue => {
+              return true
             })
-          }
-
-          // First click on a spoon someone is taking: Battle occurs
-          if (currentSpoon.filter((clicker: any) => clicker === myPlayer.id).length === 0) {
-            return currentValue.map((spoonStatus: any, i: number) => {
-              // Add yourself to list and reset others to 1
-              if (i === pos) {
-                const idsInBattle: any[] = []
-                spoonStatus.forEach((id: any, j: number) => {
-                  if (idsInBattle.filter(_id => _id === id).length === 0) {
-                    idsInBattle.push(id)
-                  }
-                })
-                return [myPlayer.id].concat(idsInBattle)
-              }
-              // Remove yourself from other lists
-              if (typeof spoonStatus !== 'boolean') { 
-                const filtered = spoonStatus.filter((x: any) => x !== myPlayer.id) 
-                if (filtered.length === 0) return false 
-                return filtered
-              }
-              return spoonStatus
+          } else {
+            currentSpoonRef.transaction((currentValue: any) => {
+              return currentValue.concat([myPlayer.id])
             })
           }
-          // Already clicked on the spoon
-          if (currentSpoon.filter((clicker: any) => clicker === myPlayer.id).length > 0) {
-            return currentValue.map((spoonStatus: any, i: number) => {
-              if (i === pos) {
-                if (willCollectSpoon) {
-                  gameStateRef.transaction((currentValue) => {
-                    return {
-                      ...currentValue,
-                      spoonCollected: true
-                    }
-                  })
-                  return true
-                } 
-                return spoonStatus.concat([myPlayer.id])
-              }
-              return spoonStatus
-            })
-          }
+          
         }
-      })
+      }
     }
     
   }
@@ -450,12 +468,20 @@ const Game = (props: GameProps) => {
     <Fullscreen>
       {/* --------------- NAVBAR   */}
       { currentMyPlayer.isHost && 
-        <>
-        <div className={styles.backButton}> 
-          <Button disabled={false} onClick={() => backToLobby()} primary> LOBBY </Button>  
+        <div className={styles.navbar}> 
+          <Flexbox spaceBetween>
+            <Button disabled={false} onClick={backToLobby} primary> BACK TO LOBBY </Button>
+            { (roundComplete && currentGameStatus.round < currentGameStatus.numRounds) &&
+              <Button
+                onClick={nextRound}
+                disabled={false}
+                primary
+              > 
+                Start next round
+              </Button>
+            }
+          </Flexbox>
         </div>
-        <br/>
-        </>
       }
         
       {/* ---------------  GAME */}

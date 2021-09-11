@@ -70,7 +70,7 @@ const Board: FunctionComponent<BoardProps> = (props) => {
               <button 
                 onClick={e => props.collectSpoon(index)} 
                 className={styles.spoon} 
-                disabled={!spoonCollectAllowed() || roundComplete || spectating}
+                disabled={!spoonCollectAllowed(index) || roundComplete || spectating}
               > 
                 <Spoon 
                   height={spoonHeight} 
@@ -114,7 +114,7 @@ const Board: FunctionComponent<BoardProps> = (props) => {
             <button 
               onClick={e => props.collectSpoon(index)} 
               className={styles.spoon} 
-              disabled={!spoonCollectAllowed() || roundComplete || spectating}
+              disabled={!spoonCollectAllowed(index) || roundComplete || spectating}
             > 
               <Spoon 
                 height={spoonHeight} 
@@ -134,7 +134,13 @@ const Board: FunctionComponent<BoardProps> = (props) => {
     }))
   }
 
-  const spoonCollectAllowed = () => {
+  const spoonCollectAllowed = (index: number) => {
+
+    if (currentRound === numRounds) {
+      if (typeof spoonsArray[index] !== 'boolean') {
+        if (!props.fourOfAKind()) return true
+      }
+    }
     
     const firstSpoonCollected = currentPlayers.filter(p => p.gameState.spoonCollected).length >= 1
     const myPlayerCollected = myPlayer.gameState.spoonCollected
@@ -179,7 +185,7 @@ const Board: FunctionComponent<BoardProps> = (props) => {
                     <h2 style={{ marginBottom: '10px'}}>Timer: {seconds}</h2>
                   </Flexbox>
                 }
-                { props.fourOfAKind() &&
+                { (props.fourOfAKind() && !spoonCollectAllowed) &&
                   <Flexbox center>
                     <h2 className={styles.collectIndicator} style={{ textAlign: 'center'}}> COLLECT NOW! </h2>
                   </Flexbox>
@@ -252,47 +258,25 @@ const Board: FunctionComponent<BoardProps> = (props) => {
                   <Flexbox center>
                     <h1 style={{ textAlign: 'center'}}>{roundWinner} WINS THE GAME!</h1> 
                   </Flexbox>
-                  <br/>
-                  <Flexbox center>
-                    <Button
-                      onClick={props.backToLobby}
-                      disabled={false}
-                      primary
-                    > 
-                      Return to Lobby
-                    </Button>
-                  </Flexbox>
                 </>
               }
               {/* ------- NEXT ROUND */}
               {currentRound < numRounds &&
-                <>
-                  <Flexbox center>
-                    { currentRound < numRounds - 1 &&
-                      <Flexbox column>
-                        <h1 style={{ textAlign: 'center'}}> {roundWinner} wins! </h1>
-                        <h3 style={{ textAlign: 'center'}}> {roundLoser} is out! </h3>
-                        <h3 style={{ textAlign: 'center'}}> {numRounds - currentRound + 1} players remain. </h3>
-                      </Flexbox>
-                    }
-                    { currentRound === numRounds - 1 && 
-                      <Flexbox column> 
-                        <h1 style={{ textAlign: 'center'}}> {finalPlayers && finalPlayers[0].nickname} vs. {finalPlayers && finalPlayers[1].nickname} in the FINALE! </h1>
-                        <h3 style={{ textAlign: 'center'}}> {roundLoser} is out! </h3>
-                      </Flexbox>
-                    }
-                  </Flexbox>
-                  <br/>
-                  <Flexbox center>
-                    <Button
-                      onClick={props.nextRound}
-                      disabled={false}
-                      primary
-                    > 
-                      Start next round
-                    </Button>
-                  </Flexbox>
-                </>
+                <Flexbox center>
+                  { currentRound < numRounds - 1 &&
+                    <Flexbox column>
+                      <h1 style={{ textAlign: 'center'}}> {roundWinner} wins! </h1>
+                      <h3 style={{ textAlign: 'center'}}> {roundLoser} is out! </h3>
+                      <h3 style={{ textAlign: 'center'}}> {numRounds - currentRound + 1} players remain. </h3>
+                    </Flexbox>
+                  }
+                  { currentRound === numRounds - 1 && 
+                    <Flexbox column> 
+                      <h1 style={{ textAlign: 'center'}}> {finalPlayers && finalPlayers[0].nickname} vs. {finalPlayers && finalPlayers[1].nickname} in the FINALE! </h1>
+                      <h3 style={{ textAlign: 'center'}}> {roundLoser} is out! </h3>
+                    </Flexbox>
+                  }
+                </Flexbox>
               }
             </>
           }
