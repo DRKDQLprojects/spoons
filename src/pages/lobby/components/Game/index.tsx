@@ -231,26 +231,26 @@ const Game = (props: GameProps) => {
     else {
       const spoonStatusesRef = firebase.database().ref(`${currentLobby.id}/gameStatus/spoonStatuses`)
       spoonStatusesRef.transaction((currentValue) => {
-        const spoonValue = currentValue[pos]
+        const currentSpoon = currentValue[pos]
 
-        if (typeof spoonValue === 'boolean') {
+        if (typeof currentSpoon === 'boolean') {
           // Spoon already collected
-          if (spoonValue) return currentValue
+          if (currentSpoon) return currentValue
           // First click on the spoon, add your player ID, remove your player ID from everywhere else
-          return currentValue.map((v: any, i: number) => {
+          return currentValue.map((spoonStatus: any, i: number) => {
             if (i === pos) return [myPlayer.id]
-            if (typeof v !== 'boolean') { 
-              const filtered = v.filter((x: any) => x !== myPlayer.id) 
+            if (typeof spoonStatus !== 'boolean') { 
+              const filtered = spoonStatus.filter((clicker: any) => clicker !== myPlayer.id) 
               if (filtered.length === 0) return false 
               return filtered
             }
-            return v
+            return spoonStatus
           })
         // Clicking in progress
         } else {
 
           const winner = currentPlayers.filter(p => p.gameState.roundWinner).length === 0
-          const willCollectSpoon = spoonValue.filter((v: any) => v === myPlayer.id).length + 1 === clicksToCollect
+          const willCollectSpoon = currentSpoon.filter((clicker: any) => clicker === myPlayer.id).length + 1 === clicksToCollect
 
           // Winner of spoon
           if (winner && willCollectSpoon) {
@@ -262,38 +262,40 @@ const Game = (props: GameProps) => {
                 roundWinner: true
               }
             })
-            return currentValue.map((v: any, i: number) => {
+            return currentValue.map((spoonStatus: any, i: number) => {
               if (i === pos) return true
-              return v
+              return spoonStatus
             })
           }
 
-          // First click on a spoon someone is taking: Battle occurs - add yourself to list, and lower occurence of other players (RESET TO 1 FOR NOW), remove yourself from others
-          if (spoonValue.filter((v: any) => v === myPlayer.id).length === 0) {
-            return currentValue.map((v: any, i: number) => {
+          // First click on a spoon someone is taking: Battle occurs
+          if (currentSpoon.filter((clicker: any) => clicker === myPlayer.id).length === 0) {
+            return currentValue.map((spoonStatus: any, i: number) => {
+              // Add yourself to list and reset others to 1
               if (i === pos) {
                 const idsInBattle: any[] = []
-                v.forEach((id: any, j: number) => {
+                spoonStatus.forEach((id: any, j: number) => {
                   if (idsInBattle.filter(_id => _id === id).length === 0) {
                     idsInBattle.push(id)
                   }
                 })
                 return [myPlayer.id].concat(idsInBattle)
               }
-              if (typeof v !== 'boolean') { 
-                const filtered = v.filter((x: any) => x !== myPlayer.id) 
+              // Remove yourself from other lists
+              if (typeof spoonStatus !== 'boolean') { 
+                const filtered = spoonStatus.filter((x: any) => x !== myPlayer.id) 
                 if (filtered.length === 0) return false 
                 return filtered
               }
-              return v
+              return spoonStatus
             })
           }
-          if (spoonValue.filter((v: any) => v === myPlayer.id).length > 0) {
-            return currentValue.map((v: any, i: number) => {
+          // Already clicked on the spoon
+          if (currentSpoon.filter((clicker: any) => clicker === myPlayer.id).length > 0) {
+            return currentValue.map((spoonStatus: any, i: number) => {
               if (i === pos) {
                 if (willCollectSpoon) {
                   gameStateRef.transaction((currentValue) => {
-                    if (currentValue)
                     return {
                       ...currentValue,
                       spoonCollected: true
@@ -301,9 +303,9 @@ const Game = (props: GameProps) => {
                   })
                   return true
                 } 
-                return v.concat([myPlayer.id])
+                return spoonStatus.concat([myPlayer.id])
               }
-              return v
+              return spoonStatus
             })
           }
         }
