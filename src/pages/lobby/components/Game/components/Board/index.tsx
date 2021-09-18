@@ -27,7 +27,8 @@ type BoardProps = {
   backToLobby: () => void,
   nextRound: () => void,
   width: number,
-  opponents: Player[]
+  opponents: Player[],
+  clicksToCollect: number
 }
 
 const Board: FunctionComponent<BoardProps> = (props) => {
@@ -45,6 +46,7 @@ const Board: FunctionComponent<BoardProps> = (props) => {
   const spoonsArray = props.spoonStatuses
   const width = props.width
   const peekingOn = props.peekingOn
+  const clicksToCollect = props.clicksToCollect
 
   let spoonHeight = 75
   let spoonWidth = 50
@@ -173,7 +175,7 @@ const Board: FunctionComponent<BoardProps> = (props) => {
         height: `${currentPlayers.filter(p => p.gameState.remaining).length - 1 < 3 ? spoonHeight+85 : getHeight()}px`
       }}
     >
-      <Flexbox column center stretch noWrap> 
+      <Flexbox column center={clicksToCollect === 1} stretch noWrap> 
         {/* ----- DURING ROUND */}
         { !roundComplete && 
           <>

@@ -541,6 +541,7 @@ const Game = (props: GameProps) => {
               nextRound={nextRound}
               width={width}
               opponents={opponents}
+              clicksToCollect={currentSettings.clicksToCollect}
             />
             {/* ---------- RIGHT PLAYERS*/}
             { opponents.length > 2 &&
