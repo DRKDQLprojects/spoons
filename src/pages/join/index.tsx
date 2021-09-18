@@ -161,8 +161,8 @@ const Join: NextPage = () => {
         <br/>
         <AvatarPicker
           number={avatar}
-          onNext={() => setAvatar((avatar + 1) % 8)}
-          onPrevious={() => setAvatar(avatar === 0 ? 7 : avatar - 1)}
+          onNext={() => setAvatar((avatar + 1) % 10)}
+          onPrevious={() => setAvatar(avatar === 0 ? 9 : avatar - 1)}
         />
         <br/>
         <h2> Enter your Nickname </h2> 

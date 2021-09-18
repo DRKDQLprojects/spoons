@@ -117,8 +117,8 @@ const Setup = (props: SetupProps) => {
               <AvatarPicker
                 number={myPlayer.avatar}
                 size={50}
-                onPrevious={() => { updateAvatar(myPlayer.avatar === 0 ? 7 : myPlayer.avatar - 1)}}
-                onNext={() => updateAvatar((myPlayer.avatar + 1) % 8)}
+                onPrevious={() => { updateAvatar(myPlayer.avatar === 0 ? 9 : myPlayer.avatar - 1)}}
+                onNext={() => updateAvatar((myPlayer.avatar + 1) % 10)}
               />
             </Flexbox>
             <Flexbox center noWrap>
