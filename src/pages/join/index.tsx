@@ -165,7 +165,7 @@ const Join: NextPage = () => {
           onPrevious={() => setAvatar(avatar === 0 ? 9 : avatar - 1)}
         />
         <br/>
-        <h2> Enter your Nickname </h2> 
+        <h2> Enter your Nickname </h2>  
         <br/>
         <TextField 
           type="text" 

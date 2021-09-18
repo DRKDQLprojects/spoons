@@ -136,14 +136,16 @@ const Board: FunctionComponent<BoardProps> = (props) => {
     }))
   }
 
-  const spoonCollectAllowed = (index: number) => {
+  const spoonCollectAllowed = (index: number | null) => {
 
-    if (currentRound === numRounds) {
-      if (typeof spoonsArray[index] !== 'boolean') {
-        if (!props.fourOfAKind()) return true
+    if (index) {
+      if (currentRound === numRounds) {
+        if (typeof spoonsArray[index] !== 'boolean') {
+          if (!props.fourOfAKind()) return true
+        }
       }
-    }
-    
+    } 
+
     const firstSpoonCollected = currentPlayers.filter(p => p.gameState.spoonCollected).length >= 1
     const myPlayerCollected = myPlayer.gameState.spoonCollected
 
@@ -182,16 +184,18 @@ const Board: FunctionComponent<BoardProps> = (props) => {
             {/* ---------- DURING PEEK */}
             {(peekTimerOn || myPlayer.gameState.spoonCollected || spectating || !peekingOn) && 
               (<>
+                <div style={{ height: '60px'}}>
                 { !(myPlayer.gameState.spoonCollected || spectating || !peekingOn) && 
                   <Flexbox center> 
                     <h2 style={{ marginBottom: '10px'}}>Timer: {seconds}</h2>
                   </Flexbox>
                 }
-                { (props.fourOfAKind() && !spoonCollectAllowed) &&
+                { (props.fourOfAKind() && !spoonCollectAllowed(null)) &&
                   <Flexbox center>
                     <h2 className={styles.collectIndicator} style={{ textAlign: 'center'}}> COLLECT NOW! </h2>
                   </Flexbox>
                 }
+                </div>
                 <div style={{height: '85px'}}>
                   <Flexbox spaceEvenly noWrap={width > 850}> 
                     {spoons()}
@@ -204,9 +208,11 @@ const Board: FunctionComponent<BoardProps> = (props) => {
               <> 
                 {currentRound === numRounds && 
                   <>
+                    <div style={{ height: '60px'}}>
                     <Flexbox center>
                       <h2 className={styles.collectIndicator} style={{ textAlign: 'center'}}> {props.fourOfAKind() && 'COLLECT NOW!'} </h2>
                     </Flexbox>
+                    </div>
                     <div style={{height: '85px'}}>
                       <Flexbox center> 
                         {spoons()}
@@ -218,9 +224,11 @@ const Board: FunctionComponent<BoardProps> = (props) => {
                   <>
                     { props.fourOfAKind() &&
                       <>
+                        <div style={{ height: '60px'}}>
                         <Flexbox center>
-                          <h2 className={styles.collectIndicator} style={{ textAlign: 'center'}}> {props.fourOfAKind() && 'COLLECT NOW!'} </h2>
+                          <h2 className={styles.collectIndicator} style={{ textAlign: 'center'}}> COLLECT NOW! </h2>
                         </Flexbox>
+                        </div>
                         <div style={{height: '85px'}}>
                           <Flexbox spaceEvenly noWrap={width > 850}> 
                             {spoons()}
