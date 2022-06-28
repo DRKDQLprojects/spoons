@@ -7,7 +7,7 @@ const Home: NextPage = () => {
   return (
     <div className={styles.container}>
       <Head>
-        <title>Spoons | By Derek and Marc</title>
+        <title>Spoons by DRKDQL</title>
         <meta name="description" content="Online multiplayer version of the card game called Spoons" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -16,8 +16,7 @@ const Home: NextPage = () => {
         <h1 className={styles.title}>
           Welcome to <span> Spoons</span>
         </h1>
-        <p> This project is currently under development. Stay tuned :)</p>
-        <p> - Derek Daquel & Marc Pizzinato</p>
+        <p> This project is currently under development. Stay tuned...</p>
       </main>
     </div>
   )
