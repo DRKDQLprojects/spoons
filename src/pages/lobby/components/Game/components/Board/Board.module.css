@@ -1,0 +1,35 @@
+.spoons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.spoon {
+  background-color: rgb(0, 0, 0, 0);
+  border: none;
+  box-shadow: 0px 5px 0px rgba(0, 0, 0, 0.1);
+  border: 3px solid white;
+  border-radius: 10px;
+}
+
+.spoon:hover:not(:disabled) {
+  border: 3px solid greenyellow;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.spoon:active:not(:disabled) {
+  box-shadow: none;
+}
+
+.spoon:disabled {
+  box-shadow: none;
+  border: none;
+}
+
+.collectIndicator{
+  text-shadow: 0px 4px 4px #00000026;
+  margin-bottom: 10px;
+}
