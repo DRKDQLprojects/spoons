@@ -4,7 +4,7 @@ import { FunctionComponent, useState } from 'react'
 import { Card, Player } from 'src/types'
 import { getSuit } from 'src/shared/helpers'
 
-import Flexbox from 'src/shared/layout/Flexbox'
+import { Stack } from '@mui/material'
 import Avatar from 'src/shared/components/Avatar'
 
 type MyPlayerProps = {
@@ -78,14 +78,14 @@ const MyPlayer : FunctionComponent<MyPlayerProps> = (props) => {
 
   return (
     <div className={styles.container}>
-    <Flexbox column>
-      <Flexbox center>
+    <Stack>
+      <Stack direction="row" justifyContent="center">
         { spectating && 
           <span>
             <button className={styles.spectating} onClick={props.spectateNext}> {'<'}</button> 
           </span>
         }
-        <Flexbox center>
+        <Stack direction="row" justifyContent="center">
           <div className={safeMessage && width <= 850 ? (safeMessage === 'ELIMINATED' ? styles.eliminatedMobile : styles.safeMobile ) : styles.flex}>
             <Avatar
               number={myPlayer.avatar}
@@ -98,50 +98,50 @@ const MyPlayer : FunctionComponent<MyPlayerProps> = (props) => {
               {(safeMessage && width > 850) && <span className={safeMessage === 'ELIMINATED' ? styles.eliminated : styles.safe}> {safeMessage} </span>}
             </h3>
           </div>
-        </Flexbox>
+        </Stack>
         { spectating && 
           <span>
             <button className={styles.spectating} onClick={props.spectatePrevious}> {'>'} </button>
           </span>
         }
-      </Flexbox>
+      </Stack>
       <div style={{ height: '5px'}}> </div>
-      <Flexbox center noWrap>
+      <Stack direction="row" justifyContent="center" flexWrap="nowrap">
         {myPlayer.gameState.hand.map((card, index) => {
           return (
-            <Flexbox key={`card-${index}`}  column>
+            <Stack key={`card-${index}`}>
               <button 
                 className={styles.card} 
                 onClick={() => props.discard(card)} 
                 disabled={cardDrawn === undefined || spectating || props.fourOfAKind()}
                 style={(card.suit === 'diamond' || card.suit === 'heart') ? { color: "red" } : { }}
               > 
-                <Flexbox column center>
+                <Stack justifyContent="center">
                   <h4> {getSuit(card.suit)} </h4>
                   <h4> {card.value} </h4>
-                </Flexbox>
+                </Stack>
               </button>
               { width > 850 && <h3 className={styles.discardText}> REMOVE </h3> }
-            </Flexbox>
+            </Stack>
           )
         })}
         <div className={styles.cardDrawn}>
           { cardDrawn && 
       
-              <Flexbox column> 
+              <Stack> 
                 <button 
                   className={styles.card} 
                   disabled={spectating}
                   onClick={() => props.discard(cardDrawn)}
                   style={(cardDrawn.suit === 'diamond' || cardDrawn.suit === 'heart') ? { color: "red" } : { }}
                 > 
-                  <Flexbox column center>
+                  <Stack justifyContent="center">
                     <h4> {getSuit(cardDrawn.suit)} </h4>
                     <h4> {cardDrawn.value} </h4>
-                  </Flexbox>
+                  </Stack>
                 </button>
                 { width > 850 && <h3 className={styles.discardText}> REMOVE </h3> }
-              </Flexbox>
+              </Stack>
           } 
           { !cardDrawn && <div className={styles.cardPlaceholder}/> }
         </div>
@@ -149,8 +149,8 @@ const MyPlayer : FunctionComponent<MyPlayerProps> = (props) => {
             { pileLength > 0 && pile(pileLength)}
             {!(pileLength > 0 || (roundComplete && !spectating))  && <h4 className={styles.pilePlaceholder}> Wait for card </h4>}
         </div>
-      </Flexbox>
-    </Flexbox>
+      </Stack>
+    </Stack>
     </div>
   )
 }

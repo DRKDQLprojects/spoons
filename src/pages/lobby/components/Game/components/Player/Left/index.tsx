@@ -2,7 +2,7 @@ import { FunctionComponent  } from "react"
 import { Player } from "src/types"
 import styles from './Left.module.css'
 
-import Flexbox from "src/shared/layout/Flexbox"
+import { Stack } from '@mui/material'
 import Avatar from "src/shared/components/Avatar"
 import { getSuit } from "src/shared/helpers"
 
@@ -112,14 +112,14 @@ const PlayerLeft: FunctionComponent<PlayerLeftProps>  = (props) => {
   const cardWidth = width > 850 ? 70 : 50
   
   return (
-    <Flexbox column noWrap> 
+    <Stack flexWrap="nowrap"> 
       <div 
         style={{
           marginLeft: width > 850 ? '20px' : '5px',
           marginTop: '10px'
        }}
       > 
-        <Flexbox noWrap>
+        <Stack direction="row" flexWrap="nowrap">
           <div className={roundComplete && width <= 850 ? (spoonCollected ? styles.safeMobile : styles.eliminatedMobile ) : styles.flex}>
             <Avatar
               number={player.avatar}
@@ -137,19 +137,19 @@ const PlayerLeft: FunctionComponent<PlayerLeftProps>  = (props) => {
               }
             </h4>
           </div>
-        </Flexbox>
+        </Stack>
         <div style={{ height: '5px'}}/>
-        <Flexbox column>
-          <Flexbox column>
+        <Stack>
+          <Stack>
             {renderHand()}
-          </Flexbox>
+          </Stack>
           <div className={styles.pile} style={{ width: `${cardWidth + maxPileLength}px`}}> 
             { pile.length === 0  && <div className={styles.pilePlaceholder}/>}
             { pile.length > 0 && renderPile()}
           </div>
-        </Flexbox >
+        </Stack >
       </div>
-    </Flexbox>
+    </Stack>
    
   )
 }

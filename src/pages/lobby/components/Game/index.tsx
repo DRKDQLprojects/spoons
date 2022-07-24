@@ -6,9 +6,9 @@ import { convertToDBPlayers, convertToPlayers, getMaxPileLength, playersToRender
 
 import styles from './Game.module.css'
 import Fullscreen from 'src/shared/layout/Fullscreen';
-import Loader from 'src/shared/components/Loader'
-import Flexbox from 'src/shared/layout/Flexbox';
-import OldGrid from 'src/shared/layout/Grid';
+import Loader from 'src/shared/components/Loader';
+
+import { Grid, Stack } from '@mui/material';
 
 import Board from './components/Board';
 import PlayerTop from './components/Player/Top';
@@ -469,7 +469,7 @@ const Game = (props: GameProps) => {
       {/* --------------- NAVBAR   */}
       { currentMyPlayer.isHost && 
         <div className={styles.navbar}> 
-          <Flexbox spaceBetween>
+          <Stack direction="row" justifyContent="space-between">
             <Button disabled={false} onClick={backToLobby} primary> BACK TO LOBBY </Button>
             { (roundComplete && currentGameStatus.round < currentGameStatus.numRounds) &&
               <Button
@@ -480,46 +480,51 @@ const Game = (props: GameProps) => {
                 Start next round
               </Button>
             }
-          </Flexbox>
+          </Stack>
         </div>
       }
         
       {/* ---------------  GAME */}
-      <div className={styles.container} style={{ transform: `scale(${scale})`, transformOrigin: 'top'}}>
-        <Flexbox column spaceEvenly>
+      {/* <div className={styles.container} style={{ transform: `scale(${scale})`, transformOrigin: 'top'}}> */}
+      <Grid 
+        className={styles.container}
+        container
+      >
           {/* ---------- TOP PLAYERS*/}
+          <Grid item xs={12}> 
+            <Stack direction="row" justifyContent="space-evenly" flexWrap="nowrap" >
+              {playersToRender(opponents, 'top').map((player, i) => {
+                return (
+                  <>
+                    {(i > 0 && opponents.length !== 1) &&  <div style={{ marginLeft: '10px'}}/>}
+                    <PlayerTop
+                      key={`player-${player.id}`}
+                      player={player}
+                      roundComplete={roundComplete}
+                      width={width}
+                      maxPileLength={getMaxPileLength(opponents.length + 1)}
+                    />
+                  </>
+                )
+              })}
+            </Stack>
+          </Grid>
 
-          <Flexbox spaceEvenly noWrap> 
-            {playersToRender(opponents, 'top').map((player, i) => {
-              return (
-                <>
-                  {(i > 0 && opponents.length !== 1) &&  <div style={{ marginLeft: '10px'}}/>}
-                  <PlayerTop
-                    key={`player-${player.id}`}
-                    player={player}
-                    roundComplete={roundComplete}
-                    width={width}
-                    maxPileLength={getMaxPileLength(opponents.length + 1)}
-                  />
-                </>
-              )
-            })}
-          </Flexbox>
-
-          <OldGrid 
-            gridTemplateColumns={opponents.length > 2 ? "1fr 4fr 1fr" : "4fr"}
-            gridTemplateRows=""
-          >
-            {/* -------- LEFT PLAYERS*/}
-            { opponents.length > 2 &&
+      
+          {/* -------- LEFT PLAYERS*/}
+          <Grid item xs={2}> 
+          { opponents.length > 2 &&
               <PlayerLeft
                 player={playersToRender(opponents, 'left')[0]}
                 roundComplete={roundComplete}
                 width={width}
                 maxPileLength={getMaxPileLength(opponents.length + 1)}
               />
-            }
-            {/* --------------- BOARD */}
+          }
+          </Grid>
+
+          {/* --------------- BOARD */}
+          <Grid item xs={8}>
             <Board
               peekTimerOn={peekTimerOn}
               myPlayer={myPlayer}
@@ -543,25 +548,36 @@ const Game = (props: GameProps) => {
               opponents={opponents}
               clicksToCollect={currentSettings.clicksToCollect}
             />
-            {/* ---------- RIGHT PLAYERS*/}
-            { opponents.length > 2 &&
+          </Grid>
+
+          {/* ---------- RIGHT PLAYERS*/}
+          <Grid item xs={2}>
+          { opponents.length > 2 &&
               <PlayerRight
                 player={playersToRender(opponents, 'right')[0]}
                 roundComplete={roundComplete}
                 width={width}
                 maxPileLength={getMaxPileLength(opponents.length + 1)}
               />
-            }
-          </OldGrid>
-          <Flexbox center spaceEvenly noWrap>
-            { opponents.length >= 8 &&
-              <PlayerBottom
-                player={opponents[0]}
-                roundComplete={roundComplete}
-                width={width}
-                maxPileLength={getMaxPileLength(opponents.length + 1)}
-              />
-            }
+          }
+          </Grid>
+          
+          <Grid item xs={3}>
+            {/* ---------- BOTTOM-LEFT PLAYERS*/}
+            <Stack alignItems="center">
+              { opponents.length >= 8 &&
+                <PlayerBottom
+                  player={opponents[0]}
+                  roundComplete={roundComplete}
+                  width={width}
+                  maxPileLength={getMaxPileLength(opponents.length + 1)}
+                />
+              }
+            </Stack>
+          </Grid>
+
+          {/* ---------- MY PLAYER*/}
+          <Grid item xs={6}>
             <MyPlayer
               myPlayer={myPlayer}
               spectating={spectating}
@@ -575,17 +591,22 @@ const Game = (props: GameProps) => {
               drawFromPile={drawFromPile}
               width={width}
             /> 
-            { opponents.length === 9 &&
-              <PlayerBottom
-                player={opponents[8]}
-                roundComplete={roundComplete}
-                width={width}
-                maxPileLength={getMaxPileLength(opponents.length + 1)}
-              />
-            }
-          </Flexbox>
-        </Flexbox>
-        </div>
+          </Grid>
+
+          <Grid item xs={3}>
+            {/* ---------- BOTTOM-RIGHT PLAYERS*/}
+            <Stack alignItems="center">
+              { opponents.length === 9 &&
+                <PlayerBottom
+                  player={opponents[8]}
+                  roundComplete={roundComplete}
+                  width={width}
+                  maxPileLength={getMaxPileLength(opponents.length + 1)}
+                />
+              }
+            </Stack>
+        </Grid>
+      </Grid>
     </Fullscreen>
   )
 }

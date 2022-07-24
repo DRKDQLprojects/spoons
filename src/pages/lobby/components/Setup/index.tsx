@@ -10,7 +10,7 @@ import styles from './Setup.module.css'
 import Logo from 'src/shared/components/Logo'
 import Button from 'src/shared/components/Button'
 import Radio from 'src/shared/components/Radio'
-import { Stack } from '@mui/material'
+import { Stack, Grid } from '@mui/material'
 import Fullscreen from 'src/shared/layout/Fullscreen'
 import AvatarPicker from 'src/shared/components/Avatar/AvatarPicker'
 import Avatar from 'src/shared/components/Avatar'
@@ -187,201 +187,207 @@ const Setup = (props: SetupProps) => {
         </CopyToClipboard>
       </Stack>
       <br/>
-      {/* **************** PLAYERS ****************  */}
-      <div className={styles.players}> 
-        <h2> Players </h2> 
-        <br/>
-        <Stack direction="row" spacing={1}> 
-          <Stack className={styles.player} key={`lobby-${myPlayer.id}`} justifyContent="center">
-            <Stack direction='column' justifyContent='center' alignItems='center'>
-                <AvatarPicker
-                  number={myPlayer.avatar}
-                  size={50}
-                  onPrevious={() => { updateAvatar(myPlayer.avatar === 0 ? 9 : myPlayer.avatar - 1)}}
-                  onNext={() => updateAvatar((myPlayer.avatar + 1) % 10)}
-                />
-                <h3 style={{ margin: '5px'}}> {myPlayer.nickname} {myPlayer.isHost && '🤴'} </h3>
-            </Stack>     
+      
+      <Grid
+        justifyContent="center"
+        container
+      >
+        {/* **************** PLAYERS ****************  */}
+        <Grid item xs={10} className={styles.players}> 
+          <h2> PLAYERS </h2> 
+          <br/>
+          <Stack direction="row" spacing={1}> 
+            <Stack className={styles.player} key={`lobby-${myPlayer.id}`} justifyContent="center">
+              <Stack direction='column' justifyContent='center' alignItems='center'>
+                  <AvatarPicker
+                    number={myPlayer.avatar}
+                    size={50}
+                    onPrevious={() => { updateAvatar(myPlayer.avatar === 0 ? 9 : myPlayer.avatar - 1)}}
+                    onNext={() => updateAvatar((myPlayer.avatar + 1) % 10)}
+                  />
+                  <h3 style={{ margin: '5px'}}> {myPlayer.nickname} {myPlayer.isHost && '🤴'} </h3>
+              </Stack>     
+            </Stack>
+            <div className={styles.scrollablePlayers}> 
+              <Stack 
+                direction="row"
+                spacing={2}
+              > 
+                { renderPlayers()}
+              </Stack>
+            </div>
           </Stack>
-          <div className={styles.scrollablePlayers}> 
-            <Stack 
-              direction="row"
-              spacing={2}
-            > 
-              { renderPlayers()}
+        </Grid>
+        <br/>
+        {/* **************** SETTINGS ****************  */}
+        <Grid item xs={10} className={styles.settings}>
+          <h2> SETTINGS </h2> 
+          <br/>
+          <div className={styles.scrollableSettings}>
+            <h3> PLAYER POSITIONS ON TABLE </h3>
+            {(settings.shuffle) && 
+              <p> SHUFFLE - The players next to you will be random each round. </p>
+            }
+            {(!settings.shuffle) && 
+              <p> LOBBY - The players next to you are determined by lobby order. </p>
+            }
+            <br/>
+            <Stack direction="row" flexWrap="wrap">
+                <Radio 
+                  id="shuffle-off" 
+                  label="LOBBY"
+                  checked={!settings.shuffle} 
+                  disabled={!myPlayer.isHost} 
+                  onChange={() => updatePlayerPositions(false)}
+                />
+                <Radio 
+                  id="shuffle-on" 
+                  label="SHUFFLE"
+                  checked={settings.shuffle} 
+                  disabled={!myPlayer.isHost} 
+                  onChange={() => updatePlayerPositions(true)}
+                />
+            </Stack>
+
+            <h3> DEALER </h3>
+            {(settings.dealer.on && settings.dealer.type === "host") && 
+              <p> HOST - The host of the lobby will start with a full pile every round. </p>
+            }
+            {(settings.dealer.on && settings.dealer.type === "random") && 
+              <p> RANDOM - A random player will start with a full pile every round. </p>
+            }
+            {(settings.dealer.on && settings.dealer.type === "winner") && 
+              <p> WINNER - The winner of the last round will start with a full pile (random on first round). </p>
+            }
+            {!settings.dealer.on && 
+              <p> OFF - Every player will start with an equal pile. </p>
+            }
+            <br/>
+            <Stack direction="row" flexWrap="wrap">
+                <Radio 
+                  id="dealer-host" 
+                  label="HOST"
+                  checked={settings.dealer.on && settings.dealer.type === "host"} 
+                  disabled={!myPlayer.isHost} 
+                  onChange={() => updateDealerType("host")}
+                />
+
+                <Radio 
+                  id="dealer-random" 
+                  label="RANDOM"
+                  checked={settings.dealer.on && settings.dealer.type === "random"} 
+                  disabled={!myPlayer.isHost} 
+                  onChange={() => updateDealerType("random")}
+                />
+
+                <Radio 
+                  id="dealer-winner" 
+                  label="WINNER"
+                  checked={settings.dealer.on && settings.dealer.type === "winner"} 
+                  disabled={!myPlayer.isHost} 
+                  onChange={() => updateDealerType("winner")}
+                />
+
+                <Radio 
+                  id="dealer-off" 
+                  label="OFF"
+                  checked={!settings.dealer.on} 
+                  disabled={!myPlayer.isHost} 
+                  onChange={() => updateDealerOn(false, settings.dealer.type)}
+                />
+            </Stack>
+
+            <h3> PEEKING </h3>
+            {(settings.peek.on) && 
+              <p> ON - You will only be able to see / collect Spoons by peeking at the table. </p>
+            }
+            {(!settings.peek.on) && 
+              <p> OFF - Spoons will be visible / collectable at all times. </p>
+            }
+            <br/>
+
+            <Stack direction="row" flexWrap="wrap">
+              <Radio 
+                id="peeking-on" 
+                label="ON"
+                checked={settings.peek.on} 
+                disabled={!myPlayer.isHost} 
+                onChange={() => updatePeekOn(true)}
+              />
+
+              <Radio 
+                id="peeking-off" 
+                label="OFF"
+                checked={!settings.peek.on} 
+                disabled={!myPlayer.isHost} 
+                onChange={() => updatePeekOn(false)}
+              />
+            </Stack>
+
+            { settings.peek.on && 
+              <>
+                <h4> Timer </h4>
+                <p> You will be able to peek for {settings.peek.timer}s. </p>
+                <br/>
+                <Stack direction='row' flexWrap="wrap">
+                  { [2,3,4,5].map(time => {
+                      return (
+                        <Radio 
+                          key={`peek-timer-${time}`}
+                          id={`peek-timer-${time}`}
+                          label={`${time}s`}
+                          checked={time === settings.peek.timer}
+                          onChange={() => updatePeekTimer(time)}
+                          disabled={!myPlayer.isHost}
+                        />
+                      )
+                    })
+                  }
+                </Stack>
+              
+                <h4> Cooldown </h4>
+                <p> You must wait {settings.peek.cooldown}s before you can peek again. </p>
+                <br/>
+                <Stack direction='row' flexWrap="wrap">
+                  { [2,3,4,5].map(time => {
+                      return (
+                        <Radio 
+                          key={`peek-cooldown-${time}`}
+                          id={`peek-cooldown-${time}`}
+                          label={`${time}s`}
+                          checked={time === settings.peek.cooldown}
+                          onChange={() => updatePeekCooldown(time)}
+                          disabled={!myPlayer.isHost}
+                        />
+                      )
+                    })
+                  }
+                </Stack>
+              </>
+            }
+            <br/>
+            <h3> CLICKS TO COLLECT </h3>
+            { settings.clicksToCollect === 1 && <p> {settings.clicksToCollect} CLICK - First person to click a Spoon collects that Spoon.</p>}
+            { settings.clicksToCollect > 1 && <p> TUG OF WAR - Another player may interrupt your count to {settings.clicksToCollect} CLICKS.</p> } 
+            <br/>
+            <Stack direction='row' flexWrap="wrap">
+              { [1, 2, 3, 4, 5, 6, 7].map(num => {
+                  return (
+                    <Radio 
+                      key={`clicks-to-collect-${num}`}
+                      id={`clicks-to-collect-${num}`}
+                      label={`${num}`}
+                      checked={num === settings.clicksToCollect}
+                      onChange={() => updateClicksToCollect(num)}
+                      disabled={!myPlayer.isHost}
+                    />
+                  )
+                })
+              }
             </Stack>
           </div>
-        </Stack>
-      </div>
-      <br/>
-      {/* **************** SETTINGS ****************  */}
-      <div className={styles.settings}>
-        <h2> Settings </h2> 
-        <br/>
-        <div className={styles.scrollableSettings}>
-          <h3> PLAYER POSITIONS ON TABLE </h3>
-          {(settings.shuffle) && 
-            <p> SHUFFLE - The players next to you will be random each round. </p>
-          }
-          {(!settings.shuffle) && 
-            <p> LOBBY - The players next to you are determined by lobby order. </p>
-          }
-          <br/>
-          <Stack direction="row" flexWrap="wrap">
-              <Radio 
-                id="shuffle-off" 
-                label="LOBBY"
-                checked={!settings.shuffle} 
-                disabled={!myPlayer.isHost} 
-                onChange={() => updatePlayerPositions(false)}
-              />
-              <Radio 
-                id="shuffle-on" 
-                label="SHUFFLE"
-                checked={settings.shuffle} 
-                disabled={!myPlayer.isHost} 
-                onChange={() => updatePlayerPositions(true)}
-              />
-          </Stack>
-
-          <h3> DEALER </h3>
-          {(settings.dealer.on && settings.dealer.type === "host") && 
-            <p> HOST - The host of the lobby will start with a full pile every round. </p>
-          }
-          {(settings.dealer.on && settings.dealer.type === "random") && 
-            <p> RANDOM - A random player will start with a full pile every round. </p>
-          }
-          {(settings.dealer.on && settings.dealer.type === "winner") && 
-            <p> WINNER - The winner of the last round will start with a full pile (random on first round). </p>
-          }
-          {!settings.dealer.on && 
-            <p> OFF - Every player will start with an equal pile. </p>
-          }
-          <br/>
-          <Stack direction="row" flexWrap="wrap">
-              <Radio 
-                id="dealer-host" 
-                label="HOST"
-                checked={settings.dealer.on && settings.dealer.type === "host"} 
-                disabled={!myPlayer.isHost} 
-                onChange={() => updateDealerType("host")}
-              />
-
-              <Radio 
-                id="dealer-random" 
-                label="RANDOM"
-                checked={settings.dealer.on && settings.dealer.type === "random"} 
-                disabled={!myPlayer.isHost} 
-                onChange={() => updateDealerType("random")}
-              />
-
-              <Radio 
-                id="dealer-winner" 
-                label="WINNER"
-                checked={settings.dealer.on && settings.dealer.type === "winner"} 
-                disabled={!myPlayer.isHost} 
-                onChange={() => updateDealerType("winner")}
-              />
-
-              <Radio 
-                id="dealer-off" 
-                label="OFF"
-                checked={!settings.dealer.on} 
-                disabled={!myPlayer.isHost} 
-                onChange={() => updateDealerOn(false, settings.dealer.type)}
-              />
-          </Stack>
-
-          <h3> PEEKING </h3>
-          {(settings.peek.on) && 
-            <p> ON - You will only be able to see / collect Spoons by peeking at the table. </p>
-          }
-          {(!settings.peek.on) && 
-            <p> OFF - Spoons will be visible / collectable at all times. </p>
-          }
-          <br/>
-
-          <Stack direction="row" flexWrap="wrap">
-            <Radio 
-              id="peeking-on" 
-              label="ON"
-              checked={settings.peek.on} 
-              disabled={!myPlayer.isHost} 
-              onChange={() => updatePeekOn(true)}
-            />
-
-            <Radio 
-              id="peeking-off" 
-              label="OFF"
-              checked={!settings.peek.on} 
-              disabled={!myPlayer.isHost} 
-              onChange={() => updatePeekOn(false)}
-            />
-          </Stack>
-
-          { settings.peek.on && 
-            <>
-              <h4> Timer </h4>
-              <p> You will be able to peek for {settings.peek.timer}s. </p>
-              <br/>
-              <Stack direction='row' flexWrap="wrap">
-                { [2,3,4,5].map(time => {
-                    return (
-                      <Radio 
-                        key={`peek-timer-${time}`}
-                        id={`peek-timer-${time}`}
-                        label={`${time}s`}
-                        checked={time === settings.peek.timer}
-                        onChange={() => updatePeekTimer(time)}
-                        disabled={!myPlayer.isHost}
-                      />
-                    )
-                  })
-                }
-              </Stack>
-            
-              <h4> Cooldown </h4>
-              <p> You must wait {settings.peek.cooldown}s before you can peek again. </p>
-              <br/>
-              <Stack direction='row' flexWrap="wrap">
-                { [2,3,4,5].map(time => {
-                    return (
-                      <Radio 
-                        key={`peek-cooldown-${time}`}
-                        id={`peek-cooldown-${time}`}
-                        label={`${time}s`}
-                        checked={time === settings.peek.cooldown}
-                        onChange={() => updatePeekCooldown(time)}
-                        disabled={!myPlayer.isHost}
-                      />
-                    )
-                  })
-                }
-              </Stack>
-            </>
-          }
-          <br/>
-          <h3> CLICKS TO COLLECT </h3>
-          { settings.clicksToCollect === 1 && <p> {settings.clicksToCollect} CLICK - First person to click a Spoon collects that Spoon.</p>}
-          { settings.clicksToCollect > 1 && <p> TUG OF WAR - Another player may interrupt your count to {settings.clicksToCollect} CLICKS.</p> } 
-          <br/>
-          <Stack direction='row' flexWrap="wrap">
-            { [1, 2, 3, 4, 5, 6, 7].map(num => {
-                return (
-                  <Radio 
-                    key={`clicks-to-collect-${num}`}
-                    id={`clicks-to-collect-${num}`}
-                    label={`${num}`}
-                    checked={num === settings.clicksToCollect}
-                    onChange={() => updateClicksToCollect(num)}
-                    disabled={!myPlayer.isHost}
-                  />
-                )
-              })
-            }
-          </Stack>
-        </div>
-      </div> 
+        </Grid> 
+      </Grid>
       <br/>
     </Fullscreen>
   )

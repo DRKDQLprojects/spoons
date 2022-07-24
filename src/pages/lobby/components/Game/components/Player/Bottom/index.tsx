@@ -2,7 +2,7 @@ import { FunctionComponent  } from "react"
 import { Player } from "src/types"
 import styles from './Bottom.module.css'
 
-import Flexbox from "src/shared/layout/Flexbox"
+import { Stack } from '@mui/material';
 import Avatar from "src/shared/components/Avatar"
 import { getSuit } from "src/shared/helpers"
 
@@ -116,8 +116,8 @@ const PlayerBottom: FunctionComponent<PlayerBottomProps>  = (props) => {
   const cardHeight = width > 850 ? 70 : 50
 
   return (
-    <Flexbox column end>
-      <Flexbox center noWrap>
+    <Stack justifyContent="flex-end">
+      <Stack direction="row" justifyContent="center" flexWrap="nowrap">
         <div className={roundComplete && width <= 850 ? (spoonCollected? styles.safeMobile : styles.eliminatedMobile ) : styles.flex}>
           <Avatar
             number={player.avatar}
@@ -135,14 +135,14 @@ const PlayerBottom: FunctionComponent<PlayerBottomProps>  = (props) => {
             }
           </h4>
         </div>
-      </Flexbox>
+      </Stack>
       <div style={{ height: '5px'}}/>
-      <Flexbox noWrap>
-        <Flexbox column end>
-          <Flexbox>
+      <Stack direction="row" flexWrap="nowrap">
+        <Stack justifyContent="flex-end">
+          <Stack direction="row">
             {renderHand()}
-          </Flexbox>
-        </Flexbox>
+          </Stack>
+        </Stack>
         <div 
           className={styles.pile} 
           style={{ 
@@ -153,8 +153,8 @@ const PlayerBottom: FunctionComponent<PlayerBottomProps>  = (props) => {
           { pile.length > 0 && renderPile()}
         </div>
         
-      </Flexbox>
-    </Flexbox >
+      </Stack>
+    </Stack >
   )
 }
 

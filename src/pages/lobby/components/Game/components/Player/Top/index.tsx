@@ -2,7 +2,7 @@ import { FunctionComponent  } from "react"
 import { Player } from "src/types"
 import styles from './Top.module.css'
 
-import Flexbox from "src/shared/layout/Flexbox"
+import { Stack } from '@mui/material'
 import Avatar from "src/shared/components/Avatar"
 import { getSuit } from "src/shared/helpers"
 
@@ -117,8 +117,8 @@ const PlayerTop: FunctionComponent<PlayerTopProps>  = (props) => {
   const cardHeight = width > 850 ? 70 : 50
 
   return (
-    <Flexbox column>
-      <Flexbox center noWrap>
+    <Stack>
+      <Stack direction="row" justifyContent="center" flexWrap="nowrap">
         <div className={roundComplete && width <= 850 ? (spoonCollected? styles.safeMobile : styles.eliminatedMobile ) : styles.flex}>
           <Avatar
             number={player.avatar}
@@ -136,9 +136,9 @@ const PlayerTop: FunctionComponent<PlayerTopProps>  = (props) => {
             }
           </h4>
         </div>
-      </Flexbox>
+      </Stack>
       <div style={{ height: '5px'}}/>
-      <Flexbox noWrap>
+      <Stack direction="row" flexWrap="nowrap">
         <div 
           className={styles.pile} 
           style={{ 
@@ -148,11 +148,11 @@ const PlayerTop: FunctionComponent<PlayerTopProps>  = (props) => {
           { pile.length === 0  && <div className={styles.pilePlaceholder}/>}
           { pile.length > 0 && renderPile()}
         </div>
-        <Flexbox>
+        <Stack direction="row">
           {renderHand()}
-        </Flexbox>
-      </Flexbox>
-    </Flexbox >
+        </Stack>
+      </Stack>
+    </Stack >
   )
 }
 

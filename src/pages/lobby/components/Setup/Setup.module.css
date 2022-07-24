@@ -1,19 +1,9 @@
-.container {
- margin: 0px 0px 0px 0px;
- padding-left: 20px;
- padding-right: 20px;
- height: 450px;
-}
-
 .players, .settings {
   padding: 24px;
   background: rgba(131, 86, 204, 0.5);
   border: 5px solid #FFFFFF;
-  border-radius: 20px;;
-}
-
-.players {
-  width: 90%;
+  border-radius: 20px;
+  margin-bottom: 20px;
 }
 
 .scrollablePlayers {
@@ -27,11 +17,6 @@
   display: flex;
   flex-direction: row;
   white-space: nowrap;
-}
-
-.settings {
-  width: auto;
-  margin: 0px 20px 20px 20px;
 }
 
 .scrollableSettings {

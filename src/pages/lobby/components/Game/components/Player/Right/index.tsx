@@ -2,7 +2,7 @@ import { FunctionComponent  } from "react"
 import { Player } from "src/types"
 import styles from './Right.module.css'
 
-import Flexbox from "src/shared/layout/Flexbox"
+import { Stack } from "@mui/material"
 import Avatar from "src/shared/components/Avatar"
 import { getSuit } from "src/shared/helpers"
 
@@ -110,14 +110,14 @@ const PlayerRight: FunctionComponent<PlayerRightProps>  = (props) => {
   const cardWidth = width > 850 ? 70 : 50
 
   return (
-    <Flexbox column noWrap> 
+    <Stack flexWrap="nowrap"> 
       <div 
         style={{ 
           marginRight: width > 850 ? '20px' : '5px',
           marginTop: '10px'
         }}>
-      <Flexbox column>
-        <Flexbox end noWrap>
+      <Stack>
+        <Stack direction="row" justifyContent="flex-end" flexWrap="nowrap">
           <div className={roundComplete && width <= 850 ? (spoonCollected ? styles.safeMobile : styles.eliminatedMobile ) : styles.flex}>
             <Avatar
               number={player.avatar}
@@ -135,21 +135,21 @@ const PlayerRight: FunctionComponent<PlayerRightProps>  = (props) => {
               }
             </h4>
           </div>
-        </Flexbox>
-        <Flexbox end>
+        </Stack>
+        <Stack direction="row" justifyContent="flex-end">
           <div className={styles.pile} style={{ width: `${cardWidth + maxPileLength}px`}}> 
               { pile.length === 0  && <div className={styles.pilePlaceholder}/>}
               { pile.length > 0 && renderPile()}
           </div>
-        </Flexbox>
-        <Flexbox end>
-          <Flexbox column>
+        </Stack>
+        <Stack direction="row" justifyContent="flex-end">
+          <Stack>
             {renderHand()}
-          </Flexbox>
-        </Flexbox>
-      </Flexbox >
+          </Stack>
+        </Stack>
+      </Stack>
       </div>
-    </Flexbox>
+    </Stack>
   )
 }
 
