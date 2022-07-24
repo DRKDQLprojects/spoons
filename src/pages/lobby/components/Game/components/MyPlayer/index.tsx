@@ -94,7 +94,7 @@ const MyPlayer : FunctionComponent<MyPlayerProps> = (props) => {
             <h3 style={{ marginLeft: '5px', marginTop: '5px'}}>
               {spectating && `SPECTATING: ${myPlayer.nickname}`} 
               {!spectating && `${myPlayer.nickname}`}
-              {myPlayer.gameState.dealer ? '🤵‍♂️' : ''}
+              {myPlayer.gameState.dealer ? '👔' : ''}
               {(safeMessage && width > 850) && <span className={safeMessage === 'ELIMINATED' ? styles.eliminated : styles.safe}> {safeMessage} </span>}
             </h3>
           </div>

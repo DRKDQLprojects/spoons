@@ -11,7 +11,7 @@ import Loader from 'src/shared/components/Loader'
 import Logo from 'src/shared/components/Logo'
 import TextField from 'src/shared/components/TextField'
 import Button from 'src/shared/components/Button'
-import { Grid } from '@material-ui/core'
+import { Grid } from '@mui/material'
 import Fullscreen from 'src/shared/layout/Fullscreen'
 import AvatarPicker from 'src/shared/components/Avatar/AvatarPicker'
 
@@ -39,7 +39,6 @@ const Join: NextPage = () => {
     localStorage.removeItem('saved-lobby')
     if (!loading) {
       if (!error) {
-        // Wait for URL code to be loaded before getting information
         if (router.isReady) {
           const code = router.query.code as string
           if (code) {
@@ -93,32 +92,29 @@ const Join: NextPage = () => {
   // ***** JOIN LOBBY *****
   const joinLobby = () => {
     setJoining(true)
-    // Entered data not valid
+
+    // Error conditions
     if (!nickname || nickname.length < 3) {
       setNicknameError('Your nickname must be at least 3 characters long.')
       setJoining(false)
       return
     }
-
     if (players.filter(p => p.nickname.toLocaleLowerCase() === nickname.toLowerCase()).length !== 0) {
       setNicknameError('Sorry this nickname is taken. Please try another nickname.')
       setJoining(false)
       return
     } 
-
-    // Lobby full
     if (players.length + 1 > 10) {
       setNicknameError('The lobby is full. Please try again soon.')
       setJoining(false)
       return
     } 
-    // Game already started
     if (gameStarted) {
       setNicknameError('The lobby has already started the game. Please try again soon.') 
       setJoining(false)
       return
     }
-    // Join success
+
     const playerId = firebase.database().ref(`${lobbyId}/players`).push().key as string
     firebase.database().ref(`${lobbyId}/players/${playerId}`).transaction(() => {
       return {
@@ -135,20 +131,14 @@ const Join: NextPage = () => {
     setJoining(false)
   }
 
-  // ***** CHANGE NICKNAME *****
-  const changeNickname = (value: string) => {
-    setNicknameError('')
-    setNickname(value)
-  }
-
   // ********** RENDER **********
-  if (loading) return (<Loader message="Attempting to find lobby..."/>)
-  if (joining) return (<Loader message="Joining lobby..."/> )
+  if (loading) return (<Loader message="Attempting to find lobby..."/>);
+  if (joining) return (<Loader message="Joining lobby..."/> );
+
   return (
     <Fullscreen>
       <Grid
         container
-        spacing={0}
         direction="column"
         justifyContent="center"
         alignItems="center"
@@ -171,9 +161,13 @@ const Join: NextPage = () => {
           type="text" 
           value={nickname} 
           onPaste={e => e.preventDefault()} 
-          onChange={e => changeNickname(e.target.value.replace(/[^a-zA-Z\d]/ig, ""))}
+          onChange={e => {
+            const val = e.target.value.replace(/[^a-zA-Z\d]/ig, "")
+            setNicknameError('')
+            setNickname(val)
+          }}
           maxLength={20}
-          placeholder={'E.g. Marc6789'}
+          placeholder={'E.g. Daquel34'}
           error={nicknameError !== ''}
         />
         {nicknameError && 

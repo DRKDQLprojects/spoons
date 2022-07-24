@@ -57,9 +57,11 @@ export type GameStatus = {
   spoonStatuses: SpoonStatus[]
 }
 
+export type SpoonStatus = boolean | string[] // false = not collected yet, true = collected by winner, string[] = IDs of people who have clicked spoon
+
 export type Settings = {
   dealer: {
-    default: boolean,
+    type: DealerType,
     on: boolean,
   },
   peek : {
@@ -71,7 +73,7 @@ export type Settings = {
   clicksToCollect: number
 }
 
-export type SpoonStatus = boolean | string[] // false = not collected yet, true = collected by winner, string[] = IDs of people who have clicked spoon
+export type DealerType = "host" | "random" | "winner"
 
 // Empty Types
 
@@ -105,10 +107,10 @@ export const emptyGameStatus : GameStatus = {
 export const emptySettings : Settings = {
   dealer: {
     on: true,
-    default: true,
+    type: "host",
   },
   peek : {
-    on: true,
+    on: false,
     cooldown: 2,
     timer: 4
   },

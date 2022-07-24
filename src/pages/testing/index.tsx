@@ -53,6 +53,19 @@ const Home: NextPage = () => {
       }).then(() => {
         sessionStorage.setItem('lid', lobbyId)
         sessionStorage.setItem('pid', playerId)
+
+        let i = 0;
+        while (i < 9) {        
+          const botId = firebase.database().ref(`${lobbyId}/players`).push().key as string
+          firebase.database().ref(`${lobbyId}/players/${botId}`).set({
+            nickname: `player${i + 1}`,
+            avatar: i + 1,
+            isHost: false,
+            gameState: emptyGameState
+          });
+          i++;
+        }
+
         router.push('/lobby')
       })
     })
@@ -105,7 +118,7 @@ const Home: NextPage = () => {
           </>
         }
         <br/>
-        <Button onClick={createLobby} primary disabled={false}> Create Lobby </Button>
+        <Button onClick={createLobby} primary disabled={false}> TEST </Button>
       </Grid>
     </Fullscreen>
   )

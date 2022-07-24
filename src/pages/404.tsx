@@ -2,7 +2,7 @@ import router from 'next/router';
 import Fullscreen from 'src/shared/layout/Fullscreen';
 import Logo from 'src/shared/components/Logo';
 import Button from 'src/shared/components/Button';
-import { Grid } from '@material-ui/core';
+import { Grid } from '@mui/material';
 
 export default function Custom404() {
   return (

@@ -126,7 +126,7 @@ const PlayerTop: FunctionComponent<PlayerTopProps>  = (props) => {
           />
           <h4 style={{ marginLeft: '5px', marginTop: '5px'}}> 
             {player.nickname} 
-            {player.gameState.dealer ? '🤵‍♂️' : ''}
+            {player.gameState.dealer ? '👔' : ''}
             {(roundComplete && width > 850) && 
               <span className={spoonCollected? styles.safe : styles.eliminated}> 
                 {spoonCollected && roundWinner&& 'WINNER' }

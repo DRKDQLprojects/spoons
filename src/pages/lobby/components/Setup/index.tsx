@@ -1,18 +1,16 @@
 import { CopyToClipboard } from 'react-copy-to-clipboard'
-import { LobbyInfo, Player } from 'src/types'
+import { DealerType, LobbyInfo, Player } from 'src/types'
 import firebase from 'src/firebase/client'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { setupBoard } from 'src/shared/helpers'
+import useInterval from 'react-useinterval'
 
 import styles from './Setup.module.css'
+
 import Logo from 'src/shared/components/Logo'
-import Flexbox from 'src/shared/layout/Flexbox'
 import Button from 'src/shared/components/Button'
 import Radio from 'src/shared/components/Radio'
-import useInterval from 'react-useinterval'
-import Container from 'src/shared/layout/Container'
-
-import { Grid } from '@material-ui/core'
+import { Stack } from '@mui/material'
 import Fullscreen from 'src/shared/layout/Fullscreen'
 import AvatarPicker from 'src/shared/components/Avatar/AvatarPicker'
 import Avatar from 'src/shared/components/Avatar'
@@ -60,14 +58,14 @@ const Setup = (props: SetupProps) => {
   }
 
   // ***** UPDATE GAME SETTINGS *****
-  const updateDealerOn = (value: boolean, type: boolean) => {
+  const updateDealerOn = (value: boolean, type: DealerType) => {
     firebase.database().ref(`${lobbyId}/settings/dealer`).set({
       on: value,
-      default: value ? type : true
+      type: value ? type : "host"
     })
   }
-  const updateDealerDefault = (value: boolean) => {
-    updateDealerOn(true, value)
+  const updateDealerType = (type: DealerType) => {
+    updateDealerOn(true, type)
   }
   const updatePlayerPositions = (value: boolean) => {
     firebase.database().ref(`${lobbyId}/settings/shuffle`).set(value)
@@ -110,59 +108,37 @@ const Setup = (props: SetupProps) => {
   const renderPlayers = () => {
     let elems = []
 
-    elems.push(
-      <div className={styles.myPlayer} key={`lobby-${myPlayer.id}`}>
-        <Flexbox column center noWrap>
-            <Flexbox center>
-              <AvatarPicker
-                number={myPlayer.avatar}
-                size={50}
-                onPrevious={() => { updateAvatar(myPlayer.avatar === 0 ? 9 : myPlayer.avatar - 1)}}
-                onNext={() => updateAvatar((myPlayer.avatar + 1) % 10)}
-              />
-            </Flexbox>
-            <Flexbox center noWrap>
-              <h3 style={{ margin: '5px'}}> {myPlayer.nickname} </h3>
-              <h2> {myPlayer.isHost && '🤴'} </h2>
-            </Flexbox>
-        </Flexbox>
-      </div>
-    )
     players.filter(p => p.id !== myPlayer.id).forEach(player => {
       elems.push(
-        <div key={`lobby-${player.id}`} className={styles.player}>
-          <Flexbox column noWrap>
-            <Flexbox center>
+        <Stack key={`lobby-${player.id}`}  className={styles.player} justifyContent="center">
+          <Stack direction='column' justifyContent='center' alignItems='center'>
               <Avatar number={player.avatar} size={45}/>
-            </Flexbox>
-            <Flexbox center noWrap>
-              <h3 style={{ margin: '5px'}}> {player.nickname} </h3>
-              <h2> {player.isHost && '🤴'} </h2>
-            </Flexbox>
-          </Flexbox>
-          {myPlayer.isHost &&
-            <Flexbox center>
-              <Button onClick={() => props.removePlayer(lobbyId, player.id)} danger disabled={false}>
-                Kick
-              </Button>
-            </Flexbox>
-          }
-        </div>
+              <h3 style={{ margin: '5px'}}> {player.nickname} {player.isHost && '🤴'} </h3>  
+              { myPlayer.isHost &&
+                <Button onClick={() => props.removePlayer(lobbyId, player.id)} danger disabled={!myPlayer.isHost} hidden={!myPlayer.isHost}>
+                  Kick
+                </Button>
+              }
+          </Stack>
+        </Stack>
       )
     })
 
     for (let i = 0; i < 10 - players.length; i++) {
       elems.push(
-        <div key={`lobby-empty-player-${i}`} className={styles.emptyPlayer}>
-          <Flexbox column center noWrap>
-            <Flexbox center>
-              <Avatar size={45} number={-1}/>
-            </Flexbox>
-            <Flexbox center>
-              <p> Empty </p>
-            </Flexbox>
-          </Flexbox>
-        </div>
+        <Stack 
+          key={`lobby-empty-player-${i}`} 
+          className={styles.emptyPlayer}
+          justifyContent="center"
+        >
+          <Stack direction='column' justifyContent='center' alignItems='center'> 
+            <Avatar size={45} number={-1}/>
+            <p> Empty </p>
+            { myPlayer.isHost &&
+              <Button onClick={() => {}} danger disabled hidden> Kick </Button>
+            }
+          </Stack>
+        </Stack>
       )
     }
 
@@ -189,198 +165,224 @@ const Setup = (props: SetupProps) => {
   // ********** RENDER **********
   return (
     <Fullscreen>
-      <Flexbox center>
-        <Logo size={75}/>
-      </Flexbox>
-      <Grid
-        container
-        direction={width > 850 ? 'row' : 'column'}
-        justifyContent="center"
-        alignItems="center"
-        style={{ transform: `scale(${scale})`, transformOrigin: 'top'}}
-      >
-        <div 
-          className={width > 850 ? styles.gridItem : styles.mobileGridItem}
-        >
-          <Flexbox center fullWidth>
-            <h1> Lobby {`${players.length}/10`} </h1> 
-          </Flexbox>
-          <br/>
-          <div className={styles.scrollablePlayers}>
-            {renderPlayers()}
+      <br/>
+      <Logo size={75}/>
+      {/* **************** START / INVITE ****************  */}
+      <Stack direction="row" spacing={1}>
+          { myPlayer.isHost && 
+            <Button success disabled={!myPlayer.isHost || players.length === 1} onClick={() => startGame()}> 
+              {players.length > 1 && 'Start Game'}
+              {players.length === 1 && 'Waiting for players...'}
+            </Button>
+          }
+          {!myPlayer.isHost && 
+            <h2 style={{ marginTop: '10px'}}>
+              Waiting for host to start game...
+            </h2>
+          }
+        <CopyToClipboard text={`${process.env.NEXT_PUBLIC_BASE_URL}/join?code=${lobbyId}`} onCopy={() => { }}>
+            <Button primary disabled={false} onClick={() => { setSeconds(2); setCopiedTimerOn(true); }}> 
+              { copiedTimerOn ? 'COPIED!' : 'INVITE'  }
+            </Button>
+        </CopyToClipboard>
+      </Stack>
+      <br/>
+      {/* **************** PLAYERS ****************  */}
+      <div className={styles.players}> 
+        <h2> Players </h2> 
+        <br/>
+        <Stack direction="row" spacing={1}> 
+          <Stack className={styles.player} key={`lobby-${myPlayer.id}`} justifyContent="center">
+            <Stack direction='column' justifyContent='center' alignItems='center'>
+                <AvatarPicker
+                  number={myPlayer.avatar}
+                  size={50}
+                  onPrevious={() => { updateAvatar(myPlayer.avatar === 0 ? 9 : myPlayer.avatar - 1)}}
+                  onNext={() => updateAvatar((myPlayer.avatar + 1) % 10)}
+                />
+                <h3 style={{ margin: '5px'}}> {myPlayer.nickname} {myPlayer.isHost && '🤴'} </h3>
+            </Stack>     
+          </Stack>
+          <div className={styles.scrollablePlayers}> 
+            <Stack 
+              direction="row"
+              spacing={2}
+            > 
+              { renderPlayers()}
+            </Stack>
           </div>
-        </div>
-        {width > 850 && <div style={{ width: '20px'}}/>}
-        <div className={styles.gridItem}>
-          <Flexbox center stretch>
-            <h1> Settings </h1>
-          </Flexbox>
-          <Flexbox column spaceBetween noWrap> 
-            <div className={styles.scrollableSettings}>
-              <Container>
-                <h3> PLAYER POSITIONS </h3>
-                <br/>
-                <Flexbox>
-                    <Radio 
-                      id="shuffle-off" 
-                      label="LOBBY"
-                      checked={!settings.shuffle} 
-                      disabled={!myPlayer.isHost} 
-                      onChange={() => updatePlayerPositions(false)}
-                    />
+        </Stack>
+      </div>
+      <br/>
+      {/* **************** SETTINGS ****************  */}
+      <div className={styles.settings}>
+        <h2> Settings </h2> 
+        <br/>
+        <div className={styles.scrollableSettings}>
+          <h3> PLAYER POSITIONS ON TABLE </h3>
+          {(settings.shuffle) && 
+            <p> SHUFFLE - The players next to you will be random each round. </p>
+          }
+          {(!settings.shuffle) && 
+            <p> LOBBY - The players next to you are determined by lobby order. </p>
+          }
+          <br/>
+          <Stack direction="row" flexWrap="wrap">
+              <Radio 
+                id="shuffle-off" 
+                label="LOBBY"
+                checked={!settings.shuffle} 
+                disabled={!myPlayer.isHost} 
+                onChange={() => updatePlayerPositions(false)}
+              />
+              <Radio 
+                id="shuffle-on" 
+                label="SHUFFLE"
+                checked={settings.shuffle} 
+                disabled={!myPlayer.isHost} 
+                onChange={() => updatePlayerPositions(true)}
+              />
+          </Stack>
 
-                    <Radio 
-                      id="shuffle-on" 
-                      label="SHUFFLE"
-                      checked={settings.shuffle} 
-                      disabled={!myPlayer.isHost} 
-                      onChange={() => updatePlayerPositions(true)}
-                    />
-                </Flexbox>
-              </Container>
-              <Container>
-                <h3> DEALER </h3>
-                <br/>
-                <Flexbox>
-                    <Radio 
-                      id="dealer-random" 
-                      label="RANDOM"
-                      checked={settings.dealer.on && settings.dealer.default} 
-                      disabled={!myPlayer.isHost} 
-                      onChange={() => updateDealerDefault(true)}
-                    />
+          <h3> DEALER </h3>
+          {(settings.dealer.on && settings.dealer.type === "host") && 
+            <p> HOST - The host of the lobby will start with a full pile every round. </p>
+          }
+          {(settings.dealer.on && settings.dealer.type === "random") && 
+            <p> RANDOM - A random player will start with a full pile every round. </p>
+          }
+          {(settings.dealer.on && settings.dealer.type === "winner") && 
+            <p> WINNER - The winner of the last round will start with a full pile (random on first round). </p>
+          }
+          {!settings.dealer.on && 
+            <p> OFF - Every player will start with an equal pile. </p>
+          }
+          <br/>
+          <Stack direction="row" flexWrap="wrap">
+              <Radio 
+                id="dealer-host" 
+                label="HOST"
+                checked={settings.dealer.on && settings.dealer.type === "host"} 
+                disabled={!myPlayer.isHost} 
+                onChange={() => updateDealerType("host")}
+              />
 
-                    <Radio 
-                      id="dealer-winner" 
-                      label="WINNER"
-                      checked={settings.dealer.on && !settings.dealer.default} 
-                      disabled={!myPlayer.isHost} 
-                      onChange={() => updateDealerDefault(false)}
-                    />
+              <Radio 
+                id="dealer-random" 
+                label="RANDOM"
+                checked={settings.dealer.on && settings.dealer.type === "random"} 
+                disabled={!myPlayer.isHost} 
+                onChange={() => updateDealerType("random")}
+              />
 
-                    <Radio 
-                      id="dealer-off" 
-                      label="OFF"
-                      checked={!settings.dealer.on} 
-                      disabled={!myPlayer.isHost} 
-                      onChange={() => updateDealerOn(false, true)}
-                    />
-                </Flexbox>
-              </Container>
-              <Container>
-                <h3> PEEKING </h3>
-                <br/>
+              <Radio 
+                id="dealer-winner" 
+                label="WINNER"
+                checked={settings.dealer.on && settings.dealer.type === "winner"} 
+                disabled={!myPlayer.isHost} 
+                onChange={() => updateDealerType("winner")}
+              />
 
-                <Flexbox>
-                  <Radio 
-                    id="peeking-on" 
-                    label="ON"
-                    checked={settings.peek.on} 
-                    disabled={!myPlayer.isHost} 
-                    onChange={() => updatePeekOn(true)}
-                  />
+              <Radio 
+                id="dealer-off" 
+                label="OFF"
+                checked={!settings.dealer.on} 
+                disabled={!myPlayer.isHost} 
+                onChange={() => updateDealerOn(false, settings.dealer.type)}
+              />
+          </Stack>
 
-                  <Radio 
-                    id="peeking-off" 
-                    label="OFF"
-                    checked={!settings.peek.on} 
-                    disabled={!myPlayer.isHost} 
-                    onChange={() => updatePeekOn(false)}
-                  />
-                </Flexbox>
+          <h3> PEEKING </h3>
+          {(settings.peek.on) && 
+            <p> ON - You will only be able to see / collect Spoons by peeking at the table. </p>
+          }
+          {(!settings.peek.on) && 
+            <p> OFF - Spoons will be visible / collectable at all times. </p>
+          }
+          <br/>
 
-                { settings.peek.on && 
-                  <>
-                    <h4> Timer </h4>
-                    <Flexbox>
-                      { [2,3,4,5].map(time => {
-                          return (
-                            <Radio 
-                              key={`peek-timer-${time}`}
-                              id={`peek-timer-${time}`}
-                              label={`${time}s`}
-                              checked={time === settings.peek.timer}
-                              onChange={() => updatePeekTimer(time)}
-                              disabled={!myPlayer.isHost}
-                            />
-                          )
-                        })
-                      }
-                    </Flexbox>
-                    
-                    <h4> Cooldown </h4>
-                    <Flexbox>
-                      { [2,3,4,5].map(time => {
-                          return (
-                            <Radio 
-                              key={`peek-cooldown-${time}`}
-                              id={`peek-cooldown-${time}`}
-                              label={`${time}s`}
-                              checked={time === settings.peek.cooldown}
-                              onChange={() => updatePeekCooldown(time)}
-                              disabled={!myPlayer.isHost}
-                            />
-                          )
-                        })
-                      }
-                    </Flexbox>
-                  </>
-                }
-              </Container>
+          <Stack direction="row" flexWrap="wrap">
+            <Radio 
+              id="peeking-on" 
+              label="ON"
+              checked={settings.peek.on} 
+              disabled={!myPlayer.isHost} 
+              onChange={() => updatePeekOn(true)}
+            />
+
+            <Radio 
+              id="peeking-off" 
+              label="OFF"
+              checked={!settings.peek.on} 
+              disabled={!myPlayer.isHost} 
+              onChange={() => updatePeekOn(false)}
+            />
+          </Stack>
+
+          { settings.peek.on && 
+            <>
+              <h4> Timer </h4>
+              <p> You will be able to peek for {settings.peek.timer}s. </p>
               <br/>
-              <h3> CLICKS TO COLLECT </h3>
-              <br/>
-              <Flexbox>
-                { [1, 2, 3, 4, 5, 6, 7].map(num => {
+              <Stack direction='row' flexWrap="wrap">
+                { [2,3,4,5].map(time => {
                     return (
                       <Radio 
-                        key={`clicks-to-collect-${num}`}
-                        id={`clicks-to-collect-${num}`}
-                        label={`${num}`}
-                        checked={num === settings.clicksToCollect}
-                        onChange={() => updateClicksToCollect(num)}
+                        key={`peek-timer-${time}`}
+                        id={`peek-timer-${time}`}
+                        label={`${time}s`}
+                        checked={time === settings.peek.timer}
+                        onChange={() => updatePeekTimer(time)}
                         disabled={!myPlayer.isHost}
                       />
                     )
                   })
                 }
-              </Flexbox>
-            </div>
-
-            <Flexbox noWrap>
-              <CopyToClipboard 
-                  text={`${process.env.NEXT_PUBLIC_BASE_URL}/join?code=${lobbyId}`}
-                  onCopy={() => { }}
-                >
-                <div className={styles.buttonPadding}>
-                  <Button primary disabled={false} onClick={() => { setSeconds(2); setCopiedTimerOn(true); }}> 
-                    { copiedTimerOn ? 'COPIED!' : 'INVITE'  }
-                  </Button>
-                </div>
-              </CopyToClipboard>
-              <div className={styles.buttonPadding}>
-                { myPlayer.isHost && 
-                  <Button 
-                    success
-                    disabled={!myPlayer.isHost || players.length === 1}
-                    onClick={() => startGame()}
-                  > 
-                    {players.length > 1 && 'Start'}
-                    {players.length === 1 && 'Waiting for players...'}
-                  </Button>
+              </Stack>
+            
+              <h4> Cooldown </h4>
+              <p> You must wait {settings.peek.cooldown}s before you can peek again. </p>
+              <br/>
+              <Stack direction='row' flexWrap="wrap">
+                { [2,3,4,5].map(time => {
+                    return (
+                      <Radio 
+                        key={`peek-cooldown-${time}`}
+                        id={`peek-cooldown-${time}`}
+                        label={`${time}s`}
+                        checked={time === settings.peek.cooldown}
+                        onChange={() => updatePeekCooldown(time)}
+                        disabled={!myPlayer.isHost}
+                      />
+                    )
+                  })
                 }
-                {!myPlayer.isHost && 
-                  <Flexbox column center>
-                    <h2 style={{ marginTop: '10px'}}>
-                      Waiting for host...
-                    </h2>
-                  </Flexbox>
-                }
-              </div>
-            </Flexbox>
-          </Flexbox>
+              </Stack>
+            </>
+          }
+          <br/>
+          <h3> CLICKS TO COLLECT </h3>
+          { settings.clicksToCollect === 1 && <p> {settings.clicksToCollect} CLICK - First person to click a Spoon collects that Spoon.</p>}
+          { settings.clicksToCollect > 1 && <p> TUG OF WAR - Another player may interrupt your count to {settings.clicksToCollect} CLICKS.</p> } 
+          <br/>
+          <Stack direction='row' flexWrap="wrap">
+            { [1, 2, 3, 4, 5, 6, 7].map(num => {
+                return (
+                  <Radio 
+                    key={`clicks-to-collect-${num}`}
+                    id={`clicks-to-collect-${num}`}
+                    label={`${num}`}
+                    checked={num === settings.clicksToCollect}
+                    onChange={() => updateClicksToCollect(num)}
+                    disabled={!myPlayer.isHost}
+                  />
+                )
+              })
+            }
+          </Stack>
         </div>
-      </Grid>
+      </div> 
+      <br/>
     </Fullscreen>
   )
 }

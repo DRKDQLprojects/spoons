@@ -47,18 +47,25 @@ export const setupBoard = (players : Player[], settings: any, round: number) : a
 
   if (settings.dealer.on && remainingPlayers.length > 2) {
     
-    // Random Dealer
     let dealer;
-    if (settings.dealer.default) {
-      dealer = remainingPlayers[Math.floor(Math.random() * remainingPlayers.length)]
-
-    // Winner deals
-    } else {
-      if (round === 0) {
+    switch (settings.dealer.type) {
+      // Random Dealer
+      case "random":
         dealer = remainingPlayers[Math.floor(Math.random() * remainingPlayers.length)]
-      } else {
-        dealer = remainingPlayers.filter(p => p.id === winner.id)[0]
-      }
+        break;
+      // Winner Dealer
+      case "winner":
+        if (round === 0) {
+          dealer = remainingPlayers[Math.floor(Math.random() * remainingPlayers.length)]
+        } else {
+          dealer = remainingPlayers.filter(p => p.id === winner.id)[0]
+        }
+        break;
+      // Host Dealer
+      case "host":
+      default:
+        dealer = remainingPlayers.filter(p => p.isHost)[0]
+        break;
     }
 
     // Draw Hands

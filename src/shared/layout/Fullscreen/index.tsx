@@ -1,5 +1,5 @@
 import { FunctionComponent, useEffect, useState } from 'react'
-import { Grid } from '@material-ui/core'
+import { Grid } from '@mui/material'
 
 const Fullscreen : FunctionComponent<any> = (props) => {
 
@@ -18,18 +18,14 @@ const Fullscreen : FunctionComponent<any> = (props) => {
   return (
     <Grid
       container
-      spacing={0}
       direction="column"
       justifyContent="center"
       alignItems="center"
       style={{
         minHeight: '100vh',
-        background: `linear-gradient(180deg, rgba(131,86,204,0.7) 0%, rgba(113,199,218,0.7) 100%), url(${width > 850 ? require('/public/assets/Spoon.svg') : require('/public/assets/SpoonMobile.svg')})`,
       }}
     > 
-      <div>
-        {props.children}
-      </div>
+      {props.children}
     </Grid>
   )
 }

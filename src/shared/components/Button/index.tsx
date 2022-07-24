@@ -8,13 +8,14 @@ type ButtonProps = {
   danger?: boolean,
   success?: boolean,
   disabled: boolean,
-  stretch?: boolean
+  stretch?: boolean,
+  hidden?: boolean,
 }
 
 const Button : FunctionComponent<ButtonProps> = (props) => {
 
-  const getStyle = () => {
-    const { primary, danger, success} = props
+  const getClass = () => {
+    const { primary, danger, success } = props
     if (primary) return styles.button
     if (danger) return styles.danger
     if (success) return styles.success
@@ -22,10 +23,12 @@ const Button : FunctionComponent<ButtonProps> = (props) => {
 
   return (
     <button 
-      className={getStyle()} 
+      className={getClass()} 
       onClick={props.onClick}
       disabled={props.disabled}
-      style={props.stretch ? { height: '100%', width: '100%' } : {}}
+      style={{ 
+        visibility: props.hidden ? 'hidden' : undefined
+      }}
     > 
       <p 
         className={styles.text}
